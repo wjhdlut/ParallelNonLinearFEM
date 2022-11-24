@@ -1,0 +1,61 @@
+TITLE = Example 7.5.1 - Internally pressurised thick-walled cylinder;
+
+INCLUDE = /home/wangjianhua/ExampleCpp/ParallelNonLinearFEM/input/test.dat;
+
+ANALYSIS_TYPE = 2 (plane strain);
+
+LARGE_STRAIN_FORMULATION  = on;
+
+SOLUTION_ALGORITHM = 2;
+
+ELEMENT_GROUPS =
+{
+  group_numbers = 1;
+  group_1 =
+  {
+    i_group = 1;
+    i_elem_type = 1;
+    i_mat_type  = 1;
+  };
+  group_2 =
+  {
+    i_group = 2;
+    i_elem_type = 1;
+    i_mat_type  = 1;
+  };
+};
+
+ELEMENT_TYPES = 
+{
+	numbers = 1;
+	elem_type_1 =
+	{
+		i_elem = 1;
+		i_type = 28;
+		num_gauss_point = 4;
+	};
+};
+
+MATERIALS = 
+{
+	numbers = 1;
+	Material_1 = 
+	{
+		ID = 1;
+		type = VON_MISES;
+		young_modulus = 210.000;
+		poisson_ratio = 0.300;
+		stress_strain_pair = [0.000 0.24
+													1.000 0.24];
+	};
+};
+
+INCREMENTS = 
+{
+ step_numbers = 5;
+ values = [0.10      0.10000E-06    15  1 1 1 0 0;
+           0.04      0.10000E-06    15  1 1 0 0 0;
+           0.04      0.10000E-06    15  1 1 1 0 0;
+           0.01      0.10000E-06    15  1 1 0 0 0;
+           0.002     0.10000E-06    15  1 1 0 0 0];
+};

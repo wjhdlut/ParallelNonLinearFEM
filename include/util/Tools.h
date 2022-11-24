@@ -1,0 +1,17 @@
+#ifndef TOOLS_H
+#define TOOLS_H
+
+
+#include <string>
+#include <vector>
+
+namespace Tools
+{
+  std::vector<std::string> StringSplit(std::string &strData, const std::string &tag, const int maxSplit = 10);
+
+  std::string StringStrip(const std::string &strData, const std::string &tag = " ");
+
+  std::string GetVarType(const std::string&value);
+}
+
+#endif // TOOLS_H

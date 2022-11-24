@@ -1,0 +1,40 @@
+#include <materials/BaseMaterial.h>
+
+BaseMaterial::BaseMaterial(const nlohmann::json &props) : m_props(props)
+{}
+
+BaseMaterial::~BaseMaterial()
+{}
+
+void BaseMaterial::SetIter(int iIter)
+{
+  m_iIter = iIter;
+}
+
+int BaseMaterial::SetHistoryParameter(const std::string &name, double vale)
+{
+  if(-1 == m_iIter) 
+  {
+    m_initHistory[name] = vale;
+    return 0;
+  }
+
+  if(m_current.size() == m_iIter) m_current.emplace_back(m_initHistory);
+
+  m_current[m_iIter].at(name) = vale;
+
+  return 0;
+}
+
+double BaseMaterial::GetHistoryParameter(const std::string&name)
+{
+  if(0 == m_history.size()) return m_initHistory[name];
+  else return m_history[m_iIter].at(name);
+}
+
+void BaseMaterial::CommitHistory()
+{
+  m_history.clear();
+  for(auto h : m_current)
+    m_history.emplace_back(h);
+}
