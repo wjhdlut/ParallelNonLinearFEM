@@ -4,7 +4,6 @@
 Element::Element(const std::vector<int> &elemNodes, const nlohmann::json &modelProps)
         : m_nodes(elemNodes)
 {
-
   for(auto iter = modelProps.begin(); iter != modelProps.end(); iter++)
   {
     if("material" == iter.key())

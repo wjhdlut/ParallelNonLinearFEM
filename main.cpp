@@ -14,7 +14,7 @@
 #include <mpi.h>
 #include <petsc.h>
 #include <iostream>
-#include "../include/io/InputReader.h"
+#include <io/InputReader.h>
 
 int main(int argc, char **args)
 {
@@ -26,7 +26,7 @@ int main(int argc, char **args)
   MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
   MPI_Comm_size(PETSC_COMM_WORLD, &size);
 
-  NONLINEARFEMIO::InputReader(rank);
+  GlobalData *globalDat = NONLINEARFEMIO::InputReader(rank);
 
   ierr = PetscFinalize(); CHKERRQ(ierr);
 

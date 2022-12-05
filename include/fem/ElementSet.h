@@ -6,6 +6,9 @@
 #include <fem/NodeSet.h>
 #include <nlohmann/json.hpp>
 #include <elements/Element.h>
+#include <petscmat.h>
+
+class Element;
 
 class ElementSet
 {
@@ -16,8 +19,15 @@ public:
 public:
   void ReadFromFile(const std::string&fileName);
 
+  std::vector<std::string> GetDofType();
+  // void AssembleTangentStiffness();
+  // void AssembleInternalForce();
+  // void AssembleMassMatrix();
+
 private:
   void Add(const int elemId, const std::string &modelName, const std::vector<int> &elementNodes);
+  
+  // PetscErrorCode AssembleMatrix(Mat &A);
 
 private:
   std::shared_ptr<NodeSet> m_nodes;

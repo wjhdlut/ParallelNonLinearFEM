@@ -12,7 +12,7 @@ MaterialManager::MaterialManager(const nlohmann::json &matProps)
 MaterialManager::~MaterialManager()
 {}
 
-void MaterialManager::reset()
+void MaterialManager::Reset()
 {
   iIter = -1;
 }

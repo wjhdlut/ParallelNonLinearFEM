@@ -1,7 +1,7 @@
 #ifndef NODESET_H
 #define NODESET_H
 
-#include <unordered_map>
+#include <map>
 
 #include <util/Tools.h>
 
@@ -18,8 +18,8 @@ public:
 
   std::vector<std::vector<double>> GetNodeCoords(const std::vector<int> &nodeIds);
 
-private:
-  std::unordered_map<int, std::vector<double>> m_nodeCoords;
+public:
+  std::map<int, std::vector<double>> m_nodeCoords;
 };
 
 #endif // NODESET_H

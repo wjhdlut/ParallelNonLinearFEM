@@ -10,8 +10,7 @@ public:
   MaterialManager(const nlohmann::json &matProps);
   ~MaterialManager();
 
-private:
-  void reset();
+  void Reset();
 
 private:
   int iIter = -1;

@@ -23,12 +23,12 @@ void NodeSet::ReadFromFile(const std::string&fileName)
   std::smatch result;
   while(true)
   {
-    getline(fin , line); line.erase(line.find("\r"));
+    getline(fin , line), line.erase(line.find("\r"));
     if(line.npos != line.find("<Nodes>"))
     {
       while(true)
       {
-        getline(fin, line); line.erase(line.find("\r"));
+        getline(fin, line), line.erase(line.find("\r"));
 
         if(line.npos != line.find("</Nodes>")) return;
         
@@ -41,7 +41,9 @@ void NodeSet::ReadFromFile(const std::string&fileName)
           if("//" == b[0].substr(0, 2) || "#" == b[0].substr(0, 1)) break;
 
           int nodeID = std::stoi(b[0]);
-          if(m_nodeCoords.count(nodeID) == 0) m_nodeCoords[nodeID] = {};
+          // m_nodeIndex.emplace_back(nodeID);
+          if(m_nodeCoords.count(nodeID) == 0)
+            m_nodeCoords.insert(std::pair<int, std::vector<double>>(nodeID, {}));
           for(auto iterb = b.begin() + 1; iterb != b.end(); iterb++)
             m_nodeCoords[nodeID].emplace_back(std::stod(*iterb));
         }

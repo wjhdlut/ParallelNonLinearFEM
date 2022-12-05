@@ -9,6 +9,8 @@ class FiniteStrainContinuum : public Element
 public:
   FiniteStrainContinuum(const std::vector<int> &elemNodes, const nlohmann::json &modelProps);
   ~FiniteStrainContinuum();
+
+  virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
 };
 
 ReflectRegister(FiniteStrainContinuum, const std::vector<int> &, const nlohmann::json &)

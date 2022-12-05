@@ -11,3 +11,8 @@ FiniteStrainContinuum::FiniteStrainContinuum(const std::vector<int> &elemNodes,
 FiniteStrainContinuum::~FiniteStrainContinuum()
 {}
 
+void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elemDat)
+{
+  
+}
+
