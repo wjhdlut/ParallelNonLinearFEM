@@ -20,14 +20,14 @@ public:
   void ReadFromFile(const std::string&fileName);
 
   std::vector<std::string> GetDofType();
-  // void AssembleTangentStiffness();
-  // void AssembleInternalForce();
-  // void AssembleMassMatrix();
+  void AssembleTangentStiffness();
+  void AssembleInternalForce();
+  void AssembleMassMatrix();
 
 private:
   void Add(const int elemId, const std::string &modelName, const std::vector<int> &elementNodes);
   
-  // PetscErrorCode AssembleMatrix(Mat &A);
+  PetscErrorCode AssembleMatrix(Mat &A);
 
 private:
   std::shared_ptr<NodeSet> m_nodes;

@@ -91,60 +91,60 @@ std::vector<std::string> ElementSet::GetDofType()
   return dofTypes;
 }
 
-// PetscErrorCode ElementSet::AssembleMatrix(Mat&A)
-// {
-//   int numOfNode = GlobalData::GetInstance()->m_dofs->m_dofs.size();
-//   int numOfDof = GlobalData::GetInstance()->m_dofs->m_dofs.at(0).size();
-//   int numOfTolDof = numOfNode * numOfDof;
+PetscErrorCode ElementSet::AssembleMatrix(Mat&A)
+{
+  int numOfNode = GlobalData::GetInstance()->m_dofs->m_dofs.size();
+  int numOfDof = GlobalData::GetInstance()->m_dofs->m_dofs.at(0).size();
+  int numOfTolDof = numOfNode * numOfDof;
 
-//   PetscErrorCode ierr;
-//   ierr = MatCreate(PETSC_COMM_WORLD, &A); CHKERRQ(ierr);
-//   ierr = MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, numOfTolDof, numOfTolDof); CHKERRQ(ierr);
-//   ierr = MatSetFromOptions(A); CHKERRQ(ierr);
+  PetscErrorCode ierr;
+  ierr = MatCreate(PETSC_COMM_WORLD, &A); CHKERRQ(ierr);
+  ierr = MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, numOfTolDof, numOfTolDof); CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A); CHKERRQ(ierr);
 
-//   GlobalData::GetInstance()->ResetNodalOutput();
+  GlobalData::GetInstance()->ResetNodalOutput();
 
-//   m_props = GlobalData::GetInstance()->m_props;
-//   std::shared_ptr<DofSpace> dofs = GlobalData::GetInstance()->m_dofs;
+  m_props = GlobalData::GetInstance()->m_props;
+  std::shared_ptr<DofSpace> dofs = GlobalData::GetInstance()->m_dofs;
   
-//   Vec &state = GlobalData::GetInstance()->m_state;
-//   Vec &Dstate = GlobalData::GetInstance()->m_Dstate;
-//   for(auto elementGroup : m_groups)
-//   {
-//     nlohmann::json &elemPrpos = m_props.at(elementGroup.first);
-//     for(auto element : elementGroup.second)
-//     {
-//       std::shared_ptr<Element> elemPtr = m_elem[element];
+  Vec &state = GlobalData::GetInstance()->m_state;
+  Vec &Dstate = GlobalData::GetInstance()->m_Dstate;
+  for(auto elementGroup : m_groups)
+  {
+    nlohmann::json &elemPrpos = m_props.at(elementGroup.first);
+    for(auto element : elementGroup.second)
+    {
+      std::shared_ptr<Element> elemPtr = m_elem[element];
 
-//       // Get the element nodes
-//       std::vector<int> &elemNodes = elemPtr->GetNodes();
+      // Get the element nodes
+      std::vector<int> elemNodes = elemPtr->GetNodes();
 
-//       // Get the element coordinates
-//       std::vector<std::vector<double>> &elemCoords = m_nodes->GetNodeCoords(elemNodes);
+      // Get the element coordinates
+      std::vector<std::vector<double>> elemCoords = m_nodes->GetNodeCoords(elemNodes);
 
-//       // Get the element degrees of freedom
-//       std::vector<int> &elemDofs = dofs->Get(elemNodes);
+      // Get the element degrees of freedom
+      std::vector<int> elemDofs = dofs->Get(elemNodes);
 
-//       // Get the element state
-//       std::vector<double> elemState, elemDstate;
-//       VecGetValues(state, elemDofs.size(), elemDofs, elemState);
-//       VecGetValues(Dstate, elemDofs.size(), elemDofs, elemDstate);
+      // Get the element state
+      std::vector<double> elemState, elemDstate;
+      VecGetValues(state, elemDofs.size(), &elemDofs[0], &elemState[0]);
+      VecGetValues(Dstate, elemDofs.size(), &elemDofs[0], &elemDstate[0]);
 
-//       std::shared_ptr<ElementData> elemData = std::make_shared<ElementDate>(elemState, elemDstate);
-//       elemData->m_coords = elemCoords;
+      std::shared_ptr<ElementData> elemData = std::make_shared<ElementData>(elemState, elemDstate);
+      elemData->m_coords = elemCoords;
 
-//       elemPtr->MatReset();
-//       elemPtr->GetTangentStiffness(elemData);
-//     }
-//   }
-//   return ierr;
-// }
+      elemPtr->MatReset();
+      elemPtr->GetTangentStiffness(elemData);
+    }
+  }
+  return ierr;
+}
 
-// void ElementSet::AssembleTangentStiffness()
-// {}
+void ElementSet::AssembleTangentStiffness()
+{}
 
-// void ElementSet::AssembleInternalForce()
-// {}
+void ElementSet::AssembleInternalForce()
+{}
 
-// void ElementSet::AssembleMassMatrix()
-// {}
+void ElementSet::AssembleMassMatrix()
+{}

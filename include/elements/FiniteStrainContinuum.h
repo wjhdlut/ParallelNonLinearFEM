@@ -11,6 +11,8 @@ public:
   ~FiniteStrainContinuum();
 
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
+
+  
 };
 
 ReflectRegister(FiniteStrainContinuum, const std::vector<int> &, const nlohmann::json &)

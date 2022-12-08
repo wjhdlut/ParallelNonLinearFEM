@@ -53,6 +53,11 @@ public:
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) = 0;
 
 protected:
+  inline int DofCount(){
+    return m_nodes.size() * m_dofType.size();
+  }
+
+protected:
   std::vector<std::string> m_dofType;
   std::shared_ptr<MaterialManager> m_mat;
   nlohmann::json m_props;
