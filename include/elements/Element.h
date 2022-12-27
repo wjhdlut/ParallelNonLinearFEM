@@ -30,6 +30,7 @@ struct ElementData
   std::vector<double> m_lumped;
   std::vector<std::string> m_outLabel;
   std::vector<std::vector<double>> m_coords;
+  std::vector<std::vector<double>> m_outputData;
 };
 
 class Element
@@ -51,6 +52,8 @@ public:
   }
 
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) = 0;
+
+  void AppendNodalOutput(const std::string&outputName, const Matrix&outMatrix);
 
 protected:
   inline int DofCount(){

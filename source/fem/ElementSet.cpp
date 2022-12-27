@@ -91,16 +91,22 @@ std::vector<std::string> ElementSet::GetDofType()
   return dofTypes;
 }
 
-PetscErrorCode ElementSet::AssembleMatrix(Mat&A)
+PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const std::string&action)
 {
   int numOfNode = GlobalData::GetInstance()->m_dofs->m_dofs.size();
   int numOfDof = GlobalData::GetInstance()->m_dofs->m_dofs.at(0).size();
   int numOfTolDof = numOfNode * numOfDof;
 
+  // Create PETSc object Mat
   PetscErrorCode ierr;
   ierr = MatCreate(PETSC_COMM_WORLD, &A); CHKERRQ(ierr);
   ierr = MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, numOfTolDof, numOfTolDof); CHKERRQ(ierr);
   ierr = MatSetFromOptions(A); CHKERRQ(ierr);
+
+  // Create PETSc object Vec
+  ierr = VecCreate(PETSC_COMM_WORLD, &B); CHKERRQ(ierr);
+  ierr = VecSetSizes(B, PETSC_DECIDE, numOfTolDof); CHKERRQ(ierr);
+  ierr = VecSetFromOptions(B); CHKERRQ(ierr);
 
   GlobalData::GetInstance()->ResetNodalOutput();
 
@@ -135,16 +141,64 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A)
 
       elemPtr->MatReset();
       elemPtr->GetTangentStiffness(elemData);
+
+      for(auto label : elemData->m_outLabel)
+        elemPtr->AppendNodalOutput(label, elemData->m_outputData);
+
+      // Assemble Global Stiffness Matrix and Internal Force Vector
+      if(1 == rank)
+      {
+        ierr = VecSetValues(B, elemDofs.size(), &elemDofs[0], &(elemData->m_fint[0]), ADD_VALUES); CHKERRQ(ierr);
+      }
+      else if(2 == rank && "getTangentStiffness" == action)
+      {
+        int numOfElemStiff = elemDofs.size() * elemDofs.size();
+        int rowIndex[numOfElemStiff], lineIndex[numOfElemStiff];
+        double stiffMatrixValue[numOfElemStiff];
+        for(int row = 0; row < elemDofs.size(); row++)
+        {
+          for(int line = 0; line < elemDofs.size(); line++)
+          {
+            int count = row * elemDofs.size() + line;
+            rowIndex[count] = elemDofs[row];
+            lineIndex[count] = elemDofs[line];
+            stiffMatrixValue[count] = elemData->m_stiff[row][line];
+          }
+        }
+
+        ierr = MatSetValues(A, numOfElemStiff, rowIndex, numOfElemStiff, lineIndex, stiffMatrixValue, ADD_VALUES);
+        ierr = VecSetValues(B, elemDofs.size(), &elemDofs[0], &(elemData->m_fint[0]), ADD_VALUES); CHKERRQ(ierr);
+      }
+      else if(2 == rank && "getMassMatrix" == action)
+      {
+        // TO DO
+      }
+      else
+      {
+        throw "assemleArray is only implemented for vectors and matrices.";
+      }
     }
   }
+  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+  ierr = VecAssemblyBegin(B); CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(B); CHKERRQ(ierr);
   return ierr;
 }
 
-void ElementSet::AssembleTangentStiffness()
-{}
+void ElementSet::AssembleTangentStiffness(Mat&A, Vec &B)
+{
+  AssembleMatrix(A, B, 2, "getTangentStiffness");
+}
 
-void ElementSet::AssembleInternalForce()
-{}
+void ElementSet::AssembleInternalForce(Vec &B)
+{
+  Mat A;
+  AssembleMatrix(A, B, 1, "getInternalForce");
+}
 
-void ElementSet::AssembleMassMatrix()
-{}
+void ElementSet::AssembleMassMatrix(Mat &A, Vec&B)
+{
+  AssembleMatrix(A, B, 2, "getMassMatrix");
+}

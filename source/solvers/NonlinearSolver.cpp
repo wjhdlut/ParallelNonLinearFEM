@@ -34,4 +34,14 @@ void NonlinearSolver::Run()
   GlobalData::GetInstance()->m_iiter = 0;
 
   Mat K;
+  GlobalData::GetInstance()->m_elements->AssembleTangentStiffness(K, fint);
+
+  double error = 1.;
+
+  while(error > m_tol)
+  {
+    GlobalData::GetInstance()->m_iiter += 1;
+
+    GlobalData::GetInstance()->m_elements->AssembleTangentStiffness(K, fint);
+  }
 }

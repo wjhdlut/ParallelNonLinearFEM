@@ -39,6 +39,8 @@ public:
   nlohmann::json m_props;
   
   std::vector<std::string> m_outputName;
+  
+  std::unordered_map<std::string, Matrix> m_outputData;
   Vec m_state;
   Vec m_Dstate;
   Vec m_fint;

@@ -163,21 +163,41 @@ void GetIntegrationPoints(std::vector<std::vector<double>>&xi, std::vector<doubl
 void GetElemShapeData(std::vector<std::vector<double>>&elemCoords, const int order,
                       const std::string &method, const std::string&elemType)
 {
-  std::string realElemType = ("Default" == elemType) ? GetElemType(elemCoords) : elemType;
-  std::vector<std::vector<double>> xi;
-  std::vector<double> weight;
-  GetIntegrationPoints(xi, weight, realElemType, order, method);
-  std::string elemName = realElemType + "ShapeFunctions";
+  // std::string realElemType = ("Default" == elemType) ? GetElemType(elemCoords) : elemType;
+  // std::vector<std::vector<double>> xi;
+  // std::vector<double> weight;
+  // GetIntegrationPoints(xi, weight, realElemType, order, method);
+  // std::string elemName = realElemType + "ShapeFunctions";
 
-  std::vector<std::vector<double>> jac;
-  std::vector<std::vector<double>> pHpX;
-  for(auto iXi : xi){
-    std::shared_ptr<ElementShapeFunctions>res = ObjectFactory::CreateObject<ElementShapeFunctions>(elemName);
-    if(nullptr == res) throw "Unkonwn type " + realElemType;
-    res->GetShapeFunction(iXi);
+  // std::vector<std::vector<double>> jac;
+  // std::vector<std::vector<double>> invJac;
+  
+  // /* pHpX = [pH1pX1 pH1pX2 pH1pX3,
+  //            pH2pX1 pH2pX2 pH2pX3,
+  //            ...
+  //            pHnpX1 pHnpX2 pHnpX3,]*/
+  // std::vector<std::vector<double>> pHpX;
 
-    // compute jacobian matrix
-    std::vector<std::vector<double>> jac = Math::MatrixATransMultB(elemCoords, res->pHpxi);
-  }
+  // double weighti = 0.;
+  // int count = 0;
+  // for(auto iXi : xi){
+  //   std::shared_ptr<ElementShapeFunctions>res = ObjectFactory::CreateObject<ElementShapeFunctions>(elemName);
+  //   if(nullptr == res) throw "Unkonwn type " + realElemType;
+  //   res->GetShapeFunction(iXi);
+
+  //   // compute jacobian matrix
+  //   /*jac = [pXpxi1 pXpxi2 pXpxi3,
+  //            pYpxi1 pYpxi2 pYpxi3,
+  //            pZpxi1 pZpxi2 pZpxi3];*/
+  //   jac = Math::MatrixATransMultB(elemCoords, res->pHpxi);
+
+  //   invJac = Math::MatrixInverse(jac);
+
+  //   pHpX = Math::MatrixAMultB(res->pHpxi, invJac);
+
+  //   weighti = Math::MatrixDet(jac) * weight[count];
+
+  //   count++;
+  // }
 }
 }

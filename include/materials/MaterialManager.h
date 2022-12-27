@@ -3,6 +3,7 @@
 
 #include <nlohmann/json.hpp>
 #include <materials/BaseMaterial.h>
+#include <util/Kinematics.h>
 
 class MaterialManager
 {
@@ -11,6 +12,12 @@ public:
   ~MaterialManager();
 
   void Reset();
+
+  std::vector<double> GetStress(const std::shared_ptr<Kinematics>&kin, int iSam = -1);
+
+  inline std::vector<std::vector<double>> GetTangMatrix(){
+    return m_mat->GetTangMatrix();
+  }
 
 private:
   int iIter = -1;

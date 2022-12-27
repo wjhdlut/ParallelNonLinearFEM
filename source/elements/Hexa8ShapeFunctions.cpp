@@ -7,6 +7,8 @@ Hexa8ShapeFunctions::Hexa8ShapeFunctions()
   
   std::vector<double> temp(2);
   pHpxi.resize(8, temp);
+
+  numOfStress = 6;
 };
 
 Hexa8ShapeFunctions::~Hexa8ShapeFunctions()

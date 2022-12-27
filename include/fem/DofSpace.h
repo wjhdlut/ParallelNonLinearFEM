@@ -31,15 +31,34 @@ public:
       for(auto dof : m_dofs.at(indexRow))
         elemDofs.emplace_back(dof);
     }
-
     return elemDofs;
   }
+
+  /**
+   * @Brief:  solve equation sets when K is matrix
+   * 
+   * @param K  stiffness matrix
+   * @param df increment of force vector
+   * @param da displacement increment
+   */
+  void Solve(Mat&K, Vec&df, Vec&da);
+
+  /**
+   * @Brief: solve equation when K is scale
+   * 
+   * @param K 
+   * @param df 
+   * @param da 
+   */
+  void Solve(double K, Vec&df, Vec&da);
 
 public:
   std::vector<std::vector<int>> m_dofs;
 
 private:
   void Constrain(const int&nodeId, const std::string&dofType, const double&value);
+
+  Matrix GetConstraintsMatrix();
 
 private:
   std::vector<std::string> m_dofTypes;

@@ -71,3 +71,39 @@ void DofSpace::Constrain(const int&nodeId, const std::string&dofType, const doub
   int indexLine = std::distance(m_dofTypes.begin(), std::find(m_dofTypes.begin(), m_dofTypes.end(), dofType));
   m_constrained.insert(std::pair<int, double>(m_dofs[indexRow][indexLine], value));
 }
+
+
+void DofSpace::Solve(Mat&K, Vec&df, Vec&da)
+{
+
+}
+
+void DofSpace::Solve(double K, Vec&df, Vec&da)
+{
+  if (abs(K) > 1e-10)
+  {
+    Vec temp;
+    VecDuplicate(da, &temp);
+    VecSet(temp, 0.);
+    VecWAXPY(da, 1. / K, df, temp);
+    VecDestroy(&temp);
+  }
+}
+
+Matrix DofSpace::GetConstraintsMatrix()
+{
+  int n_constrianed = m_constrained.size();
+  int n = m_dofs.size();
+
+  Matrix C = Math::MatrixZeros(n, n-n_constrianed);
+  
+  int j = 0;
+  for(int i = 0; i < n ; i++)
+  {
+    if(0 != m_constrained.count(i)) continue;
+    C[i][j] = 1.;
+    j += 1;
+  }
+
+  return C;
+}

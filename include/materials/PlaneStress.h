@@ -10,13 +10,14 @@ public:
   PlaneStress(const nlohmann::json &props);
   ~PlaneStress();
 
+  virtual std::vector<double> GetStress(const std::shared_ptr<Kinematics>&kin) override;
+
 private:
   void ComputeDMatrix() override;
 
 private:
   double m_E = 0.;
   double m_nu = 0.;
-  double m_D[3][3] = {{0.}};
 };
 
 ReflectRegister(PlaneStress, const nlohmann::json &)

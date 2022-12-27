@@ -12,6 +12,15 @@ public:
   ~NodeSet();
 
 public:
+  /**
+   * @Brief:         Get the Number Of Nodes
+   * 
+   * @return int 
+   */
+  inline int GetNumOfNodes(){
+    return m_nodeCoords.size();
+  }
+
   void ReadFromFile(const std::string&fileName);
 
   std::vector<double> GetNodeCoords(const int&nodeId);

@@ -98,4 +98,101 @@ std::vector<std::vector<double>> MatrixInverse(const std::vector<std::vector<dou
   
   return invA;
 }
+
+std::vector<std::vector<double>> MatrixEye(const int dim)
+{
+  std::vector<double> rowData(dim, 0);
+  std::vector<std::vector<double>> eye(dim, rowData);
+  for(int i = 0; i < dim; i++)
+    eye[i][i] = 1.;
+  return eye;
+}
+
+std::vector<std::vector<double>> MatrixAdd(const double scale,
+                                           const std::vector<std::vector<double>>&A,
+                                           const std::vector<std::vector<double>>&B)
+{
+  if(A.size() != B.size() || A[0].size() != B[0].size())
+    throw "the size of matrix A and B should be same for add";
+  
+  std::vector<double> temp(A[0].size(), 0);
+  std::vector<std::vector<double>> result(A.size(), temp);
+  for (int i = 0; i < A.size(); i++)
+    for(int j = 0; j < A[0].size(); j++)
+      result[i][j] = A[i][j] + scale * B[i][j];
+  return result;
+}
+
+std::vector<double> MatraixAMultVecB(const std::vector<std::vector<double>>&A,
+                                     const std::vector<double>&b)
+{
+  if(A[0].size() != b.size()) throw "Matrix and Vector is incompatible";
+  std::vector<double> c(A.size(), 0.);
+
+  for(int i = 0; i < A.size(); i++)
+    for(int j = 0; j < b.size(); j++)
+      c[i] += A[i][i] * b[j];
+  
+  return c;
+}
+
+Matrix MatrixZeros(const int rowNum, const int lineNum)
+{
+  std::vector<double> temp(lineNum, 0.);
+  Matrix A(rowNum, temp);
+
+  return A;
+}
+
+Matrix MatrixScale(const double scale, const Matrix&A)
+{
+  Matrix B = A;
+  for(int i = 0; i < A.size(); i++)
+    for(int j = 0; j < A[0].size(); j++)
+      B[i][j] = scale * A[i][j];
+  
+  return B;
+}
+
+std::vector<double> MatrixTAMultVecB(const Matrix&A,
+                                     const std::vector<double>&b)
+{
+  std::vector<double> c(A[0].size(), 0.);
+  for(int i = 0; i < A[0].size(); i++)
+    for(int j = 0; j < A.size(); j++)
+      c[i] += A[i][j] * b[j];
+
+  return c;
+}
+
+std::vector<double> VecScale(const double scale, const std::vector<double> &A)
+{
+  std::vector<double> b = A;
+  for(int i = 0; i < A.size(); i++)
+    b[i] = scale * A[i];
+
+  return b;
+}
+
+std::vector<double> VecAdd(const double scale, const std::vector<double>&a, const std::vector<double>&b)
+{
+  if(a.size() != b.size()) throw "size of two vectors to add should be same.";
+  std::vector<double> c = a;
+
+  for(int i = 0; i < a.size(); i++)
+    c[i] = a[i] + scale * b[i];
+  
+  return c;
+}
+
+Matrix VecOuter(const std::vector<double>&A, const std::vector<double>&B)
+{
+  std::vector<double> temp(B.size(), 0.);
+  Matrix C(A.size(), temp);
+  for(int row = 0; row < A.size(); row++)
+    for(int line = 0; line < B.size(); line++)
+      C[row][line] = A[row] * B[line];
+
+  return C;
+}
 }
