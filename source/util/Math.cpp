@@ -1,5 +1,6 @@
 
 #include<util/Math.h>
+#include <iostream>
 
 namespace Math
 {
@@ -11,14 +12,11 @@ std::vector<std::vector<double>> MatrixAMultB(const std::vector<std::vector<doub
   std::vector<std::vector<double>> result;
   std::vector<double> tempVec;
   for(int rowA = 0; rowA < A.size(); rowA++){
+    tempVec.clear();
     for(int lineB = 0; lineB < B[0].size(); lineB++){
       double temp = 0;
-      tempVec.clear();
-      for (int rowB = 0; rowB < B.size(); rowB++){
-        for (int lineA = 0; lineA < A[0].size(); lineA++){
-          temp += A[rowA][lineA] * B[rowB][lineB];
-        }
-      }
+      for (int rowB = 0; rowB < B.size(); rowB++)
+        temp += A[rowA][rowB] * B[rowB][lineB];
       tempVec.emplace_back(temp);
     }
     result.emplace_back(tempVec);
@@ -35,14 +33,11 @@ std::vector<std::vector<double>> MatrixATransMultB(const std::vector<std::vector
   std::vector<std::vector<double>> result;
   std::vector<double> tempVec;
   for(int lineA = 0; lineA < A[0].size(); lineA++){
+    tempVec.clear();
     for (int lineB = 0; lineB < B[0].size(); lineB++){
       double temp = 0;
-      tempVec.clear();
-      for(int rowA = 0; rowA < A.size(); rowA++){
-        for(int rowB = 0; rowB< B.size(); rowB++){
-          temp += A[rowA][lineA] * B[rowB][lineB];
-        }
-      }
+      for(int row = 0; row < A.size(); row++)
+        temp += A[row][lineA] * B[row][lineB];
       tempVec.emplace_back(temp);
     }
     result.emplace_back(tempVec);
@@ -73,7 +68,7 @@ std::vector<std::vector<double>> MatrixInverse(const std::vector<std::vector<dou
   if(A.size() > 3) throw "inability to compute inverse of matrix with rank more than 3";
 
   double detA = MatrixDet(A);
-  std::vector<std::vector<double>> invA;
+  std::vector<std::vector<double>> invA = A;
   if(2 == A.size()){
     invA[0][0] = A[1][1]/detA;
     invA[1][1] = A[0][0]/detA;
@@ -131,7 +126,7 @@ std::vector<double> MatraixAMultVecB(const std::vector<std::vector<double>>&A,
 
   for(int i = 0; i < A.size(); i++)
     for(int j = 0; j < b.size(); j++)
-      c[i] += A[i][i] * b[j];
+      c[i] += A[i][j] * b[j];
   
   return c;
 }
@@ -157,10 +152,11 @@ Matrix MatrixScale(const double scale, const Matrix&A)
 std::vector<double> MatrixTAMultVecB(const Matrix&A,
                                      const std::vector<double>&b)
 {
+  if(A.size() != b.size()) throw "Matrix and Vector is incompatible";
   std::vector<double> c(A[0].size(), 0.);
   for(int i = 0; i < A[0].size(); i++)
     for(int j = 0; j < A.size(); j++)
-      c[i] += A[i][j] * b[j];
+      c[i] += A[j][i] * b[j];
 
   return c;
 }
@@ -185,6 +181,15 @@ std::vector<double> VecAdd(const double scale, const std::vector<double>&a, cons
   return c;
 }
 
+std::vector<double> ConvertMatrixToVec(const std::vector<std::vector<double>>&A)
+{
+  std::vector<double> B;
+  for(auto iRowValue : A)
+    B.insert(B.end(), iRowValue.begin(), iRowValue.end());
+  
+  return B;
+}
+
 Matrix VecOuter(const std::vector<double>&A, const std::vector<double>&B)
 {
   std::vector<double> temp(B.size(), 0.);
@@ -194,5 +199,17 @@ Matrix VecOuter(const std::vector<double>&A, const std::vector<double>&B)
       C[row][line] = A[row] * B[line];
 
   return C;
+}
+
+void MatrixOutput(const std::vector<std::vector<double>> &A)
+{
+  for(int i = 0; i < A.size(); i++)
+  {
+    for(int j = 0; j < A[0].size(); j++)
+    {
+      std::cout << A[i][j] << "\t";
+    }
+    std::cout << std::endl;
+  }
 }
 }

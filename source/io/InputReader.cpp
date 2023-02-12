@@ -27,6 +27,8 @@ GlobalData* InputReader(int rank)
   globalData->SetFEMData(props, nodes, elems, dofs);
   globalData->ReadFromFile(dataFileName);
 
+  GlobalData::GetInstance()->m_prefix = fileName.substr(0, fileName.find_first_of("."));
+
   return globalData;
 }
 }

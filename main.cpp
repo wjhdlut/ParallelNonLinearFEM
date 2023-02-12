@@ -15,6 +15,8 @@
 #include <petsc.h>
 #include <iostream>
 #include <io/InputReader.h>
+#include <solvers/Solver.h>
+#include <io/OutputManager.h>
 
 int main(int argc, char **args)
 {
@@ -27,6 +29,18 @@ int main(int argc, char **args)
   MPI_Comm_size(PETSC_COMM_WORLD, &size);
 
   GlobalData *globalDat = NONLINEARFEMIO::InputReader(rank);
+
+  std::shared_ptr<Solver> solver = std::make_shared<Solver>();
+
+  std::shared_ptr<OutputManager> output = std::make_shared<OutputManager>();
+
+  while(GlobalData::GetInstance()->m_active)
+  {
+    if(nullptr != solver) solver->Run();
+    if(nullptr != output) output->Run();
+  }
+
+  std::cout << "PyFem analysis terminated successfully." << std::endl;
 
   ierr = PetscFinalize(); CHKERRQ(ierr);
 

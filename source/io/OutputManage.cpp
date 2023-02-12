@@ -6,7 +6,7 @@
 
 OutputManager::OutputManager()
 {
-  std::vector<std::string> outputModules = GlobalData::GetInstance()->m_props;
+  std::vector<std::string> outputModules = GlobalData::GetInstance()->m_props["outputModules"];
   for (auto name : outputModules)
   {
     GlobalData::GetInstance()->m_props["currentModule"] = name;
@@ -27,4 +27,7 @@ OutputManager::~OutputManager()
 {}
 
 void OutputManager::Run()
-{}
+{
+  for(auto output : m_outman)
+    output->Run();
+}

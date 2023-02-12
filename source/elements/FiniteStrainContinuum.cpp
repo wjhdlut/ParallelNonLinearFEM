@@ -18,7 +18,7 @@ FiniteStrainContinuum::~FiniteStrainContinuum()
 void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elemDat)
 {
   std::string elemType = ShapeFunctions::GetElemType(elemDat->m_coords);
-  elemDat->m_outLabel.emplace_back("stress");
+  elemDat->m_outLabel.emplace_back("stresses");
   
   ShapeFunctions::GetIntegrationPoints(xi, weight, elemType, order, method);
   
@@ -35,48 +35,49 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     jac = Math::MatrixATransMultB(elemDat->m_coords, res->pHpxi);
 
     detJac = Math::MatrixDet(jac);
-
+    
+    // compute the derivative of shape function about physical coordinate
     invJac = Math::MatrixInverse(jac);
-
     pHpX = Math::MatrixAMultB(res->pHpxi, invJac);
-
     weighti = Math::MatrixDet(jac) * weight[count];
 
     // compute deforamtion gradient
     kin = GetKinematics(pHpX, elemDat->m_state);
 
     sigma = m_mat->GetStress(kin);
-
+    
+    // compute tangent modulue matrix
     D = m_mat->GetTangMatrix();
-
+    
+    // compute strain matrix
     B = GetBMatrix(pHpX, kin->F);
     
+    // compute linear stiffness matrix
+    detJac *= weight[count];
     tempMatrix = Math::MatrixATransMultB(B, Math::MatrixAMultB(m_mat->GetTangMatrix(), B));
+    elemDat->m_stiff = Math::MatrixAdd(detJac, elemDat->m_stiff, tempMatrix);
 
-    elemDat->m_stiff = Math::MatrixAdd(1.0, elemDat->m_stiff, tempMatrix);
-
+    // compute stress matrix
     T = Stress2Matrix(sigma);
-
+    
+    // compute nonlinear strain matrix
     Bnl = GetBNLMatrix(pHpX);
 
+    // compute nonlinear stiffness matrix
     tempMatrix = Math::MatrixATransMultB(Bnl, Math::MatrixAMultB(T, Bnl));
-    elemDat->m_stiff = Math::MatrixAdd(1.0, elemDat->m_stiff, tempMatrix);
+    elemDat->m_stiff = Math::MatrixAdd(detJac, elemDat->m_stiff, tempMatrix);
 
-    detJac *= weight[count];
-    elemDat->m_stiff = Math::MatrixScale(detJac, elemDat->m_stiff);
-
+    // compute internal force vector
     tempVec = Math::MatrixTAMultVecB(B, sigma);
-
-    tempVec = Math::VecScale(detJac, tempVec);
-
-    elemDat->m_fint = Math::VecAdd(1.0, elemDat->m_fint, tempVec);
-
+    elemDat->m_fint = Math::VecAdd(detJac, elemDat->m_fint, tempVec);
+    
+    // compute output stress matrix
     tempMatrix = Math::VecOuter(std::vector<double>(elemDat->m_coords.size(), 1.0), sigma);
     outputData = Math::MatrixAdd(1., outputData, tempMatrix);
     
-    count++;
+    count += 1;
   }
-elemDat->m_outputData = Math::MatrixScale(1./elemDat->m_coords.size(), outputData);
+elemDat->m_outputData = Math::MatrixScale(1./xi.size(), outputData);
 }
 
 std::shared_ptr<Kinematics> FiniteStrainContinuum::GetKinematics(const std::vector<std::vector<double>> &dphi,
@@ -95,6 +96,7 @@ std::shared_ptr<Kinematics> FiniteStrainContinuum::GetKinematics(const std::vect
   // compute Green-Lagrange strain tensor
   std::vector<std::vector<double>> rightCauchyGreen = Math::MatrixATransMultB(kin->F, kin->F);
   kin->E = Math::MatrixAdd(-1., rightCauchyGreen, Math::MatrixEye(numOfDim));
+  kin->E = Math::MatrixScale(0.5, kin->E);
   kin->SetStrainVector();
 
   return kin;
@@ -119,6 +121,8 @@ std::vector<std::vector<double>> FiniteStrainContinuum::GetBMatrix(const std::ve
 
     B[2][2*count + 0] = dp[1] * F[0][0] + dp[0] * F[0][1];
     B[2][2*count + 1] = dp[0] * F[1][1] + dp[1] * F[1][0];
+
+    count += 1;
   }
 
   return B;
@@ -157,6 +161,8 @@ Matrix FiniteStrainContinuum::GetBNLMatrix(const Matrix &dphi)
 
     Bnl[2][numOfDim * count + 1] = dp[0];
     Bnl[3][numOfDim * count + 1] = dp[1];
+
+    count += 1;
   }
 
   return Bnl;

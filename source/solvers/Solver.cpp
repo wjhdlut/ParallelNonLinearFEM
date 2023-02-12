@@ -1,8 +1,8 @@
-#include <solvers/Solvers.h>
+#include <solvers/Solver.h>
 #include <util/DataStructure.h>
 #include <util/ObjectFactory.h>
 
-Solvers::Solvers()
+Solver::Solver()
 {
   nlohmann::json &solverProps = GlobalData::GetInstance()->m_props.at("solver");
 
@@ -13,10 +13,10 @@ Solvers::Solvers()
   m_solver = ObjectFactory::CreateObject<BaseModule>(solveType, GlobalData::GetInstance()->m_props);
 }
 
-Solvers::~Solvers()
+Solver::~Solver()
 {}
 
-void Solvers::Run()
+void Solver::Run()
 {
-  m_solver->Run();
+  if(nullptr != m_solver) m_solver->Run();
 }

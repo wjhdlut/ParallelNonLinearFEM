@@ -102,6 +102,9 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
   ierr = MatCreate(PETSC_COMM_WORLD, &A); CHKERRQ(ierr);
   ierr = MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, numOfTolDof, numOfTolDof); CHKERRQ(ierr);
   ierr = MatSetFromOptions(A); CHKERRQ(ierr);
+  ierr = MatSetUp(A); CHKERRQ(ierr);
+
+  // ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
 
   // Create PETSc object Vec
   ierr = VecCreate(PETSC_COMM_WORLD, &B); CHKERRQ(ierr);
@@ -115,6 +118,9 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
   
   Vec &state = GlobalData::GetInstance()->m_state;
   Vec &Dstate = GlobalData::GetInstance()->m_Dstate;
+
+  // ierr = VecView(state, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+  std::vector<double> elemStiffValues;
   for(auto elementGroup : m_groups)
   {
     nlohmann::json &elemPrpos = m_props.at(elementGroup.first);
@@ -132,9 +138,9 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
       std::vector<int> elemDofs = dofs->Get(elemNodes);
 
       // Get the element state
-      std::vector<double> elemState, elemDstate;
-      VecGetValues(state, elemDofs.size(), &elemDofs[0], &elemState[0]);
-      VecGetValues(Dstate, elemDofs.size(), &elemDofs[0], &elemDstate[0]);
+      std::vector<double> elemState(elemDofs.size(), 0.), elemDstate(elemDofs.size(), 0.);
+      ierr = VecGetValues(state, elemDofs.size(), &elemDofs[0], &elemState[0]); CHKERRQ(ierr);
+      ierr = VecGetValues(Dstate, elemDofs.size(), &elemDofs[0], &elemDstate[0]); CHKERRQ(ierr);
 
       std::shared_ptr<ElementData> elemData = std::make_shared<ElementData>(elemState, elemDstate);
       elemData->m_coords = elemCoords;
@@ -146,27 +152,18 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
         elemPtr->AppendNodalOutput(label, elemData->m_outputData);
 
       // Assemble Global Stiffness Matrix and Internal Force Vector
+      elemStiffValues = Math::ConvertMatrixToVec(elemData->m_stiff);
+
       if(1 == rank)
       {
         ierr = VecSetValues(B, elemDofs.size(), &elemDofs[0], &(elemData->m_fint[0]), ADD_VALUES); CHKERRQ(ierr);
       }
       else if(2 == rank && "getTangentStiffness" == action)
       {
-        int numOfElemStiff = elemDofs.size() * elemDofs.size();
-        int rowIndex[numOfElemStiff], lineIndex[numOfElemStiff];
-        double stiffMatrixValue[numOfElemStiff];
-        for(int row = 0; row < elemDofs.size(); row++)
-        {
-          for(int line = 0; line < elemDofs.size(); line++)
-          {
-            int count = row * elemDofs.size() + line;
-            rowIndex[count] = elemDofs[row];
-            lineIndex[count] = elemDofs[line];
-            stiffMatrixValue[count] = elemData->m_stiff[row][line];
-          }
-        }
-
-        ierr = MatSetValues(A, numOfElemStiff, rowIndex, numOfElemStiff, lineIndex, stiffMatrixValue, ADD_VALUES);
+        // std::cout << "element stiffness matrix" << std::endl;
+        // Math::MatrixOutput(elemData->m_stiff);
+        ierr = MatSetValues(A, elemDofs.size(), &elemDofs[0], elemDofs.size(), 
+                           &elemDofs[0], &elemStiffValues[0], ADD_VALUES); CHKERRQ(ierr);        
         ierr = VecSetValues(B, elemDofs.size(), &elemDofs[0], &(elemData->m_fint[0]), ADD_VALUES); CHKERRQ(ierr);
       }
       else if(2 == rank && "getMassMatrix" == action)
@@ -181,6 +178,7 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
   }
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  // ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
 
   ierr = VecAssemblyBegin(B); CHKERRQ(ierr);
   ierr = VecAssemblyEnd(B); CHKERRQ(ierr);
@@ -201,4 +199,35 @@ void ElementSet::AssembleInternalForce(Vec &B)
 void ElementSet::AssembleMassMatrix(Mat &A, Vec&B)
 {
   AssembleMatrix(A, B, 2, "getMassMatrix");
+}
+
+void ElementSet::CommitHistory()
+{
+  for(auto elem : m_elem)
+    elem.second->CommitHistory();
+}
+
+int ElementSet::ElemGroupCount(const std::string&groupName)
+{
+  if("All" == groupName){
+    int temp = 0;
+    for(auto group : m_groups)
+     temp += group.second.size();
+    return temp;
+  }
+  else
+    return m_groups[groupName].size();
+}
+
+std::vector<int> ElementSet::IterElementGroup(const std::string&elemGroupName)
+{
+  std::vector<int> elem;
+  if("All" == elemGroupName){
+    for(auto iElem : m_groups)
+      elem.insert(elem.end(), iElem.second.begin(), iElem.second.end());
+  }
+  else{
+    elem.insert(elem.end(), m_groups[elemGroupName].begin(), m_groups[elemGroupName].end());
+  }
+  return elem;
 }

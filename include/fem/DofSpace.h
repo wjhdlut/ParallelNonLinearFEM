@@ -4,6 +4,7 @@
 
 #include <map>
 #include <fem/ElementSet.h>
+#include <petscksp.h>
 
 class DofSpace
 {
@@ -15,6 +16,10 @@ public:
 
   inline void SetConstrainFactor(double fac){
     m_constrainedFac = fac;
+  }
+
+  inline std::vector<std::string> GetDofType(){
+    return m_dofTypes;
   }
 
   inline int GetForType(const int nodeIds, const std::string&dofType){
@@ -34,6 +39,18 @@ public:
     return elemDofs;
   }
 
+  inline std::vector<int> GetIndex(const std::vector<int>&nodeIDs){
+    std::vector<int> index;
+    for(auto nodeID : nodeIDs)
+      index.emplace_back(GetIndex(nodeID));
+    return index;
+  }
+
+  inline int GetIndex(int nodeID){
+    return std::distance(m_IDmap.begin(), std::find(m_IDmap.begin(), m_IDmap.end(), nodeID));
+  }
+
+
   /**
    * @Brief:  solve equation sets when K is matrix
    * 
@@ -41,7 +58,7 @@ public:
    * @param df increment of force vector
    * @param da displacement increment
    */
-  void Solve(Mat&K, Vec&df, Vec&da);
+  PetscErrorCode Solve(Mat&K, Vec&df, Vec&da, KSP&ksp);
 
   /**
    * @Brief: solve equation when K is scale
@@ -50,7 +67,16 @@ public:
    * @param df 
    * @param da 
    */
-  void Solve(double K, Vec&df, Vec&da);
+  PetscErrorCode Solve(double K, Vec&df, Vec&da);
+
+  /**
+   * @Brief: Compute the Norm of dF Vector for the value at non-Constrained Location 
+   * 
+   * @param r                   [in]  dF Vector
+   * @param error               [out] the Norm Value
+   * @return PetscErrorCode 
+   */
+  PetscErrorCode Norm(Vec &r, double &error);
 
 public:
   std::vector<std::vector<int>> m_dofs;
@@ -58,7 +84,7 @@ public:
 private:
   void Constrain(const int&nodeId, const std::string&dofType, const double&value);
 
-  Matrix GetConstraintsMatrix();
+  PetscErrorCode GetConstraintsMatrix(Mat&C);
 
 private:
   std::vector<std::string> m_dofTypes;

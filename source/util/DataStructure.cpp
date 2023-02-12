@@ -85,3 +85,35 @@ PetscErrorCode GlobalData::CreateVecSpace()
   ierr = VecDuplicate(m_state, &m_acce); CHKERRQ(ierr);
   return ierr;
 }
+
+Matrix GlobalData::GetData(const std::string&outputName)
+{
+  Matrix data    = m_outputData[outputName];
+  Matrix weights = m_outputData[outputName + "Weight"];
+
+  Matrix outputData;
+  std::vector<double> iRow;
+  
+  for(auto node : m_nodes->m_nodeCoords)
+  {
+    int index = m_dofs->GetIndex(node.first);
+    if(weights[index][0] != 0)
+      iRow = Math::VecScale(1./weights[index][0], data[index]);
+    else
+      iRow = data[index];
+
+    outputData.emplace_back(iRow);
+  }
+
+  return outputData;
+}
+
+double GlobalData::GetData(const std::string&outputName, const int nodeID)
+{
+  Matrix data = m_outputData[outputName];
+  Matrix weights = m_outputData[outputName + "Weight"];
+
+
+  // TO DO
+  return 0.;
+}

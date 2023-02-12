@@ -17,6 +17,8 @@ public:
 
   void SetIter(int iIter);
 
+  void CommitHistory();
+
   inline std::vector<std::vector<double>> GetTangMatrix(){
     return m_D;
   }
@@ -25,8 +27,6 @@ protected:
   int SetHistoryParameter(const std::string &name, double vale);
 
   double GetHistoryParameter(const std::string&name);
-
-  void CommitHistory();
 
   virtual void ComputeDMatrix() = 0;
 

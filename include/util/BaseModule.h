@@ -21,7 +21,7 @@ public:
   virtual void Run() = 0;
 
 protected:
-  std::string m_myProps;
+  nlohmann::json m_myProps;
 };
 
 #endif // BASEMOULE_H

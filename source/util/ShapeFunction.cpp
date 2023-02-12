@@ -108,6 +108,7 @@ void TriaScheme(std::vector<std::vector<double>>&xi, std::vector<double>&weight,
 void GetIntegrationPoints(std::vector<std::vector<double>>&xi, std::vector<double>&weight,
                           const std::string&elemType, const int order, const::std::string &method)
 {
+  if(0 != xi.size()) return;
   int stdOrder = 0;
   std::vector<double> xi1d;
   std::vector<double> weight1d;

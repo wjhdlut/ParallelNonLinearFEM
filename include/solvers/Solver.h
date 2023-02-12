@@ -6,11 +6,11 @@
 #include <memory>
 #include <util/BaseModule.h>
 
-class Solvers
+class Solver
 {
 public:
-  Solvers();
-  virtual ~Solvers();
+  Solver();
+  virtual ~Solver();
   
   void Run();
 

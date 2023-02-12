@@ -7,12 +7,32 @@
 class PlaneStress : public BaseMaterial
 {
 public:
+  /**
+   * @Brief: Construct a new Plane Stress Materials Object
+   * 
+   * @param props 
+   */
   PlaneStress(const nlohmann::json &props);
+
+  /**
+   * @Brief: Destroy the Plane Stress Material Object
+   * 
+   */
   ~PlaneStress();
 
+  /**
+   * @Brief: Compute the Stress Vector
+   * 
+   * @param kin 
+   * @return std::vector<double> 
+   */
   virtual std::vector<double> GetStress(const std::shared_ptr<Kinematics>&kin) override;
 
 private:
+  /**
+   * @Brief:  Compute the Tangent Modulue Matrix
+   * 
+   */
   void ComputeDMatrix() override;
 
 private:

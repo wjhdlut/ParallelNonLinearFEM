@@ -40,7 +40,7 @@ std::string ReadItem(std::vector<std::string>&strVec, nlohmann::json&db)
     l2 = Tools::StringSplit(strVec[1], ";", 1);
     
     if("[" == l2[0].substr(0, 1)){
-      std::string tempStr = l2[0].substr(1, tempStr.size() - 2);
+      std::string tempStr = l2[0].substr(1, l2[0].size() - 2);
       std::vector<std::string> l3 = Tools::StringSplit(tempStr, ",");
       StoreValue(db, strVec[0], l3);
     }
@@ -100,6 +100,5 @@ void FileParse(nlohmann::json &db, const std::string &fileName)
   ReadBlock(db, ln);
   inputFile.close();
 
-
-  // std::cout << std::setw(4) << db << std::endl;
+  std::cout << std::setw(4) << db << std::endl;
 }

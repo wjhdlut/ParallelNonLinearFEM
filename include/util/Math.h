@@ -121,6 +121,21 @@ std::vector<double> VecScale(const double scale, const std::vector<double> &A);
  *                   Am*B0, Am*B1, Am*B2, ..., Am*Bn;]
  */
 Matrix VecOuter(const std::vector<double>&A, const std::vector<double>&B);
+
+/**
+ * @Brief:  Convert Matrix to Vector
+ * 
+ * @param A 
+ * @return std::vector<double> 
+ */
+std::vector<double> ConvertMatrixToVec(const std::vector<std::vector<double>> &A);
+
+/**
+ * @Brief: Output Matrix
+ * 
+ * @param A 
+ */
+void MatrixOutput(const std::vector<std::vector<double>>&A);
 };
 
 #endif // MATH_H

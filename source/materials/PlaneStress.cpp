@@ -15,8 +15,8 @@ PlaneStress::~PlaneStress()
 
 void PlaneStress::ComputeDMatrix()
 {
-  std::vector<double> temp(3, 0);
-  std::vector<std::vector<double>> m_D(3, temp);
+  std::vector<double> temp(3, 0.);
+  m_D.resize(3, temp);
   m_D[0][0] = m_E/(1. - m_nu * m_nu);
   m_D[0][1] = m_D[0][0]*m_nu;
   m_D[1][0] = m_D[0][1];

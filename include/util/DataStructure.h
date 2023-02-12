@@ -8,9 +8,6 @@
 #include <nlohmann/json.hpp>
 #include <petscksp.h>
 
-// class ElementSet;
-
-// class DofSpace;
 
 class GlobalData
 {
@@ -28,15 +25,21 @@ public:
     m_outputName.clear();
   }
 
+  Matrix GetData(const std::string&outputName);
+
+  double GetData(const std::string&outputName, const int nodeID);
+
 public:
   int m_cycle = 0;
   int m_iiter = 0;
+  bool m_active = true;
   double m_time = 0.;
   double m_lam = 0.;
   std::shared_ptr<NodeSet> m_nodes;
   std::shared_ptr<ElementSet> m_elements;
   std::shared_ptr<DofSpace> m_dofs;
   nlohmann::json m_props;
+  std::string m_prefix;
   
   std::vector<std::string> m_outputName;
   

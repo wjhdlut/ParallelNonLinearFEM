@@ -10,7 +10,6 @@ set(MPI_LINK_DIR "/home/wangjianhua/Downloads/PETSc/petsc-main/test/lib")
 include_directories(${MPI_INC_DIR})
 link_directories(${MPI_LINK_DIR})
 
-
 # --------------------------- PETSc Pacakage ------------------------------
 set(PTESC_INC_DIR "/home/wangjianhua/Downloads/PETSc/petsc-main/include/")
 set(PETSC_LINK_DIR "/home/wangjianhua/Downloads/PETSc/petsc-main/lib/petsc")

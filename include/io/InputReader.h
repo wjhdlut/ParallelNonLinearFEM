@@ -5,6 +5,12 @@
 
 namespace NONLINEARFEMIO
 {
+/**
+ * @Brief: Read input file
+ * 
+ * @param rank 
+ * @return GlobalData* 
+ */
 GlobalData* InputReader(int rank);
 };
 
