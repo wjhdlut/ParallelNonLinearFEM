@@ -1,7 +1,7 @@
 
 #include <util/ShapeFunctions.h>
 #include <util/ObjectFactory.h>
-#include <elements/ElementShapeFunctions.h>
+#include <elements/shapefunctions/ElementShapeFunctions.h>
 #include <util/Math.h>
 
 namespace ShapeFunctions

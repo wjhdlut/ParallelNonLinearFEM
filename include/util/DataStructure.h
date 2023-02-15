@@ -27,7 +27,9 @@ public:
 
   Matrix GetData(const std::string&outputName);
 
-  double GetData(const std::string&outputName, const int nodeID);
+  std::vector<double> GetData(const std::string&outputName, const int nodeID);
+
+  void PrintNodes();
 
 public:
   int m_cycle = 0;

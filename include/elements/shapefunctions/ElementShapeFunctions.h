@@ -3,6 +3,7 @@
 #define ELEMENTSHAPEFUNCTIONS_H
 
 #include <vector>
+#include <string>
 
 /**
  * @Brief:   Base Class to Compute Element Shape Functions
@@ -40,6 +41,7 @@ public:
   int numOfStress;                              // The number of stress
   std::vector<double> H;                        // the shape function
   std::vector<std::vector<double>> pHpxi;       // the derivative of shape function about local coordinate system
+  std::vector<std::string> dofType;             // Element Dof Type
 };
 
 #endif // ELEMENTSHAPEFUNCTIONS_H

@@ -45,6 +45,7 @@ class Element
 {
 public:
   Element(const std::vector<int> &elemNodes, const nlohmann::json &modelProps);
+  
   virtual ~Element();
 
   /**

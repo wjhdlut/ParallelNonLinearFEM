@@ -1,4 +1,4 @@
-#include <elements/Quad8ShapeFunctions.h>
+#include <elements/shapefunctions/Quad8ShapeFunctions.h>
 
 Quad8ShapeFunctions::Quad8ShapeFunctions()
 {
@@ -7,6 +7,8 @@ Quad8ShapeFunctions::Quad8ShapeFunctions()
   pHpxi.resize(8, temp);
 
   numOfStress = 3;
+
+  // dofType = {"u", "v"};
 };
 
 Quad8ShapeFunctions::~Quad8ShapeFunctions()

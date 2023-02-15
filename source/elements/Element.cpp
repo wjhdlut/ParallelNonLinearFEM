@@ -12,10 +12,19 @@ Element::Element(const std::vector<int> &elemNodes, const nlohmann::json &modelP
       const nlohmann::json &matProps = iter.value();
       m_mat = std::make_shared<MaterialManager>(matProps);
     }
+    else if("dim" == iter.key())
+    {
+      if("2D" == modelProps["dim"])
+        m_dofType = {"u", "v"};
+      if("3D" == modelProps["dim"])
+        m_dofType = {"u", "v", "w"};
+    }
     else{
+      
       m_props[iter.key()] = iter.value();
     }
   }
+  if(!modelProps.contains("dim")) m_dofType = {"u", "v"};
 }
 
 Element::~Element()
@@ -35,7 +44,7 @@ void Element::AppendNodalOutput(const std::string&outputName, const Matrix&outMa
     GlobalData::GetInstance()->m_outputName.emplace_back(outputName);
 
     GlobalData::GetInstance()->m_outputData[outWeightName] = Math::MatrixZeros(numOfNode, 1);
-    GlobalData::GetInstance()->m_outputName.emplace_back(outWeightName);
+    // GlobalData::GetInstance()->m_outputName.emplace_back(outWeightName);
   }
 
   Matrix &outMatrix1 = GlobalData::GetInstance()->m_outputData[outputName];

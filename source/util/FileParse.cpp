@@ -100,5 +100,5 @@ void FileParse(nlohmann::json &db, const std::string &fileName)
   ReadBlock(db, ln);
   inputFile.close();
 
-  std::cout << std::setw(4) << db << std::endl;
+  // std::cout << std::setw(4) << db << std::endl;
 }

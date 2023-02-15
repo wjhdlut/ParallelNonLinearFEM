@@ -1,7 +1,7 @@
 #ifndef QUAD8SHAPEFUNCTION_H
 #define QUAD8SHAPEFUNCTION_H
 
-#include <elements/ElementShapeFunctions.h>
+#include <elements//shapefunctions/ElementShapeFunctions.h>
 #include <util/ObjectFactory.h>
 
 /* ----------------------------------------------------

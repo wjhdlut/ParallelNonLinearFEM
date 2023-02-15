@@ -1,4 +1,4 @@
-#include <elements/Hexa8ShapeFunctions.h>
+#include <elements/shapefunctions/Hexa8ShapeFunctions.h>
 
 Hexa8ShapeFunctions::Hexa8ShapeFunctions()
 {

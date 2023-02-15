@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <util/DataStructure.h>
 
 GlobalData *GlobalData::m_globalData = nullptr;
@@ -61,7 +62,6 @@ void GlobalData::ReadFromFile(const std::string&fileName)
 
         std::string dofType = c[0];
         int nodeId = std::stoi(Tools::StringSplit(c[1], "]")[0]);
-        std::cout << m_dofs->GetForType(nodeId, dofType) << std::endl;
 
         VecSetValue(m_fhat, m_dofs->GetForType(nodeId, dofType), std::stod(b[1]), ADD_VALUES);
       }
@@ -108,12 +108,68 @@ Matrix GlobalData::GetData(const std::string&outputName)
   return outputData;
 }
 
-double GlobalData::GetData(const std::string&outputName, const int nodeID)
+std::vector<double> GlobalData::GetData(const std::string&outputName, const int nodeID)
 {
   Matrix data = m_outputData[outputName];
   Matrix weights = m_outputData[outputName + "Weight"];
+  
+  int index = m_dofs->GetIndex(nodeID);
+  int weightValue = weights[index][0];
+  std::vector<double> tempVec;
+  for(auto iData : data[index])
+    (0 != weightValue) ? tempVec.emplace_back(iData/weightValue) : tempVec.emplace_back(iData);
+    
+  return tempVec;
+}
 
+void GlobalData::PrintNodes()
+{
+  std::cout << "   Node | ";
 
-  // TO DO
-  return 0.;
+  for(auto dofType : m_dofs->GetDofType())
+    std::cout << "    " << dofType << "         ";
+
+  int intTemp;
+  VecGetSize(m_fint, &intTemp);
+  if(0 != intTemp)
+  {
+    for(auto dofType : m_dofs->GetDofType())
+      std::cout << "  fint-" << dofType << "      ";
+  }
+
+  for(auto name : m_outputName)
+    std::cout << "         " << name;
+  
+  std::cout << std::endl;
+  std::cout << "-------------------------------------------------------"
+            << "-------------------------------------------------------\n";
+  
+  std::vector<double> doubleTemp(2*m_dofs->GetDofType().size());
+  std::vector<int> index;
+  for(auto iNode : m_nodes->m_nodeCoords)
+  {
+    std::cout << std::setw(6) << std::right << iNode.first << "  |";
+    
+    // Output the Displacement
+    index.clear();
+    for(auto dofType : m_dofs->GetDofType())
+      index.emplace_back(m_dofs->GetForType(iNode.first, dofType));
+    
+    VecGetValues(m_state, index.size(), &index[0], &doubleTemp[0]);
+    VecGetValues(m_fint, index.size(), &index[0], &doubleTemp[index.size()]);
+
+    // Output the Fint Values
+    std::cout.precision(3);
+    for(auto iTempValue : doubleTemp)
+      std::cout << std::setw(13) << std::setiosflags(std::ios::scientific) << iTempValue;
+
+    for(auto name : m_outputName)
+    {
+      auto data = GetData(name, iNode.first);
+      for(auto iData : data)
+        std::cout << std::setw(13) << std::setiosflags(std::ios::scientific) << iData;
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
 }

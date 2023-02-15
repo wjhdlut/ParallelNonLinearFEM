@@ -1,7 +1,7 @@
 
 #include <elements/FiniteStrainContinuum.h>
 #include <util/ShapeFunctions.h>
-#include <elements/ElementShapeFunctions.h>
+#include <elements/shapefunctions/ElementShapeFunctions.h>
 #include <util/Math.h>
 #include <util/Kinematics.h>
 
@@ -9,7 +9,7 @@ FiniteStrainContinuum::FiniteStrainContinuum(const std::vector<int> &elemNodes,
                                              const nlohmann::json &modelProps)
                       : Element(elemNodes, modelProps)
 {
-  m_dofType = {"u", "v"};
+  // m_dofType = {"u", "v"};
 }
 
 FiniteStrainContinuum::~FiniteStrainContinuum()
