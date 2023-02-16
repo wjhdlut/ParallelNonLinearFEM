@@ -117,6 +117,30 @@ protected:
   std::vector<int> m_nodes;                              // Element Node Index
   std::unordered_map<std::string, double> m_history;     // History Data
   std::unordered_map<std::string, double> m_current;     // Current Data
+
+protected:
+  std::vector<std::vector<double>> xi;
+  std::vector<double> weight;
+  int order = 0;                                         // the Order of Gauss Integration
+  std::string method = "Gauss";                          // the Method of Integration
+  Matrix outputData;
+  std::shared_ptr<Kinematics> kin = nullptr;
+  
+  double detJac = 0.;                                   // the Determinant of Jacobian Matrix
+  /*jac = [pXpxi1 pXpxi2 pXpxi3,
+             pYpxi1 pYpxi2 pYpxi3,
+             pZpxi1 pZpxi2 pZpxi3];*/
+  std::vector<std::vector<double>> jac;                  // the Jacobian Matrix
+  std::vector<std::vector<double>> invJac;               // the Inverse Jacobian Matrix
+
+  /* pHpX = [pH1pX1 pH1pX2 pH1pX3,
+             pH2pX1 pH2pX2 pH2pX3,
+             ...
+             pHnpX1 pHnpX2 pHnpX3,]*/
+  std::vector<std::vector<double>> pHpX;                 // the Derivative of Shape Function
+  std::vector<std::vector<double>> B;                    // the Strain Matrix
+  std::vector<double> sigma;                             // the Stress Vector
+  std::vector<std::vector<double>> D;                    // the Tangent Matrix
 };
 
 #endif // ELEMENT_H

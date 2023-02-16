@@ -28,7 +28,10 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
   outputData = Math::MatrixZeros(elemDat->m_coords.size(), res->numOfStress);
   
   int count = 0;
+  Matrix tempMatrix;
+  std::vector<double> tempVec;
   for(auto iXi : xi){
+    // compute shape functions
     res->GetShapeFunction(iXi);
 
     // compute jacobian matrix
@@ -39,7 +42,6 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     // compute the derivative of shape function about physical coordinate
     invJac = Math::MatrixInverse(jac);
     pHpX = Math::MatrixAMultB(res->pHpxi, invJac);
-    weighti = Math::MatrixDet(jac) * weight[count];
 
     // compute deforamtion gradient
     kin = GetKinematics(pHpX, elemDat->m_state);
