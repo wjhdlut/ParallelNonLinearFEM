@@ -4,6 +4,8 @@
 #include <solvers/Solver.h>
 
 class LinearSolver : public Solver
-{};
+{
+  
+};
 
 #endif // LINEARSOLVER_H
