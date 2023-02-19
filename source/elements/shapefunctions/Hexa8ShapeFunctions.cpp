@@ -16,6 +16,8 @@ Hexa8ShapeFunctions::~Hexa8ShapeFunctions()
 void Hexa8ShapeFunctions::GetShapeFunction(const std::vector<double> &xi)
 {
   if(3 != xi.size()) throw "The isoparamatric coordinate should be 3D for Hexa8 element.";
+  
+  // compute shape funtion values at gauss point
   H[0] = 0.125*(1.0-xi[0])*(1.0-xi[1])*(1.0-xi[2]);
   H[1] = 0.125*(1.0+xi[0])*(1.0-xi[1])*(1.0-xi[2]);
   H[2] = 0.125*(1.0+xi[0])*(1.0+xi[1])*(1.0-xi[2]);
@@ -25,6 +27,7 @@ void Hexa8ShapeFunctions::GetShapeFunction(const std::vector<double> &xi)
   H[6] = 0.125*(1.0+xi[0])*(1.0+xi[1])*(1.0+xi[2]);
   H[7] = 0.125*(1.0-xi[0])*(1.0+xi[1])*(1.0+xi[2]);
 
+  // Calculate derivatives of shape functions 
   pHpxi[0][0] =  0.125*(1.0-xi[1])*(1.0-xi[2]);
   pHpxi[1][0] = -0.125*(1.0-xi[1])*(1.0-xi[2]);
   pHpxi[2][0] =  0.125*(1.0+xi[1])*(1.0-xi[2]);

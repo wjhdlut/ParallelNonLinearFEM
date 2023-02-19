@@ -18,7 +18,6 @@ Quad4ShapeFunctions::~Quad4ShapeFunctions()
 void Quad4ShapeFunctions::GetShapeFunction(const std::vector<double> &xi)
 {
   if(2 != xi.size()) throw "The isoparamatric coordinate should be 2D for Quad4 element.";
-  
 
   // compute shape funtion values at gauss point
   H[0] = 0.25*(1.0-xi[0])*(1.0-xi[1]);
