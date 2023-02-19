@@ -39,6 +39,7 @@ void DofSpace::ReadFromFile(const std::string&fileName)
       while(true)
       {
         getline(fin, line); line.erase(line.find("\r"));
+        line.erase(0, line.find_first_not_of(" "));
 
         if(line.npos != line.find("</NodeConstraints>")) return;
 
@@ -109,8 +110,9 @@ PetscErrorCode DofSpace::Solve(Mat&K, Vec&df, Vec&da, KSP&ksp)
   ierr = VecSetFromOptions(constrainedB); CHKERRQ(ierr);
   
   ierr = VecDuplicate(a, &tempVec1); CHKERRQ(ierr);
+  ierr = VecAXPY(tempVec1, -1., a); CHKERRQ(ierr);
   ierr = VecDuplicate(a, &tempVec2); CHKERRQ(ierr);
-  ierr = VecScale(tempVec1, -1.); CHKERRQ(ierr);
+  // ierr = VecScale(tempVec1, -1.); CHKERRQ(ierr);
   // std::cout << "tempVec1 = " << std::endl;
   // ierr = VecView(tempVec1, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   
@@ -135,6 +137,7 @@ PetscErrorCode DofSpace::Solve(Mat&K, Vec&df, Vec&da, KSP&ksp)
   // std::cout << "constrainedDa = " << std::endl;
   // ierr = VecView(constrainedDa, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   ierr = MatMult(C, constrainedDa, da); CHKERRQ(ierr);
+  ierr = VecAXPY(da, 1.0, a); CHKERRQ(ierr);
 
   ierr = MatDestroy(&C); CHKERRQ(ierr); 
   ierr = MatDestroy(&constrainedK); CHKERRQ(ierr);

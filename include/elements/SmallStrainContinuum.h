@@ -20,5 +20,6 @@ private:
   Matrix GetBMatrix(const Matrix &dphi);
 };
 
+ReflectRegister(SmallStrainContinuum, const std::vector<int> &, const nlohmann::json &)
 
 #endif // SMALLSTRAINCONTINUUM_H

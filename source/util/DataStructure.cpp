@@ -52,6 +52,8 @@ void GlobalData::ReadFromFile(const std::string&fileName)
     {
       while(true){
         getline(fin, line), line.erase(line.find("\r"));
+        line.erase(0, line.find_first_not_of(""));
+        if(0 == line.size()) continue;
         if(line.npos != line.find("</ExternalForces>")) return;
 
         std::string temp = Tools::StringStrip(line);

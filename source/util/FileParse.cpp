@@ -19,7 +19,7 @@ void StoreValue(nlohmann::json&db, const std::string&key, const std::vector<std:
 void StoreValue(nlohmann::json&db, const std::string&key, const std::string &value)
 {
   std::regex intPattern("[\\d]+");
-	std::regex floatPattern("[\\d]+[.][\\d]*");
+	std::regex floatPattern("[\\d]+[.][\\d]*[eE]?[+-]?[\\d]*");
 	std::smatch result;
 
   if("true" == value) db[key] = true;
