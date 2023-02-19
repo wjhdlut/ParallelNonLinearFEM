@@ -28,7 +28,7 @@ int main(int argc, char **args)
   MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
   MPI_Comm_size(PETSC_COMM_WORLD, &size);
 
-  GlobalData *globalDat = NONLINEARFEMIO::InputReader(rank);
+  GlobalData *globalDat = NONLINEARFEMIO::InputReader(rank, args);
 
   std::shared_ptr<Solver> solver = std::make_shared<Solver>();
 

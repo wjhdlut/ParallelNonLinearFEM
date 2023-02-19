@@ -7,10 +7,10 @@
 
 namespace NONLINEARFEMIO
 {
-GlobalData* InputReader(int rank)
+GlobalData* InputReader(int rank, char **args)
 {
-  // std::string fileName = "/home/wangjianhua/ExampleCpp/ParallelNonLinearFEM/input/PatchTest8.pro";
-  std::string fileName = "/home/wangjianhua/ExampleCpp/ParallelNonLinearFEM/input/cantilever8.pro";
+  std::string fileName = args[1];
+  
   nlohmann::json props = nlohmann::json::object();
   FileParse(props, fileName);
 

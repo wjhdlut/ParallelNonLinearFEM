@@ -11,7 +11,7 @@ namespace NONLINEARFEMIO
  * @param rank 
  * @return GlobalData* 
  */
-GlobalData* InputReader(int rank);
+GlobalData* InputReader(int rank, char **args);
 };
 
 #endif // INPUTREADER_H

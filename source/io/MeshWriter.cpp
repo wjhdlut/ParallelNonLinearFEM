@@ -36,7 +36,7 @@ void MeshWriter::Run()
 
   vtkfile << "<PointData>" << std::endl;
   vtkfile << "<DataArray type=\"Float64\" Name=\"displacement\""
-          << "NumberOfComponents=\"3\" format=\"ascii\" >" << std::endl;
+          << " NumberOfComponents=\"3\" format=\"ascii\" >" << std::endl;
 
   // output node displacement information
   double nodeCoordValue = 0.;
@@ -117,7 +117,7 @@ void MeshWriter::Run()
     elemNode = GlobalData::GetInstance()->m_elements->GetElementPtr()[elem]->GetNodes();
 
     for(auto nodeID : elemNode)
-      vtkfile << nodeID << "  "; 
+      vtkfile << GlobalData::GetInstance()->m_dofs->GetIndex(nodeID) << "  "; 
 
     vtkfile << std::endl;
   }

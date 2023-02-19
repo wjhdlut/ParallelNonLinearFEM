@@ -4,6 +4,25 @@
 #include <elements/shapefunctions/ElementShapeFunctions.h>
 #include <util/ObjectFactory.h>
 
+/* ----------------------------------------------------
+ *  element shape and node order
+ *                    5 -------------------- 8
+ *                   / |                    /|
+ *                  /  |                   / |
+ *                 /   |                  /  |
+ *                /    |                 /   |
+ *               /     |                /    |
+ *              6 -------------------- 7     |
+ *              |      |               |     |
+ *              |      1 --------------|---- 4
+ *              |     /                |     /
+ *              |    /                 |    /
+ *              |   /                  |   /
+ *              |  /                   |  /
+ *              | /                    | /
+ *              2 ---------------------3
+ * ----------------------------------------------------- */ 
+
 class Hexa8ShapeFunctions : public ElementShapeFunctions
 {
 public:
@@ -27,6 +46,6 @@ public:
   virtual void GetShapeFunction(const std::vector<double> &xi) override;
 };
 
-ReflectRegister(Hexa8ShapeFunctions);
+ReflectRegister(Hexa8ShapeFunctions)
 
 #endif // HEXA8SHAPEFUNCTION_H
