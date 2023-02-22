@@ -84,7 +84,7 @@ std::shared_ptr<Kinematics> SmallStrainContinuum::GetKinematics(const Matrix &B,
   
   std::shared_ptr<Kinematics> kin = std::make_shared<Kinematics>(numOfDim);
 
-  kin->strain = Math::MatraixAMultVecB(B, elState);
+  kin->strain = Math::MatrixAMultVecB(B, elState);
 
   return kin;
 }

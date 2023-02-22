@@ -13,7 +13,7 @@ public:
   BaseMaterial(const nlohmann::json &props);
   virtual ~BaseMaterial();
 
-  virtual std::vector<double> GetStress(const std::shared_ptr<Kinematics>&kin) = 0;
+  virtual std::vector<double> GetStress(const std::shared_ptr<Kinematics>&kin);
 
   void SetIter(int iIter);
 
@@ -24,7 +24,7 @@ public:
   }
 
 protected:
-  int SetHistoryParameter(const std::string &name, double vale);
+  int SetHistoryParameter(const std::string &name, double value);
 
   double GetHistoryParameter(const std::string&name);
 

@@ -11,17 +11,17 @@ void BaseMaterial::SetIter(int iIter)
   m_iIter = iIter;
 }
 
-int BaseMaterial::SetHistoryParameter(const std::string &name, double vale)
+int BaseMaterial::SetHistoryParameter(const std::string &name, double value)
 {
   if(-1 == m_iIter) 
   {
-    m_initHistory[name] = vale;
+    m_initHistory[name] = value;
     return 0;
   }
 
   if(m_current.size() == m_iIter) m_current.emplace_back(m_initHistory);
 
-  m_current[m_iIter].at(name) = vale;
+  m_current[m_iIter].at(name) = value;
 
   return 0;
 }
@@ -37,4 +37,9 @@ void BaseMaterial::CommitHistory()
   m_history.clear();
   for(auto h : m_current)
     m_history.emplace_back(h);
+}
+
+std::vector<double> BaseMaterial::GetStress(const std::shared_ptr<Kinematics> &kin)
+{
+  return Math::MatrixAMultVecB(m_D, kin->strain);
 }

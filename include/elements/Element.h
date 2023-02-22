@@ -95,7 +95,7 @@ public:
   void AppendNodalOutput(const std::string&outputName, const Matrix&outMatrix);
 
   /**
-   * @Brief:         
+   * @Brief:
    * 
    */
   void CommitHistory();

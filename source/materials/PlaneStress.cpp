@@ -23,7 +23,3 @@ void PlaneStress::ComputeDMatrix()
   m_D[1][1] = m_D[0][0];
   m_D[2][2] = m_E/2./(1. + m_nu);
 }
-
-std::vector<double> PlaneStress::GetStress(const std::shared_ptr<Kinematics>&kin){
-  return Math::MatraixAMultVecB(m_D, kin->strain);
-}

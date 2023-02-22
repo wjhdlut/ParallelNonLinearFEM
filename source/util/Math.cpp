@@ -118,7 +118,7 @@ std::vector<std::vector<double>> MatrixAdd(const double scale,
   return result;
 }
 
-std::vector<double> MatraixAMultVecB(const std::vector<std::vector<double>>&A,
+std::vector<double> MatrixAMultVecB(const std::vector<std::vector<double>>&A,
                                      const std::vector<double>&b)
 {
   if(A[0].size() != b.size()) throw "Matrix and Vector is incompatible";

@@ -71,8 +71,8 @@ std::vector<double> VecAdd(const double scale, const std::vector<double>&a, cons
  * @param b   vector
  * @return std::vector<double> 
  */
-std::vector<double> MatraixAMultVecB(const std::vector<std::vector<double>>&A,
-                                     const std::vector<double>&b);
+std::vector<double> MatrixAMultVecB(const std::vector<std::vector<double>>&A,
+                                    const std::vector<double>&b);
 
 /**
  * @Brief:   compute result A^T*b
