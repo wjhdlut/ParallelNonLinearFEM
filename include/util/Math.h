@@ -25,7 +25,18 @@ std::vector<std::vector<double>> MatrixAMultB(const std::vector<std::vector<doub
  * @return std::vector<std::vector<double>> 
  */
 std::vector<std::vector<double>> MatrixATransMultB(const std::vector<std::vector<double>> &A,
-                                                  const std::vector<std::vector<double>> &B);
+                                                   const std::vector<std::vector<double>> &B);
+
+/**
+ * @Brief: compute matrix mlutiplication A*B^T
+ * 
+ * @param A 
+ * @param B 
+ * @return std::vector<std::vector<double>> 
+ */                                              
+std::vector<std::vector<double>> MatrixAMultBTrans(const std::vector<std::vector<double>> &A,
+                                                   const std::vector<std::vector<double>> &B);
+
 /**
  * @Brief:  compute the det of square matrix
  * 
@@ -62,6 +73,14 @@ std::vector<std::vector<double>> MatrixAdd(const double scale,
                                  const std::vector<std::vector<double>>&A,
                                  const std::vector<std::vector<double>>&B);
 
+/**
+ * @Brief: compute c = a + scale * b;
+ * 
+ * @param scale 
+ * @param a 
+ * @param b 
+ * @return std::vector<double> 
+ */
 std::vector<double> VecAdd(const double scale, const std::vector<double>&a, const std::vector<double>&b);
 
 /**
@@ -81,8 +100,8 @@ std::vector<double> MatrixAMultVecB(const std::vector<std::vector<double>>&A,
  * @param b   vector
  * @return std::vector<double> 
  */
-std::vector<double> MatrixTAMultVecB(const Matrix&A,
-                                     const std::vector<double>&b);
+std::vector<double> MatrixATransMultVecB(const Matrix&A,
+                                          const std::vector<double>&b);
 /**
  * @Brief:  form a zero matrix 
  * 
@@ -136,6 +155,14 @@ std::vector<double> ConvertMatrixToVec(const std::vector<std::vector<double>> &A
  * @param A 
  */
 void MatrixOutput(const std::vector<std::vector<double>>&A);
+
+/**
+ * @Brief: Compute Vector Normal
+ * 
+ * @param A 
+ * @return double 
+ */
+double VecNorm(const std::vector<double> &A);
 };
 
 #endif // MATH_H

@@ -59,7 +59,7 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
     elemDat->m_stiff = Math::MatrixAdd(detJac, elemDat->m_stiff, tempMatrix);
 
     // compute internal force vector
-    tempVec = Math::MatrixTAMultVecB(B, sigma);
+    tempVec = Math::MatrixATransMultVecB(B, sigma);
     elemDat->m_fint = Math::VecAdd(detJac, elemDat->m_fint, tempVec);
 
     // compute output stress matrix

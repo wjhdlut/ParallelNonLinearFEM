@@ -4,7 +4,7 @@
 #include <util/DataStructure.h>
 #include <iostream>
 
-LinearSolver::LinearSolver(const nlohmann::json&props) :BaseModule(props)
+LinearSolver::LinearSolver(const nlohmann::json&props) : BaseModule(props)
 {}
 
 LinearSolver::~LinearSolver()

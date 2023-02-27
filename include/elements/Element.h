@@ -75,7 +75,7 @@ public:
     return m_history[name];
   }
 
-  inline void SetHIstoryParameter(const std::string&name, const double value){
+  inline void SetHistoryParameter(const std::string&name, const double value){
     m_history[name] = value;
   }
 

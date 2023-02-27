@@ -1,6 +1,7 @@
 
-#include<util/Math.h>
+#include <util/Math.h>
 #include <iostream>
+#include <math.h>
 
 namespace Math
 {
@@ -26,7 +27,7 @@ std::vector<std::vector<double>> MatrixAMultB(const std::vector<std::vector<doub
 }
 
 std::vector<std::vector<double>> MatrixATransMultB(const std::vector<std::vector<double>> &A,
-                                                  const std::vector<std::vector<double>> &B)
+                                                   const std::vector<std::vector<double>> &B)
 {
   if(A.size() != B.size()) throw "the dimension of A and B is incorrect";
 
@@ -42,6 +43,30 @@ std::vector<std::vector<double>> MatrixATransMultB(const std::vector<std::vector
     }
     result.emplace_back(tempVec);
   }
+  return result;
+}
+
+std::vector<std::vector<double>> MatrixAMultBTrans(const std::vector<std::vector<double>> &A,
+                                                   const std::vector<std::vector<double>> &B)
+{
+  if(A[0].size() != B[0].size()) throw "the dimension of A and B is incorrect";
+
+  std::vector<std::vector<double>> result;
+  std::vector<double> tempVec;
+
+  for(int rowA = 0; rowA < A.size(); rowA++)
+  {
+    tempVec.clear();
+    for(int rowB = 0; rowB < B.size(); rowB++)
+    {
+      double temp = 0;
+      for(int line = 0; line < A[0].size(); line++)
+        temp += A[rowA][line] * B[rowB][line];
+      tempVec.emplace_back(temp);
+    }
+    result.emplace_back(tempVec);
+  }
+
   return result;
 }
 
@@ -149,8 +174,8 @@ Matrix MatrixScale(const double scale, const Matrix&A)
   return B;
 }
 
-std::vector<double> MatrixTAMultVecB(const Matrix&A,
-                                     const std::vector<double>&b)
+std::vector<double> MatrixATransMultVecB(const Matrix&A,
+                                          const std::vector<double>&b)
 {
   if(A.size() != b.size()) throw "Matrix and Vector is incompatible";
   std::vector<double> c(A[0].size(), 0.);
@@ -211,5 +236,13 @@ void MatrixOutput(const std::vector<std::vector<double>> &A)
     }
     std::cout << std::endl;
   }
+}
+
+double VecNorm(const std::vector<double> &A)
+{
+  double temp = 0;
+  for(auto a : A)
+    temp += a*a;
+  return sqrt(temp);
 }
 }
