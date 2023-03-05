@@ -59,6 +59,8 @@ private:
 
   PetscErrorCode CreateVecSpace();
 
+  PetscErrorCode DestroyVecSpace();
+
 private:
   static GlobalData *m_globalData;
 };

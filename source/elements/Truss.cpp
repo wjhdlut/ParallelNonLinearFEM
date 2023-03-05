@@ -8,7 +8,23 @@ Truss::Truss(const std::vector<int> &elemNode, const nlohmann::json &modelProps)
   
   CommitHistory();
 
-  m_E = modelProps.at("E");
+  if(modelProps.at("E").is_string())
+  {
+    std::string E = modelProps.at("E");
+    m_E = std::stod(E);
+  }
+  else{
+    m_E = modelProps.at("E");
+  }
+
+  if(modelProps.at("Area").is_string())
+  {
+    std::string area = modelProps.at("Area");
+    m_area = std::stod(area);
+  }
+  else{
+    m_area = modelProps.at("Area");
+  }
 }
 
 Truss::~Truss()
@@ -54,7 +70,7 @@ void Truss::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
   elemDat->m_fint = Transformations::ToGlobalCoordinates(elemFint, elemDat->m_coords);
 }
 
-void Truss::GetStrain(double &epsilon, double dEpsilon,
+void Truss::GetStrain(double &epsilon, double &dEpsilon,
                       const std::vector<double> &a, const std::vector<double> &a0)
 {
   epsilon = (a[2] - a[0])/m_l0 + 0.5 * pow((a[2]-a[0])/m_l0, 2) + 0.5 * pow((a[3]-a[1])/m_l0, 2);

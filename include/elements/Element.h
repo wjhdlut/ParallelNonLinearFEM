@@ -68,7 +68,8 @@ public:
 
   
   inline void MatReset(){
-    m_mat->Reset();
+    if(m_mat != nullptr)
+      m_mat->Reset();
   }
 
   inline double GetHistoryParameter(const std::string&name){
@@ -76,7 +77,7 @@ public:
   }
 
   inline void SetHistoryParameter(const std::string&name, const double value){
-    m_history[name] = value;
+    m_current[name] = value;
   }
 
   /**

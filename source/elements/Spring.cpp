@@ -4,7 +4,14 @@
 Spring::Spring(const std::vector<int> &elemNode, const nlohmann::json &modelProps)
        : Element(elemNode, modelProps)
 {
-  m_k = modelProps.at("k");
+  if(modelProps.at("k").is_string())
+  {
+    std::string k = modelProps.at("k");
+    m_k = std::stod(k);
+  }
+  else{
+    m_k = modelProps.at("k");
+  }
 }
 
 Spring::~Spring()

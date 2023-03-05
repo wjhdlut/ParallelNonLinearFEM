@@ -33,7 +33,7 @@ std::vector<double> VecToElementCoordinates(const std::vector<double> &a,
 {
   Matrix R = GetRotationMatrix(elemNodeCoords);
 
-  std::vector<double> aBar(a.size(), 0.);
+  std::vector<double> aBar;
 
   if(0 != a.size()%R.size()) throw "Vector does not have the right shape to be rotated";
 
@@ -71,7 +71,7 @@ std::vector<std::vector<double>> MatToElementCoordinates(const std::vector<std::
       tempMat.clear();
       for(int jj = 0; jj < A.size(); jj++)
       {
-        tempVec.insert(tempVec.begin(), A[i*R.size()+j].begin()+R.size()*i, A[i*R.size()+j].begin()+R.size()*(i+1));
+        tempVec.insert(tempVec.begin(), A[j*R.size()+jj].begin()+R.size()*i, A[j*R.size()+jj].begin()+R.size()*(i+1));
         tempMatA.emplace_back(tempVec);
       }
       tempMat = Math::MatrixAMultB(R, tempMatA);
@@ -109,7 +109,7 @@ std::vector<double> VecToGLobalCoordinates(const std::vector<double> &a,
 {
   Matrix R = GetRotationMatrix(elemNodeCoords);
 
-  std::vector<double> aBar(a.size(), 0.);
+  std::vector<double> aBar;
 
   if(0 != a.size()%R.size()) throw "Vector does not have the right shape to be rotated";
 
@@ -145,10 +145,11 @@ std::vector<std::vector<double>> MatToGlobalCoordinates(const std::vector<std::v
   {
     for(int j = 0; j < A.size()/R.size(); j++)
     {
-      tempMat.clear();
-      for(int jj = 0; jj < A.size(); jj++)
+      tempMatA.clear();
+      tempVec.clear();
+      for(int jj = 0; jj < R.size(); jj++)
       {
-        tempVec.insert(tempVec.begin(), A[i*R.size()+j].begin()+R.size()*i, A[i*R.size()+j].begin()+R.size()*(i+1));
+        tempVec.insert(tempVec.begin(), A[j*R.size()+jj].begin()+R.size()*i, A[j*R.size()+jj].begin()+R.size()*(i+1));
         tempMatA.emplace_back(tempVec);
       }
       tempMat = Math::MatrixATransMultB(R, tempMatA);

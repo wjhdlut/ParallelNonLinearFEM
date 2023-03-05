@@ -11,6 +11,7 @@ GlobalData::GlobalData()
 
 GlobalData::~GlobalData()
 {
+  DestroyVecSpace();
 }
 
 GlobalData* GlobalData::GetInstance()
@@ -52,9 +53,11 @@ void GlobalData::ReadFromFile(const std::string&fileName)
     {
       while(true){
         getline(fin, line), line.erase(line.find("\r"));
-        line.erase(0, line.find_first_not_of(""));
+        line.erase(0, line.find_first_not_of(" "));
         if(0 == line.size()) continue;
         if(line.npos != line.find("</ExternalForces>")) return;
+
+        if(0 == line.size()) continue;
 
         std::string temp = Tools::StringStrip(line);
         std::vector<std::string> a = Tools::StringSplit(temp, ";");
@@ -81,10 +84,32 @@ PetscErrorCode GlobalData::CreateVecSpace()
   ierr = VecSet(m_state, 0.0); CHKERRQ(ierr);
 
   ierr = VecDuplicate(m_state, &m_Dstate); CHKERRQ(ierr);
+  // ierr = VecCopy(m_state, m_Dstate); CHKERRQ(ierr);
+  
   ierr = VecDuplicate(m_state, &m_fint); CHKERRQ(ierr);
+  // ierr = VecCopy(m_state, m_fint); CHKERRQ(ierr);
+  
   ierr = VecDuplicate(m_state, &m_fhat); CHKERRQ(ierr);
+  // ierr = VecCopy(m_state, m_fhat); CHKERRQ(ierr);
+  
   ierr = VecDuplicate(m_state, &m_velo); CHKERRQ(ierr);
+  // ierr = VecCopy(m_state, m_velo); CHKERRQ(ierr);
+  
   ierr = VecDuplicate(m_state, &m_acce); CHKERRQ(ierr);
+  // ierr = VecCopy(m_state, m_acce); CHKERRQ(ierr);
+  return ierr;
+}
+
+PetscErrorCode GlobalData::DestroyVecSpace()
+{
+  PetscErrorCode ierr;
+  ierr = VecDestroy(&m_state);
+  ierr = VecDestroy(&m_Dstate);
+  ierr = VecDestroy(&m_fint);
+  ierr = VecDestroy(&m_fhat);
+  ierr = VecDestroy(&m_velo);
+  ierr = VecDestroy(&m_acce);
+
   return ierr;
 }
 

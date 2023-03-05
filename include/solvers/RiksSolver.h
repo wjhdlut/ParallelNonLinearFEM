@@ -3,6 +3,7 @@
 
 #include <util/BaseModule.h>
 #include <util/ObjectFactory.h>
+#include <petscvec.h>
 
 class RiksSolver : public BaseModule
 {
@@ -23,7 +24,7 @@ private:
   double m_totalFactor = 1.0;
   double m_maxFactor = 1.0e20;
   double m_maxLam = 1.0e20;
-  
+  double m_dLamPrev = 1.;
 };
 
 ReflectRegister(RiksSolver, const nlohmann::json &)

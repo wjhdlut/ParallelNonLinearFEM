@@ -33,6 +33,8 @@ void ElementSet::ReadFromFile(const std::string &fileName)
         getline(fin, line), line.erase(line.find("\r"));
 
         if(line.npos != line.find("</Elements>")) return;
+
+        if(line.size() == 0) continue;
         
         line =  std::regex_replace(line, pattern, " ");
         std::vector<std::string> strData = Tools::StringSplit(line, ";");

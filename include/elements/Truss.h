@@ -29,7 +29,7 @@ public:
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
 
 private:
-  void GetStrain(double &epsilon, double dEpsilon,
+  void GetStrain(double &epsilon, double &dEpsilon,
                  const std::vector<double> &a, const std::vector<double> &a0);
 
   std::vector<double> GetBMatrix(const std::vector<double> &a);
@@ -43,5 +43,6 @@ private:
   double m_area = 0.;
 };
 
+ReflectRegister(Truss, const std::vector<int> &, const nlohmann::json &)
 
 #endif //TRUSS_H

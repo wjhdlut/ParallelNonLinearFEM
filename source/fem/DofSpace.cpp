@@ -40,6 +40,8 @@ void DofSpace::ReadFromFile(const std::string&fileName)
       {
         getline(fin, line); line.erase(line.find("\r"));
         line.erase(0, line.find_first_not_of(" "));
+        
+        if(line.size() == 0) continue;
 
         if(line.npos != line.find("</NodeConstraints>")) return;
 

@@ -6,7 +6,21 @@ PlaneStress::PlaneStress(const nlohmann::json &props) : BaseMaterial(props)
   SetHistoryParameter("kappa", 0.);
   CommitHistory();
   
-  m_E = m_props.at("E"); m_nu = m_props.at("nu");
+  if(m_props.at("E").is_string()){
+    std::string E = m_props.at("E");
+    m_E = std::stod(E);
+  }
+  else{
+    m_E = m_props.at("E");
+  }
+
+  if(m_props.at("nu").is_string()){
+    std::string nu = m_props.at("nu");
+    m_nu = std::stod(nu);
+  }
+  else{
+    m_nu = m_props.at("nu");
+  }
   ComputeDMatrix();
 }
 
