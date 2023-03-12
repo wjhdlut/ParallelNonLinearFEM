@@ -20,9 +20,12 @@ public:
   void ReadFromFile(const std::string&fileName);
 
   std::vector<std::string> GetDofType();
-  void AssembleTangentStiffness(Mat &A, Vec&B);
+
+  void AssembleTangentStiffness(Mat &A, Vec &B);
+  
   void AssembleInternalForce(Vec &B);
-  void AssembleMassMatrix(Mat &A, Vec&B);
+  
+  void AssembleMassMatrix(Mat &A, Vec &B);
 
   void CommitHistory();
 

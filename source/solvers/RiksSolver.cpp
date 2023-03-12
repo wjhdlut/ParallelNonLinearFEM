@@ -6,22 +6,8 @@ RiksSolver::RiksSolver(const nlohmann::json &props) : BaseModule(props)
 {
   GlobalData::GetInstance()->m_lam = 1.0;
   
-  const nlohmann::json &solverProps = props.at("solver");
-
-  if(solverProps.contains("fixedStep"))
-  {
-    m_fixedStep = solverProps.at("fixedStep");
-  }
-
-  if(solverProps.contains("maxLam")){
-    if (solverProps.at("maxLam").is_string()){
-      std::string maxLam = solverProps.at("maxLam");
-      m_maxLam = std::stod(maxLam);
-    }
-    else{
-      m_maxLam = solverProps.at("maxLam");
-    }
-  }
+  GetParameter(m_fixedStep, "fixedStep");
+  GetParameter(m_maxLam, "maxLam");
 }
 
 RiksSolver::~RiksSolver()

@@ -28,6 +28,8 @@ public:
    */
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
 
+  virtual void GetMassMatrix(std::shared_ptr<ElementData> &elemDat) override{}
+
 private:
   void GetStrain(double &epsilon, double &dEpsilon,
                  const std::vector<double> &a, const std::vector<double> &a0);

@@ -12,6 +12,8 @@ public:
 
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
 
+  virtual void GetMassMatrix(std::shared_ptr<ElementData> &elemDat) override;
+
 private:
   std::shared_ptr<Kinematics> GetKinematics(const std::vector<std::vector<double>> &dphi,
                                             const std::vector<double>&elState);
@@ -22,6 +24,8 @@ private:
   std::vector<std::vector<double>> Stress2Matrix(const std::vector<double>&stress);
 
   Matrix GetBNLMatrix(const Matrix&dphi);
+
+  Matrix GetNMatrix(const std::vector<double> &h);
 
 private:
   Matrix Bnl;

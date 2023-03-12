@@ -101,6 +101,8 @@ public:
    */
   void CommitHistory();
 
+  virtual void GetMassMatrix(std::shared_ptr<ElementData>&elemDat) = 0;
+
 protected:
   /**
    * @Brief: Compute Number of Element Dof 
@@ -112,6 +114,7 @@ protected:
   }
 
 protected:
+  double m_rho = 0.; 
   std::vector<std::string> m_dofType;                    // Element Dof Type
   std::shared_ptr<MaterialManager> m_mat;                // Mateirals
   nlohmann::json m_props;                                // Whole modele Properties

@@ -3,7 +3,7 @@
 
 Tria3ShapeFunctions::Tria3ShapeFunctions()
 {
-  H.reserve(3);
+  H.resize(3);
   std::vector<double> temp(2);
   pHpxi.resize(3, temp);
 

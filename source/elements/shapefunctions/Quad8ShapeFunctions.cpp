@@ -2,7 +2,7 @@
 
 Quad8ShapeFunctions::Quad8ShapeFunctions()
 {
-  H.reserve(8);
+  H.resize(8);
   std::vector<double> temp(2);
   pHpxi.resize(8, temp);
 

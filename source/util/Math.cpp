@@ -2,6 +2,7 @@
 #include <util/Math.h>
 #include <iostream>
 #include <math.h>
+#include <numeric>
 
 namespace Math
 {
@@ -245,4 +246,9 @@ double VecNorm(const std::vector<double> &A)
     temp += a*a;
   return sqrt(temp);
 }
+
+double VecSum(const std::vector<double>&a)
+{
+  return std::accumulate(a.begin(), a.end(), 0.);
+} 
 }

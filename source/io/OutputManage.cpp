@@ -18,7 +18,7 @@ OutputManager::OutputManager()
         ioType = moduleProps.at("type");
     }
 
-    std::shared_ptr<BaseModule> ins = ObjectFactory::CreateObject<BaseModule>(ioType);
+    std::shared_ptr<BaseModule> ins = ObjectFactory::CreateObject<BaseModule>(ioType, GlobalData::GetInstance()->m_props);
     if (nullptr != ins) m_outman.emplace_back(ins);
   }
 }

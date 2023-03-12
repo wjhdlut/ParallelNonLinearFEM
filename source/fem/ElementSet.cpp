@@ -122,7 +122,7 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
   Vec &Dstate = GlobalData::GetInstance()->m_Dstate;
 
   // ierr = VecView(state, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-  std::vector<double> elemStiffValues;
+  std::vector<double> elemMatrixValues;
   for(auto elementGroup : m_groups)
   {
     nlohmann::json &elemPrpos = m_props.at(elementGroup.first);
@@ -146,15 +146,11 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
 
       std::shared_ptr<ElementData> elemData = std::make_shared<ElementData>(elemState, elemDstate);
       elemData->m_coords = elemCoords;
-
       elemPtr->MatReset();
       elemPtr->GetTangentStiffness(elemData);
-
+      
       for(auto label : elemData->m_outLabel)
         elemPtr->AppendNodalOutput(label, elemData->m_outputData);
-
-      // Assemble Global Stiffness Matrix and Internal Force Vector
-      elemStiffValues = Math::ConvertMatrixToVec(elemData->m_stiff);
 
       if(1 == rank)
       {
@@ -162,15 +158,19 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
       }
       else if(2 == rank && "getTangentStiffness" == action)
       {
-        // std::cout << "element stiffness matrix" << std::endl;
-        // Math::MatrixOutput(elemData->m_stiff);
+        // Assemble Global Stiffness Matrix and Internal Force Vector
+        elemMatrixValues = Math::ConvertMatrixToVec(elemData->m_stiff);
         ierr = MatSetValues(A, elemDofs.size(), &elemDofs[0], elemDofs.size(), 
-                           &elemDofs[0], &elemStiffValues[0], ADD_VALUES); CHKERRQ(ierr);        
+                           &elemDofs[0], &elemMatrixValues[0], ADD_VALUES); CHKERRQ(ierr);        
         ierr = VecSetValues(B, elemDofs.size(), &elemDofs[0], &(elemData->m_fint[0]), ADD_VALUES); CHKERRQ(ierr);
       }
       else if(2 == rank && "getMassMatrix" == action)
       {
-        // TO DO
+        elemPtr->GetMassMatrix(elemData);
+        elemMatrixValues = Math::ConvertMatrixToVec(elemData->m_mass);
+        ierr = MatSetValues(A, elemDofs.size(), &elemDofs[0], elemDofs.size(),
+                           &elemDofs[0], &elemMatrixValues[0], ADD_VALUES); CHKERRQ(ierr);
+        ierr = VecSetValues(B, elemDofs.size(), &elemDofs[0], &(elemData->m_lumped[0]), ADD_VALUES); CHKERRQ(ierr);
       }
       else
       {
@@ -198,7 +198,7 @@ void ElementSet::AssembleInternalForce(Vec &B)
   AssembleMatrix(A, B, 1, "getInternalForce");
 }
 
-void ElementSet::AssembleMassMatrix(Mat &A, Vec&B)
+void ElementSet::AssembleMassMatrix(Mat &A, Vec &B)
 {
   AssembleMatrix(A, B, 2, "getMassMatrix");
 }

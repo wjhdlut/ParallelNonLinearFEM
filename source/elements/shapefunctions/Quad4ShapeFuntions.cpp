@@ -1,9 +1,10 @@
 
 #include <elements/shapefunctions/Quad4ShapeFunctions.h>
+#include <iostream>
 
 Quad4ShapeFunctions::Quad4ShapeFunctions()
 {
-  H.reserve(4);
+  H.resize(4);
 
   std::vector<double> temp(2);
   pHpxi.resize(4, temp);

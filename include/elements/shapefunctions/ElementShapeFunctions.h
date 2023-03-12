@@ -39,8 +39,8 @@ public:
 
 public:
   int numOfStress;                              // The number of stress
-  std::vector<double> H;                        // the shape function
-  std::vector<std::vector<double>> pHpxi;       // the derivative of shape function about local coordinate system
+  std::vector<double> H;                        // The shape function
+  std::vector<std::vector<double>> pHpxi;       // The derivative of shape function about local coordinate system
   std::vector<std::string> dofType;             // Element Dof Type
 };
 

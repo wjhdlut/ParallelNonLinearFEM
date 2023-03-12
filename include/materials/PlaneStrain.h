@@ -27,6 +27,6 @@ private:
   double m_E = 0.;
   double m_nu = 0.;
 };
-
+ReflectRegister(PlaneStrain, const nlohmann::json &)
 
 #endif // PLEANESTRAIN_H

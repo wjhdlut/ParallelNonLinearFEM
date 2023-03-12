@@ -61,13 +61,13 @@ public:
   PetscErrorCode Solve(Mat&K, Vec&df, Vec&da, KSP&ksp);
 
   /**
-   * @Brief: solve equation when K is scale
+   * @Brief: solve equation when K is Vector
    * 
    * @param K 
    * @param df 
    * @param da 
    */
-  PetscErrorCode Solve(double K, Vec&df, Vec&da);
+  PetscErrorCode Solve(const Vec&K, const Vec&df, Vec&da);
 
   /**
    * @Brief: Compute the Norm of dF Vector for the value at non-Constrained Location 

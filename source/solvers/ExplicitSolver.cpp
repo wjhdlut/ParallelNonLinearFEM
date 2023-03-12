@@ -1,18 +1,15 @@
 #include <solvers/ExplicitSolver.h>
 #include <util/DataStructure.h>
-#include <petscksp.h>
+#include <iostream>
 #include <iomanip>
 
 ExplicitSolver::ExplicitSolver(const nlohmann::json &props) : BaseModule(props)
 {
-  if(props["solver"].contains("maxCycle"))
-    m_maxCycle = props["solver"].at("maxCycle");
-  
-  if(props["solver"].contains("dtime"))
-    m_dTime = props["solver"].at("dtime");
+  GetParameter(m_maxCycle, "maxCycle");
+  GetParameter(m_dTime, "dtime");
+  GetParameter(m_lam, "lam");
 
-  if(props["solver"].contains("lam"))
-    m_lam = props["solver"].at("lam");
+  GlobalData::GetInstance()->m_elements->AssembleMassMatrix(m_mass, m_lumped);
 }
 
 ExplicitSolver::~ExplicitSolver()
@@ -33,25 +30,29 @@ void ExplicitSolver::Run()
   Vec &fhat = GlobalData::GetInstance()->m_fhat;
 
   VecAXPY(velo, 0.5*m_dTime, acce);
-  VecAxPy(disp, m_dTime, velo);
+  VecAXPY(disp, m_dTime, velo);
   
   GlobalData::GetInstance()->m_elements->AssembleInternalForce(fint);
 
-  double lam = 0;
+  double lam = LamExpression(GlobalData::GetInstance()->m_time);
   GlobalData::GetInstance()->m_dofs->SetConstrainFactor(lam);
+
 
   Vec res;
   VecDuplicate(fhat, &res);
   VecCopy(fhat, res);
   VecScale(res, lam);
   VecAXPY(res, -1., fint);
+  // std::cout << "res = " << std::endl;
+  // VecView(res, PETSC_VIEWER_STDOUT_WORLD);
 
-  KSP ksp,
-  KSPCreate(ksp, PETSC_COMM_WORLD);
-
-  GlobalData::GetInstance()->m_dofs->Solve(m_lumpedMass, res, acce, ksp);
+  GlobalData::GetInstance()->m_dofs->Solve(m_lumped, res, acce);
+  // std::cout << "acce = " << std::endl;
+  // VecView(acce, PETSC_VIEWER_STDOUT_WORLD);
 
   VecAXPY(velo, 0.5*m_dTime, acce);
+  // std::cout << "velo = " << std::endl;
+  // VecView(velo, PETSC_VIEWER_STDOUT_WORLD);
 
   GlobalData::GetInstance()->m_elements->CommitHistory();
 
@@ -75,13 +76,13 @@ void ExplicitSolver::PrintStepInfo(const Vec&velo)
   double energy;
   Vec tempVec;
   VecDuplicate(velo, &tempVec);
-  MatMult(m_lumpedMass, velo, tempVec);
-  VecDot(tempVec,velo, &energy);
+  VecPointwiseMult(tempVec, m_lumped, velo);
+  VecDot(tempVec, velo, &energy);
   
   std::cout << std::setw(7) << GlobalData::GetInstance()->m_cycle;
 
   std::cout.precision(3);
   std::cout << std::setw(13) << std::setiosflags(std::ios::scientific)
             << GlobalData::GetInstance()->m_time
-            << std::setw(13) << std::setiosflags(std::ios::scientific) << energy << std::endl;
+            << std::setw(13) << std::setiosflags(std::ios::scientific) << 0.5 * energy << std::endl;
 }

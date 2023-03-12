@@ -14,6 +14,8 @@ public:
 
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
 
+  virtual void GetMassMatrix(std::shared_ptr<ElementData> &elemDat) override {}
+
 private:
   std::shared_ptr<Kinematics> GetKinematics(const Matrix &B, const std::vector<double> &elState);
 

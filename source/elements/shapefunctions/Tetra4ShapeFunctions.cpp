@@ -2,7 +2,7 @@
 
 Tetra4ShapeFunctions::Tetra4ShapeFunctions()
 {
-  H.reserve(4);
+  H.resize(4);
   std::vector<double> temp(3);
   pHpxi.resize(4, temp);
 

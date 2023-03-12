@@ -23,6 +23,11 @@ public:
     return m_D;
   }
 
+  inline double ReturnRho()
+  {
+    return m_rho;
+  }
+
 protected:
   int SetHistoryParameter(const std::string &name, double value);
 
@@ -30,8 +35,11 @@ protected:
 
   virtual void ComputeDMatrix() = 0;
 
+  double SetMaterialParamter(const std::string &name);
+
 protected:
   int m_iIter = -1;
+  double m_rho = 0.;
   std::vector<std::unordered_map<std::string, double>> m_current;
   std::vector<std::unordered_map<std::string, double>> m_history;
   std::unordered_map<std::string, double> m_initHistory;

@@ -75,7 +75,6 @@ void DofSpace::Constrain(const int&nodeId, const std::string&dofType, const doub
   m_constrained.insert(std::pair<int, double>(m_dofs[indexRow][indexLine], value));
 }
 
-
 PetscErrorCode DofSpace::Solve(Mat&K, Vec&df, Vec&da, KSP&ksp)
 {
   PetscErrorCode ierr;
@@ -152,21 +151,16 @@ PetscErrorCode DofSpace::Solve(Mat&K, Vec&df, Vec&da, KSP&ksp)
   return ierr;
 }
 
-PetscErrorCode DofSpace::Solve(double K, Vec&df, Vec&da)
+PetscErrorCode DofSpace::Solve(const Vec &K, const Vec &df, Vec&da)
 {
   PetscErrorCode ierr;
-  if (abs(K) > 1e-10)
-  {
-    Vec temp;
-    ierr = VecDuplicate(da, &temp); CHKERRQ(ierr);
-    ierr = VecSet(temp, 0.); CHKERRQ(ierr);
-    ierr = VecWAXPY(da, 1. / K, df, temp); CHKERRQ(ierr);
-    ierr = VecDestroy(&temp); CHKERRQ(ierr);
-  }
-  else
-  {
-    throw "denominator is too small";
-  }
+  
+  ierr = VecPointwiseDivide(da, df, K); CHKERRQ(ierr);
+  for(auto iConstrained : m_constrained)
+    ierr = VecSetValue(da, iConstrained.first, m_constrainedFac*iConstrained.second, INSERT_VALUES); CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(da); CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(da); CHKERRQ(ierr);
+
   return ierr;
 }
 

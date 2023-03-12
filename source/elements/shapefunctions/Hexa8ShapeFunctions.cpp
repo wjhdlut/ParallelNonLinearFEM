@@ -2,7 +2,7 @@
 
 Hexa8ShapeFunctions::Hexa8ShapeFunctions()
 {
-  H.reserve(8);
+  H.resize(8);
   
   std::vector<double> temp(3, 0.);
   pHpxi.resize(8, temp);

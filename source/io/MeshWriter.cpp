@@ -3,10 +3,11 @@
 
 #include <io/MeshWriter.h>
 #include <util/DataStructure.h>
+#include <iostream>
 
 MeshWriter::MeshWriter(const nlohmann::json &props) : BaseModule(props)
 {
-  
+  GetParameter(m_interval, "interval");
 }
 
 MeshWriter::~MeshWriter()
@@ -56,7 +57,7 @@ void MeshWriter::Run()
   Matrix stress = GlobalData::GetInstance()->GetData("stresses");
   vtkfile << "<DataArray type=\"Float64\" Name=\"sigma_xx\""
           << " NumberOfComponents=\"1\" format=\"ascii\" >" << std::endl;
-  for(auto node : GlobalData::GetInstance()->m_nodes->m_nodeCoords)
+  for (auto node : GlobalData::GetInstance()->m_nodes->m_nodeCoords)
   {
     int index = GlobalData::GetInstance()->m_dofs->GetIndex(node.first);
     vtkfile << stress[index][0] << std::endl;
@@ -66,7 +67,7 @@ void MeshWriter::Run()
   // output sigma_yy
   vtkfile << "<DataArray type=\"Float64\" Name=\"sigma_yy\""
           << " NumberOfComponents=\"1\" format=\"ascii\" >" << std::endl;
-  for(auto node : GlobalData::GetInstance()->m_nodes->m_nodeCoords)
+  for (auto node : GlobalData::GetInstance()->m_nodes->m_nodeCoords)
   {
     int index = GlobalData::GetInstance()->m_dofs->GetIndex(node.first);
     vtkfile << stress[index][1] << std::endl;
@@ -74,10 +75,11 @@ void MeshWriter::Run()
   vtkfile << "</DataArray>" << std::endl;
 
   // output sigma_xy for two-dimension problem
-  if(stress[0].size() == 3){
+  if (stress[0].size() == 3)
+  {
     vtkfile << "<DataArray type=\"Float64\" Name=\"sigma_xy\""
             << " NumberOfComponents=\"1\" format=\"ascii\" >" << std::endl;
-    for(auto node : GlobalData::GetInstance()->m_nodes->m_nodeCoords)
+    for (auto node : GlobalData::GetInstance()->m_nodes->m_nodeCoords)
     {
       int index = GlobalData::GetInstance()->m_dofs->GetIndex(node.first);
       vtkfile << stress[index][2] << std::endl;

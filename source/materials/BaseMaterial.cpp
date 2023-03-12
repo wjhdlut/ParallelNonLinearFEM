@@ -43,3 +43,14 @@ std::vector<double> BaseMaterial::GetStress(const std::shared_ptr<Kinematics> &k
 {
   return Math::MatrixAMultVecB(m_D, kin->strain);
 }
+
+double BaseMaterial::SetMaterialParamter(const std::string &name)
+{
+  if(m_props.at(name).is_string()){
+    std::string E = m_props.at(name);
+    return std::stod(E);
+  }
+  else{
+    return m_props.at(name);
+  }
+}

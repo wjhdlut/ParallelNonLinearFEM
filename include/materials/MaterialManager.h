@@ -58,6 +58,11 @@ public:
     m_mat->CommitHistory();
   }
 
+  inline double GetMaterialRho()
+  {
+    return m_mat->ReturnRho();
+  }
+
 private:
   int iIter = -1;                        // 
   std::shared_ptr<BaseMaterial> m_mat;   // Material Pointer
