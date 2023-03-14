@@ -163,6 +163,7 @@ void MatrixOutput(const std::vector<std::vector<double>>&A);
  * @return double 
  */
 double VecNorm(const std::vector<double> &A);
+
 /**
  * @Brief: Compute Sum of all elements in Vector a
  * 
@@ -170,6 +171,15 @@ double VecNorm(const std::vector<double> &A);
  * @return double 
  */
 double VecSum(const std::vector<double>&a);
+
+/**
+ * @Brief:  Compute the Dot of two vecters
+ * 
+ * @param a 
+ * @param b 
+ * @return double 
+ */
+double VecDot(const std::vector<double> &a, const std::vector<double> &b);
 };
 
 #endif // MATH_H

@@ -101,7 +101,7 @@ public:
    */
   void CommitHistory();
 
-  virtual void GetMassMatrix(std::shared_ptr<ElementData>&elemDat) = 0;
+  virtual void GetMassMatrix(std::shared_ptr<ElementData>&elemDat) {}
 
 protected:
   /**

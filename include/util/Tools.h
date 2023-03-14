@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <nlohmann/json.hpp>
 
 namespace Tools
 {
@@ -12,6 +13,14 @@ namespace Tools
   std::string StringStrip(const std::string &strData, const std::string &tag = " ");
 
   std::string GetVarType(const std::string&value);
+
+  void GetParameter(int &value, const std::string &name, const nlohmann::json &props);
+
+  void GetParameter(double &value, const std::string &name, const nlohmann::json &props);
+
+  void GetParameter(bool &value, const std::string &name, const nlohmann::json &props);
+
+  void GetParameter(std::string &value, const std::string &name, const nlohmann::json &props);
 }
 
 #endif // TOOLS_H

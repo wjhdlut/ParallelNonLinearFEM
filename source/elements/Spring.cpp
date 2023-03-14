@@ -1,17 +1,11 @@
 #include <elements/Spring.h>
 #include <util/Transformations.h>
+#include <util/Tools.h>
 
 Spring::Spring(const std::vector<int> &elemNode, const nlohmann::json &modelProps)
        : Element(elemNode, modelProps)
 {
-  if(modelProps.at("k").is_string())
-  {
-    std::string k = modelProps.at("k");
-    m_k = std::stod(k);
-  }
-  else{
-    m_k = modelProps.at("k");
-  }
+  Tools::GetParameter(m_k, "k", m_props);
 }
 
 Spring::~Spring()

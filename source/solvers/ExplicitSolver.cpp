@@ -5,9 +5,9 @@
 
 ExplicitSolver::ExplicitSolver(const nlohmann::json &props) : BaseModule(props)
 {
-  GetParameter(m_maxCycle, "maxCycle");
-  GetParameter(m_dTime, "dtime");
-  GetParameter(m_lam, "lam");
+  Tools::GetParameter(m_maxCycle, "maxCycle", m_myProps);
+  Tools::GetParameter(m_dTime, "dtime", m_myProps);
+  Tools::GetParameter(m_lam, "lam", m_myProps);
 
   GlobalData::GetInstance()->m_elements->AssembleMassMatrix(m_mass, m_lumped);
 }

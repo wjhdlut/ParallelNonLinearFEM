@@ -1,6 +1,7 @@
 
 #include <util/Tools.h>
 #include <regex>
+#include <iostream>
 
 namespace Tools
 {
@@ -42,5 +43,67 @@ std::string GetVarType(const std::string&value)
   else if(regex_match(value, result, intPattern)) return "int";
 	else if(regex_match(value, result, floatPattern)) return "double";
   else return "string";
+}
+
+void GetParameter(int &value, const std::string &name, const nlohmann::json &props)
+{
+  if(props.contains(name))
+  {
+    if(props.at(name).is_string())
+    {
+      std::string temp = props.at(name);
+      value = std::stoi(temp);
+    }
+    else
+    {
+      value = props.at(name);
+    }
+  }
+  else
+  {
+    throw "no property with name " + name;
+    std::cout << std::setw(2) << props << std::endl;
+  }
+}
+
+void GetParameter(double &value, const std::string &name, const nlohmann::json &props)
+{
+  if(props.contains(name))
+  {
+    if(props.at(name).is_string())
+    {
+      std::string temp = props.at(name);
+      value = std::stod(temp);
+    }
+    else
+    {
+      value = props.at(name);
+    }
+  }
+  else
+  {
+    throw "no property with name " + name;
+    std::cout << std::setw(2) << props << std::endl;
+  }
+}
+
+void GetParameter(bool &value, const std::string &name, const nlohmann::json &props)
+{
+  if(props.contains(name))
+    value = props.at(name);
+  else{
+    throw "no property with name " + name;
+    std::cout << std::setw(2) << props << std::endl;
+  }
+}
+
+void GetParameter(std::string &value, const std::string &name, const nlohmann::json &props)
+{
+  if(props.contains(name))
+    value = props.at(name);
+  else{
+    throw "no property with name " + name;
+    std::cout << std::setw(2) << props << std::endl;
+  }
 }
 }

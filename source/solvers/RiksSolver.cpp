@@ -6,8 +6,8 @@ RiksSolver::RiksSolver(const nlohmann::json &props) : BaseModule(props)
 {
   GlobalData::GetInstance()->m_lam = 1.0;
   
-  GetParameter(m_fixedStep, "fixedStep");
-  GetParameter(m_maxLam, "maxLam");
+  Tools::GetParameter(m_fixedStep, "fixedStep", m_myProps);
+  Tools::GetParameter(m_maxLam, "maxLam", m_myProps);
 }
 
 RiksSolver::~RiksSolver()

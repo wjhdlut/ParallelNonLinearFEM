@@ -1,5 +1,6 @@
 #include <elements/Truss.h>
 #include <util/Transformations.h>
+#include <util/Tools.h>
 
 Truss::Truss(const std::vector<int> &elemNode, const nlohmann::json &modelProps)
       : Element(elemNode, modelProps)
@@ -7,22 +8,8 @@ Truss::Truss(const std::vector<int> &elemNode, const nlohmann::json &modelProps)
   SetHistoryParameter("sigma", 0.);
   
   CommitHistory();
-
-  if(modelProps.at("E").is_string()){
-    std::string E = modelProps.at("E");
-    m_E = std::stod(E);
-  }
-  else{
-    m_E = modelProps.at("E");
-  }
-
-  if(modelProps.at("Area").is_string()){
-    std::string area = modelProps.at("Area");
-    m_area = std::stod(area);
-  }
-  else{
-    m_area = modelProps.at("Area");
-  }
+  Tools::GetParameter(m_E, "E", m_props);
+  Tools::GetParameter(m_area, "Area", m_props);
 }
 
 Truss::~Truss()

@@ -251,4 +251,15 @@ double VecSum(const std::vector<double>&a)
 {
   return std::accumulate(a.begin(), a.end(), 0.);
 } 
+
+double VecDot(const std::vector<double> &a, const std::vector<double> &b)
+{
+  if(a.size() != b.size()) throw "size of two vectors is incompatiable for VecDot";
+
+  double value = 0.;
+  for(int i = 0; i < a.size(); i++)
+    value += a[i] * b[i];
+  
+  return value;
+}
 }
