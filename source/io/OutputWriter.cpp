@@ -12,6 +12,5 @@ OutputWriter::~OutputWriter()
 
 void OutputWriter::Run()
 {
-  std::string fileName = GlobalData::GetInstance()->m_prefix + ".out";
   GlobalData::GetInstance()->PrintNodes();
 }

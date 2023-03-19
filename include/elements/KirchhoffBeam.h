@@ -26,11 +26,11 @@ public:
 private:
   std::vector<double> TolemCoordinate(const std::vector<double> &a, const Matrix &coord);
 
-  std::vector<double> GetBu(const double &xi);
+  void GetBu(const double &xi);
 
-  std::vector<double> GetBw(const double &xi);
+  void GetBw(const double &xi);
 
-  std::vector<double> GetC(const double &xi);
+  void GetC(const double &xi);
 
   std::vector<double> ToGlobalCoordinates(const std::vector<double> &aBar, const Matrix &coord);
 
@@ -46,8 +46,6 @@ private:
   double m_l0 = 0.;
   double m_EA = 0.;
   double m_EI = 0.;
-  std::vector<double> m_weights = {5./9., 8./9., 5./9.};
-  std::vector<double> m_intPoints = {-sqrt(3./5.), 0., sqrt(3./5.)};
   std::vector<double> m_Bu;
   std::vector<double> m_Bw;
   std::vector<double> m_C;
@@ -61,6 +59,8 @@ private:
   double Jac = 0.;
   double tempDouble = 0.;
   std::vector<double> tempVec;
+  std::vector<double> aBar;
+  std::vector<double> a0;
   Matrix tempMat;
 };
 ReflectRegister(KirchhoffBeam, const std::vector<int> &, const nlohmann::json &)

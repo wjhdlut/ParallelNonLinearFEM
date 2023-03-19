@@ -72,11 +72,11 @@ public:
       m_mat->Reset();
   }
 
-  inline double GetHistoryParameter(const std::string&name){
+  inline std::vector<double> GetHistoryParameter(const std::string&name){
     return m_history[name];
   }
-
-  inline void SetHistoryParameter(const std::string&name, const double value){
+  
+  inline void SetHistoryParameter(const std::string&name, const std::vector<double> &value){
     m_current[name] = value;
   }
 
@@ -115,12 +115,12 @@ protected:
 
 protected:
   double m_rho = 0.; 
-  std::vector<std::string> m_dofType;                    // Element Dof Type
-  std::shared_ptr<MaterialManager> m_mat;                // Mateirals
-  nlohmann::json m_props;                                // Whole modele Properties
-  std::vector<int> m_nodes;                              // Element Node Index
-  std::unordered_map<std::string, double> m_history;     // History Data
-  std::unordered_map<std::string, double> m_current;     // Current Data
+  std::vector<std::string> m_dofType;                                 // Element Dof Type
+  std::shared_ptr<MaterialManager> m_mat;                             // Mateirals
+  nlohmann::json m_props;                                             // Whole modele Properties
+  std::vector<int> m_nodes;                                           // Element Node Index
+  std::unordered_map<std::string, std::vector<double>> m_history;     // History Data
+  std::unordered_map<std::string, std::vector<double>> m_current;     // Current Data
 
 protected:
   std::vector<std::vector<double>> xi;
@@ -128,23 +128,6 @@ protected:
   int order = 0;                                         // the Order of Gauss Integration
   std::string method = "Gauss";                          // the Method of Integration
   Matrix outputData;
-  std::shared_ptr<Kinematics> kin = nullptr;
-  
-  double detJac = 0.;                                   // the Determinant of Jacobian Matrix
-  /*jac = [pXpxi1 pXpxi2 pXpxi3,
-             pYpxi1 pYpxi2 pYpxi3,
-             pZpxi1 pZpxi2 pZpxi3];*/
-  std::vector<std::vector<double>> jac;                  // the Jacobian Matrix
-  std::vector<std::vector<double>> invJac;               // the Inverse Jacobian Matrix
-
-  /* pHpX = [pH1pX1 pH1pX2 pH1pX3,
-             pH2pX1 pH2pX2 pH2pX3,
-             ...
-             pHnpX1 pHnpX2 pHnpX3,]*/
-  std::vector<std::vector<double>> pHpX;                 // the Derivative of Shape Function
-  std::vector<std::vector<double>> B;                    // the Strain Matrix
-  std::vector<double> sigma;                             // the Stress Vector
-  std::vector<std::vector<double>> D;                    // the Tangent Matrix
 };
 
 #endif // ELEMENT_H

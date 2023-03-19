@@ -13,17 +13,17 @@ public:
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
 
 private:
-  std::vector<double> GetHu(const double &xi);
+  void GetHu(const double &xi);
 
-  std::vector<double> GetHw(const double &xi);
+  void GetHw(const double &xi);
 
-  std::vector<double> GetHt(const double &xi);
+  void GetHt(const double &xi);
 
-  std::vector<double> GetBu(const double &xi);
+  void GetBu(const double &xi);
 
-  std::vector<double> GetBw(const double &xi);
+  void GetBw(const double &xi);
 
-  std::vector<double> GetBt(const double &xi);
+  void GetBt(const double &xi);
 
   std::vector<double> ToElemCoordinates(const std::vector<double>&a, const Matrix &coords);
 
@@ -54,6 +54,8 @@ private:
   std::vector<double> bu;
   std::vector<double> bw;
   std::vector<double> bt;
+  std::vector<double> hu;
+  std::vector<double> hw;
 };
 ReflectRegister(TimoshenkoBeam, const std::vector<int> &, const nlohmann::json &)
 

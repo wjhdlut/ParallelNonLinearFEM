@@ -143,8 +143,9 @@ void RiksSolver::Run()
     error = tempDValue1 / tempDValue2;
 
     // Print Iterative Information
+    std::cout.precision(2);
     std::cout << "  Iter " << GlobalData::GetInstance()->m_iiter
-              << " : error = " << error << std::endl;
+              << " : error = " << std::setiosflags(std::ios::scientific) << error << std::endl;
 
     if(m_iterMax == GlobalData::GetInstance()->m_iiter)
       throw "Newton-Raphson iterations did not converge!";

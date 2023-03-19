@@ -59,11 +59,6 @@ void GetParameter(int &value, const std::string &name, const nlohmann::json &pro
       value = props.at(name);
     }
   }
-  else
-  {
-    throw "no property with name " + name;
-    std::cout << std::setw(2) << props << std::endl;
-  }
 }
 
 void GetParameter(double &value, const std::string &name, const nlohmann::json &props)
@@ -80,30 +75,17 @@ void GetParameter(double &value, const std::string &name, const nlohmann::json &
       value = props.at(name);
     }
   }
-  else
-  {
-    throw "no property with name " + name;
-    std::cout << std::setw(2) << props << std::endl;
-  }
 }
 
 void GetParameter(bool &value, const std::string &name, const nlohmann::json &props)
 {
   if(props.contains(name))
     value = props.at(name);
-  else{
-    throw "no property with name " + name;
-    std::cout << std::setw(2) << props << std::endl;
-  }
 }
 
 void GetParameter(std::string &value, const std::string &name, const nlohmann::json &props)
 {
   if(props.contains(name))
     value = props.at(name);
-  else{
-    throw "no property with name " + name;
-    std::cout << std::setw(2) << props << std::endl;
-  }
 }
 }

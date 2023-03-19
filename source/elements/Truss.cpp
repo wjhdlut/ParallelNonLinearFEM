@@ -5,7 +5,7 @@
 Truss::Truss(const std::vector<int> &elemNode, const nlohmann::json &modelProps)
       : Element(elemNode, modelProps)
 {
-  SetHistoryParameter("sigma", 0.);
+  SetHistoryParameter("sigma", std::vector<double>{0.});
   
   CommitHistory();
   Tools::GetParameter(m_E, "E", m_props);
@@ -18,35 +18,36 @@ Truss::~Truss()
 void Truss::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
 {
   // Total displacement
-  std::vector<double> a = Transformations::ToElementCoordinates(elemDat->m_state, elemDat->m_coords);
+  a = Transformations::ToElementCoordinates(elemDat->m_state, elemDat->m_coords);
   
   // Increment displacement at current load step
-  std::vector<double> Da = Transformations::ToElementCoordinates(elemDat->m_Dstate, elemDat->m_coords);
+  Da = Transformations::ToElementCoordinates(elemDat->m_Dstate, elemDat->m_coords);
   
   // Converfenced displacement at last load step
-  std::vector<double> a0 = Math::VecAdd(-1, a, Da);
+  a0 = Math::VecAdd(-1, a, Da);
 
   // Length of Truss element at the initial configuration
   m_l0 = Math::VecNorm(Math::VecAdd(-1., elemDat->m_coords[1], elemDat->m_coords[0]));
 
-  double epsilon = 0., dEpsilon = 0.;
+  epsilon = 0., dEpsilon = 0.;
   GetStrain(epsilon, dEpsilon, a, a0);
 
   // Compute the stress increment (multiplied with the undeformed cross-sectional area)
-  double dSigma = m_E * dEpsilon;
+  dSigma = m_E * dEpsilon;
 
   // Compute the current stress (multiplied with the undeformed cross-sectional area)
-  double sigma = GetHistoryParameter("sigma") + dSigma;
+  sigma = GetHistoryParameter("sigma");
+  sigma[0] += dSigma;
 
   // Update the history parameter
   SetHistoryParameter("sigma", sigma);
 
   // Compute BL in the element coordinate system
-  std::vector<double> B = GetBMatrix(a);
+  GetBMatrix(a);
 
   // Compute the element stiffness in the element coordinate system
   // KL = E*A0*l0*B*B^T
-  Matrix KL = Math::MatrixScale(m_E * m_area * m_l0, Math::VecOuter(B, B));
+  KL = Math::MatrixScale(m_E * m_area * m_l0, Math::VecOuter(B, B));
 
   /**---------------------------------------------------------------------
    * KNL = A0*sigma/l0*[ 1,  0, -1,  0;
@@ -54,18 +55,18 @@ void Truss::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
    *                    -1,  0,  1,  0;
    *                     0, -1,  0,  1];
    * ---------------------------------------------------------------------*/
-  Matrix KNL = GetNonLinearStiffMatrix(sigma, m_area);
+  KNL = GetNonLinearStiffMatrix(sigma[0], m_area);
 
-  Matrix elemStiff = Math::MatrixAdd(1., KL, KNL);
+  elemDat->m_stiff = Math::MatrixAdd(1., KL, KNL);
 
   // Rotate element tangent stiffness to the global coordinate system
-  elemDat->m_stiff = Transformations::ToGlobalCoordinates(elemStiff, elemDat->m_coords);
+  elemDat->m_stiff = Transformations::ToGlobalCoordinates(elemDat->m_stiff, elemDat->m_coords);
   
   // Compute the element internal force vector in the element coordinate system
-  std::vector<double> elemFint = Math::VecScale(m_l0 * sigma * m_area, B);
+  elemDat->m_fint = Math::VecScale(m_l0 * sigma[0] * m_area, B);
 
   // Rotate element fint to the global coordinate system
-  elemDat->m_fint = Transformations::ToGlobalCoordinates(elemFint, elemDat->m_coords);
+  elemDat->m_fint = Transformations::ToGlobalCoordinates(elemDat->m_fint, elemDat->m_coords);
 }
 
 void Truss::GetStrain(double &epsilon, double &dEpsilon,
@@ -83,19 +84,17 @@ void Truss::GetStrain(double &epsilon, double &dEpsilon,
   dEpsilon = epsilon - epsilon0;
 }
 
-std::vector<double> Truss::GetBMatrix(const std::vector<double> &a)
+void Truss::GetBMatrix(const std::vector<double> &a)
 {
   /**
    * B = [-(1+(u2-u1)/l0), -(v2-v1)/l0, (1+(u2-u1)/l0),(v2-v1)/l0]/l0;
    * 
    */
-  std::vector<double> B(4, 0.);
+  B.resize(4, 0.);
   B[0] = -1./m_l0 * (1.+(a[2]-a[0])/m_l0);
   B[1] = -1./m_l0 * (a[3]-a[1])/m_l0;
   B[2] = -B[0];
   B[3] = -B[1];
-
-  return B;
 }
 
 std::vector<std::vector<double>> Truss::GetNonLinearStiffMatrix(const double &sigma,

@@ -46,7 +46,7 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     pHpX = Math::MatrixAMultB(res->pHpxi, invJac);
 
     // compute deforamtion gradient
-    kin = GetKinematics(pHpX, elemDat->m_state);
+    GetKinematics(pHpX, elemDat->m_state);
 
     sigma = m_mat->GetStress(kin);
     
@@ -54,7 +54,7 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     D = m_mat->GetTangMatrix();
     
     // compute strain matrix
-    B = GetBMatrix(pHpX, kin->F);
+    GetBMatrix(pHpX, kin->F);
     
     // compute linear stiffness matrix
     detJac *= weight[count];
@@ -62,10 +62,10 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     elemDat->m_stiff = Math::MatrixAdd(detJac, elemDat->m_stiff, tempMatrix);
 
     // compute stress matrix
-    T = Stress2Matrix(sigma);
+    Stress2Matrix(sigma);
     
     // compute nonlinear strain matrix
-    Bnl = GetBNLMatrix(pHpX);
+    GetBNLMatrix(pHpX);
 
     // compute nonlinear stiffness matrix
     tempMatrix = Math::MatrixATransMultB(Bnl, Math::MatrixAMultB(T, Bnl));
@@ -93,7 +93,6 @@ void FiniteStrainContinuum::GetMassMatrix(std::shared_ptr<ElementData>&elemDat)
   std::shared_ptr<ElementShapeFunctions>res = ObjectFactory::CreateObject<ElementShapeFunctions>(elemName);
   if(nullptr == res) throw "Unkonwn type " + elemType;
   
-  Matrix N;
   int count = 0;
   for(auto iXi : xi)
   {
@@ -103,8 +102,9 @@ void FiniteStrainContinuum::GetMassMatrix(std::shared_ptr<ElementData>&elemDat)
     jac = Math::MatrixATransMultB(elemDat->m_coords, res->pHpxi);
     detJac = Math::MatrixDet(jac);
 
-    N = GetNMatrix(res->H);
-    elemDat->m_mass = Math::MatrixAdd(m_rho*weight[count]*detJac, elemDat->m_mass, Math::MatrixATransMultB(N, N));
+    GetNMatrix(res->H);
+    elemDat->m_mass = Math::MatrixAdd(m_rho*weight[count]*detJac, elemDat->m_mass,
+                                      Math::MatrixATransMultB(N, N));
     count += 1;
   }
   
@@ -114,14 +114,14 @@ void FiniteStrainContinuum::GetMassMatrix(std::shared_ptr<ElementData>&elemDat)
   }
 }
 
-std::shared_ptr<Kinematics> FiniteStrainContinuum::GetKinematics(const std::vector<std::vector<double>> &dphi,
-                                                                 const std::vector<double>&elState)
+void FiniteStrainContinuum::GetKinematics(const std::vector<std::vector<double>> &dphi,
+                                          const std::vector<double>&elState)
 {
   // compute deformation gradient tensor
   int numOfDim = dphi[0].size();
   int numOfNode = dphi.size();
   
-  std::shared_ptr<Kinematics> kin = std::make_shared<Kinematics>(numOfDim);
+  kin = std::make_shared<Kinematics>(numOfDim);
   for(int i = 0; i < numOfNode; i++)
     for(int j = 0 ; j < numOfDim; j++)
       for(int k = 0; k < numOfDim; k++)
@@ -132,18 +132,16 @@ std::shared_ptr<Kinematics> FiniteStrainContinuum::GetKinematics(const std::vect
   kin->E = Math::MatrixAdd(-1., rightCauchyGreen, Math::MatrixEye(numOfDim));
   kin->E = Math::MatrixScale(0.5, kin->E);
   kin->SetStrainVector();
-
-  return kin;
 }
 
 
-std::vector<std::vector<double>> FiniteStrainContinuum::GetBMatrix(const std::vector<std::vector<double>>&dphi,
+void FiniteStrainContinuum::GetBMatrix(const std::vector<std::vector<double>>&dphi,
                                                                    const std::vector<std::vector<double>>&F)
 {
   int numOfDim = dphi[0].size();
   int numOfNode = dphi.size();
   std::vector<double> temp(numOfDim*numOfNode, 0.);
-  std::vector<std::vector<double>> B(3, temp);
+  B.resize(3, temp);
   int count = 0;
   for(auto dp : dphi)
   {
@@ -158,14 +156,12 @@ std::vector<std::vector<double>> FiniteStrainContinuum::GetBMatrix(const std::ve
 
     count += 1;
   }
-
-  return B;
 }
 
-std::vector<std::vector<double>> FiniteStrainContinuum::Stress2Matrix(const std::vector<double>&stress)
+void FiniteStrainContinuum::Stress2Matrix(const std::vector<double>&stress)
 {
   std::vector<double> tempVec(4, 0.);
-  std::vector<std::vector<double>> T(4, tempVec);
+  T.resize(4, tempVec);
 
   T[0][0] = stress[0];
   T[1][1] = stress[1];
@@ -176,17 +172,16 @@ std::vector<std::vector<double>> FiniteStrainContinuum::Stress2Matrix(const std:
   T[3][3] = stress[1];
   T[2][3] = stress[2];
   T[3][2] = stress[2];
-  return T;
 }
 
-Matrix FiniteStrainContinuum::GetBNLMatrix(const Matrix &dphi)
+void FiniteStrainContinuum::GetBNLMatrix(const Matrix &dphi)
 {
   if(dphi.size() == 0) throw "the deratative of shape function to form BNL is empty";
 
   int numOfNode = dphi.size();
   int numOfDim = dphi[0].size();
   std::vector<double> temp(numOfDim*numOfNode, 0.);
-  Matrix Bnl(4, temp);
+  Bnl.resize(4, temp);
 
   int count = 0;
   for(auto dp : dphi){
@@ -198,15 +193,13 @@ Matrix FiniteStrainContinuum::GetBNLMatrix(const Matrix &dphi)
 
     count += 1;
   }
-
-  return Bnl;
 }
 
-Matrix FiniteStrainContinuum::GetNMatrix(const std::vector<double> &H)
+void FiniteStrainContinuum::GetNMatrix(const std::vector<double> &H)
 {
   int numOfDof = m_dofType.size();
   std::vector<double> temp(numOfDof*H.size());
-  Matrix N(numOfDof, temp);
+  N.resize(numOfDof, temp);
 
   int lineIndex = 0;
   for(auto iH : H)
@@ -216,6 +209,4 @@ Matrix FiniteStrainContinuum::GetNMatrix(const std::vector<double> &H)
     
     lineIndex += 1;
   }
-
-  return N;
 }

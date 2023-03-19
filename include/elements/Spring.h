@@ -32,6 +32,13 @@ public:
 
 private:
   double m_k = 0.;
+
+private:
+  double elong = 0.;
+  double Fs = 0.;
+
+  std::vector<double> a;
+  std::vector<double> Da;
 };
 
 ReflectRegister(Spring, const std::vector<int> &, const nlohmann::json &)

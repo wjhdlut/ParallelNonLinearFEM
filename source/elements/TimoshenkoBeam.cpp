@@ -31,10 +31,10 @@ void TimoshenkoBeam::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
 
   for(auto intPoints : m_intPoints)
   {
-    ht = GetHt(intPoints.first);
-    bu = GetBu(intPoints.first);
-    bw = GetBw(intPoints.first);
-    bt = GetBt(intPoints.first);
+    GetHt(intPoints.first);
+    GetBu(intPoints.first);
+    GetBw(intPoints.first);
+    GetBt(intPoints.first);
 
     eps = Math::VecDot(bu, aBar) + 0.5 * pow(Math::VecDot(bw, aBar), 2.);
     gam = Math::VecDot(ht, aBar) + Math::VecDot(bw, aBar);
@@ -71,72 +71,60 @@ void TimoshenkoBeam::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
   elemDat->m_stiff = ToGlobalCoordinates(elemDat->m_stiff, elemDat->m_coords);
 }
 
-std::vector<double> TimoshenkoBeam::GetHu(const double &xi)
+void TimoshenkoBeam::GetHu(const double &xi)
 {
-  std::vector<double> Hu(9, 0.);
+  hu.resize(9, 0.);
 
-  Hu[0] = 0.5 * (1. - xi);
-  Hu[3] = (1. - xi * xi);
-  Hu[6] = 0.5 * (1. + xi);
-
-  return Hu;
+  hu[0] = 0.5 * (1. - xi);
+  hu[3] = (1. - xi * xi);
+  hu[6] = 0.5 * (1. + xi);
 }
 
-std::vector<double> TimoshenkoBeam::GetHw(const double &xi)
+void TimoshenkoBeam::GetHw(const double &xi)
 {
-  std::vector<double> Hw(9, 0.);
+  hw.resize(9, 0.);
 
-  Hw[1] = 0.5 * (1. - xi);
-  Hw[4] = (1. - xi * xi);
-  Hw[7] = 0.5 * (1. + xi);
-
-  return Hw;
+  hw[1] = 0.5 * (1. - xi);
+  hw[4] = (1. - xi * xi);
+  hw[7] = 0.5 * (1. + xi);
 }
 
-std::vector<double> TimoshenkoBeam::GetHt(const double &xi)
+void TimoshenkoBeam::GetHt(const double &xi)
 {
-  std::vector<double> Ht(9, 0.);
+  ht.resize(9, 0.);
 
-  Ht[2] = 0.5 * (1. - xi);
-  Ht[5] = (1. - xi * xi);
-  Ht[8] = 0.5 * (1. + xi);
-
-  return Ht;
+  ht[2] = 0.5 * (1. - xi);
+  ht[5] = (1. - xi * xi);
+  ht[8] = 0.5 * (1. + xi);
 }
 
-std::vector<double> TimoshenkoBeam::GetBu(const double &xi)
+void TimoshenkoBeam::GetBu(const double &xi)
 {
-  std::vector<double> Bu(9, 0.);
+  bu.resize(9, 0.);
 
-  Bu[0] = -1. / m_l0;
-  Bu[3] = -4. * xi / m_l0;
-  Bu[6] =  1. / m_l0;
-
-  return Bu;
+  bu[0] = -1. / m_l0;
+  bu[3] = -4. * xi / m_l0;
+  bu[6] =  1. / m_l0;
 }
 
-std::vector<double> TimoshenkoBeam::GetBw(const double &xi)
+void TimoshenkoBeam::GetBw(const double &xi)
 {
-  std::vector<double> Bw(9, 0.);
+  bw.resize(9, 0.);
 
-  Bw[1] = -1. / m_l0;
-  Bw[7] =  1. / m_l0;
+  bw[1] = -1. / m_l0;
+  bw[7] =  1. / m_l0;
 
-  Bw[2] =  0.5 * xi;
-  Bw[8] = -0.5 * xi;
- 
-  return Bw;
+  bw[2] =  0.5 * xi;
+  bw[8] = -0.5 * xi;
 }
 
-std::vector<double> TimoshenkoBeam::GetBt(const double &xi)
+void TimoshenkoBeam::GetBt(const double &xi)
 {
-  std::vector<double> Bt(9, 0.);
+  bt.resize(9, 0.);
 
-  Bt[2] = -1. / m_l0;
-  Bt[5] = -4. * xi / m_l0;
-  Bt[8] = 1. / m_l0;
-
-  return Bt;
+  bt[2] = -1. / m_l0;
+  bt[5] = -4. * xi / m_l0;
+  bt[8] = 1. / m_l0;
 }
 
 std::vector<double> TimoshenkoBeam::ToElemCoordinates(const std::vector<double>&a, 
