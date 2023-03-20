@@ -15,8 +15,8 @@ TimoshenkoBeam::TimoshenkoBeam(const std::vector<int> &elemNodes, const nlohmann
   m_EI = m_E * m_I;
   m_GA = m_G * m_A * 5. / 6.;
 
-  m_intPoints = {std::make_pair<double, double>(-0.5774, 1.0),
-                 std::make_pair<double, double>(0.5774, 1.0)};
+  m_intPoints = {std::make_pair<double, double>(-0.577, 1.0),
+                 std::make_pair<double, double>( 0.577, 1.0)};
 }
 
 TimoshenkoBeam::~TimoshenkoBeam()
@@ -27,7 +27,7 @@ void TimoshenkoBeam::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
 {
   m_l0 = Math::VecNorm(Math::VecAdd(-1., elemDat->m_coords[2], elemDat->m_coords[0]));
 
-  std::vector<double> aBar = ToElemCoordinates(elemDat->m_state, elemDat->m_coords);
+  aBar = ToElemCoordinates(elemDat->m_state, elemDat->m_coords);
 
   for(auto intPoints : m_intPoints)
   {
@@ -42,7 +42,7 @@ void TimoshenkoBeam::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
 
     N = m_EA * eps;
     Q = m_GA * gam;
-    N = m_EI * chi;
+    M = m_EI * chi;
 
     wght = 0.5 * m_l0 * intPoints.second;
 
@@ -61,7 +61,7 @@ void TimoshenkoBeam::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
                                        elemDat->m_stiff, Math::VecOuter(bw, bw));
     elemDat->m_stiff = Math::MatrixAdd(wght * m_GA, elemDat->m_stiff, Math::VecOuter(bw, ht));
     elemDat->m_stiff = Math::MatrixAdd(wght * m_GA, elemDat->m_stiff, Math::VecOuter(ht, bw));
-    elemDat->m_stiff = Math::MatrixAdd(wght * m_EI, elemDat->m_stiff, Math::VecOuter(bw, ht));
+    elemDat->m_stiff = Math::MatrixAdd(wght * m_EI, elemDat->m_stiff, Math::VecOuter(bt, bt));
     elemDat->m_stiff = Math::MatrixAdd(wght * m_GA, elemDat->m_stiff, Math::VecOuter(ht, ht));
   }
 
@@ -158,13 +158,14 @@ Matrix TimoshenkoBeam::GetRotationMatrix(const Matrix &coords)
 
   Matrix tempMat = Transformations::GetRotationMatrix(crd);
 
-  R[3][3] = tempMat[0][0], R[3][4] = tempMat[0][1], R[3][5] = tempMat[0][2];
-  R[4][3] = tempMat[1][0], R[4][4] = tempMat[1][1], R[4][5] = tempMat[1][2];
-  R[5][3] = tempMat[2][0], R[3][4] = tempMat[2][1], R[3][5] = tempMat[2][2];
+  R[0][0] = tempMat[0][0], R[0][1] = tempMat[0][1];
+  R[1][0] = tempMat[1][0], R[1][1] = tempMat[1][1];
 
-  R[6][6] = tempMat[0][0], R[6][7] = tempMat[0][1], R[6][8] = tempMat[0][2];
-  R[7][6] = tempMat[1][0], R[7][7] = tempMat[1][1], R[7][8] = tempMat[1][2];
-  R[8][6] = tempMat[2][0], R[8][7] = tempMat[2][1], R[8][8] = tempMat[2][2];
+  R[3][3] = tempMat[0][0], R[3][4] = tempMat[0][1];
+  R[4][3] = tempMat[1][0], R[4][4] = tempMat[1][1];
+
+  R[6][6] = tempMat[0][0], R[6][7] = tempMat[0][1];
+  R[7][6] = tempMat[1][0], R[7][7] = tempMat[1][1];
 
   return R;
 }

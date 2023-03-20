@@ -121,7 +121,6 @@ void RiksSolver::Run()
     VecAXPY(Da, 1., dDa);
     // std::cout << "a=" << std::endl;
     // VecView(a, PETSC_VIEWER_STDOUT_WORLD);
-
     // std::cout << "Da=" << std::endl;
     // VecView(Da, PETSC_VIEWER_STDOUT_WORLD);
 

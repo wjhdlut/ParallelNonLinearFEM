@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "/home/wangjianhua/ExampleCpp/build-ParallelNonLinearFEM-Desktop-Debug/ParallelNonlinearFEM",
-            "args": ["/home/wangjianhua/ExampleCpp/ParallelNonLinearFEM/input/FrameKirchhoff/FrameKirchhoff.pro"],
+            "args": ["/home/wangjianhua/ExampleCpp/ParallelNonLinearFEM/input/FrameTimoshenko/FrameTimoshenko.pro"],
             "stopAtEntry": false,
             "cwd": "/home/wangjianhua/ExampleCpp/build-ParallelNonLinearFEM-Desktop-Debug/",
             "environment": [],

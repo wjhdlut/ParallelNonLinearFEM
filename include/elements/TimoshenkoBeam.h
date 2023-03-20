@@ -56,6 +56,7 @@ private:
   std::vector<double> bt;
   std::vector<double> hu;
   std::vector<double> hw;
+  std::vector<double> aBar;
 };
 ReflectRegister(TimoshenkoBeam, const std::vector<int> &, const nlohmann::json &)
 
