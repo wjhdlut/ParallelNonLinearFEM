@@ -67,6 +67,9 @@ std::string GetElemType(const std::vector<std::vector<double>>&elemCoords)
 
 void GaussScheme(std::vector<double>&xi, std::vector<double>&weight, const int order)
 {
+  if(1 == order){
+    xi.emplace_back(0.), weight.emplace_back(2.);
+  }
   if(2 == order){
     xi.emplace_back(-0.577350269189626), weight.emplace_back(1.);
     xi.emplace_back(+0.577350269189626), weight.emplace_back(1.);

@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
+#include <petscvec.h>
 
 namespace Tools
 {
@@ -21,6 +22,8 @@ namespace Tools
   void GetParameter(bool &value, const std::string &name, const nlohmann::json &props);
 
   void GetParameter(std::string &value, const std::string &name, const nlohmann::json &props);
+
+  PetscErrorCode PrintVecIntoFile(const Vec&data, const std::string &fileName);
 }
 
 #endif // TOOLS_H

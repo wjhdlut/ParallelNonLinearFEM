@@ -6,6 +6,11 @@
 #include <fem/ElementSet.h>
 #include <petscksp.h>
 
+struct RigidWall{
+  int direction;
+  double coord;
+};
+
 class DofSpace
 {
 public:
@@ -86,12 +91,17 @@ private:
 
   PetscErrorCode GetConstraintsMatrix(Mat&C);
 
+  void ReadNodeConstraint(const std::string &fileName);
+
+  void ReadRigidWall(const std::string &fileName);
+
 private:
   std::vector<std::string> m_dofTypes;
   std::map<int, std::vector<double>> *m_nodeCoords;
   std::unordered_map<int, double> m_constrained;
   double m_constrainedFac = 1.;
   std::vector<int> m_IDmap;
+  std::shared_ptr<RigidWall> m_rigidWall;
 };
 
 #endif // DOFSPACE_H

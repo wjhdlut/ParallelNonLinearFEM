@@ -42,36 +42,9 @@ void GlobalData::SetFEMData(const nlohmann::json& props, std::shared_ptr<NodeSet
 
 void GlobalData::ReadFromFile(const std::string&fileName)
 {
-  std::ifstream fin(fileName, std::ios::in);
+  ReadExternalForce(fileName);
 
-  std::string line = "";
-
-  while(true){
-    getline(fin, line), line.erase(line.find("\r"));
-
-    if(line.npos != line.find("<ExternalForces>"))
-    {
-      while(true){
-        getline(fin, line), line.erase(line.find("\r"));
-        line.erase(0, line.find_first_not_of(" "));
-        if(0 == line.size()) continue;
-        if(line.npos != line.find("</ExternalForces>")) return;
-
-        if(0 == line.size()) continue;
-
-        std::string temp = Tools::StringStrip(line);
-        std::vector<std::string> a = Tools::StringSplit(temp, ";");
-
-        std::vector<std::string> b = Tools::StringSplit(a[0], "=");
-        std::vector<std::string> c = Tools::StringSplit(b[0], "[");
-
-        std::string dofType = c[0];
-        int nodeId = std::stoi(Tools::StringSplit(c[1], "]")[0]);
-
-        VecSetValue(m_fhat, m_dofs->GetForType(nodeId, dofType), std::stod(b[1]), ADD_VALUES);
-      }
-    }
-  }
+  ReadInitialVelocity(fileName);
 }
 
 PetscErrorCode GlobalData::CreateVecSpace()
@@ -103,13 +76,12 @@ PetscErrorCode GlobalData::CreateVecSpace()
 PetscErrorCode GlobalData::DestroyVecSpace()
 {
   PetscErrorCode ierr;
-  ierr = VecDestroy(&m_state);
-  ierr = VecDestroy(&m_Dstate);
-  ierr = VecDestroy(&m_fint);
-  ierr = VecDestroy(&m_fhat);
-  ierr = VecDestroy(&m_velo);
-  ierr = VecDestroy(&m_acce);
-
+  ierr = VecDestroy(&m_state); CHKERRQ(ierr);
+  ierr = VecDestroy(&m_Dstate); CHKERRQ(ierr);
+  ierr = VecDestroy(&m_fint); CHKERRQ(ierr);
+  ierr = VecDestroy(&m_fhat); CHKERRQ(ierr);
+  ierr = VecDestroy(&m_velo); CHKERRQ(ierr);
+  ierr = VecDestroy(&m_acce); CHKERRQ(ierr);
   return ierr;
 }
 
@@ -199,4 +171,56 @@ void GlobalData::PrintNodes()
     std::cout << std::endl;
   }
   std::cout << std::endl;
+}
+
+void GlobalData::ReadData(Vec &data, const std::string&fileName, const std::string &key)
+{
+  std::ifstream fin(fileName, std::ios::in);
+  std::string line = "";
+
+  while(true){
+    getline(fin, line);
+    if(line.npos != line.find("\r"))
+      line.erase(line.find("\r"));
+
+    if(line.npos != line.find(('<' + key + '>')))
+    {
+      while(true){
+        getline(fin, line);
+        if(line.npos != line.find("\r"))
+          line.erase(line.find("\r"));
+        line.erase(0, line.find_first_not_of(" "));
+        if(0 == line.size()) continue;
+        if(line.npos != line.find(("</" + key + '>'))){
+          VecAssemblyBegin(data);
+          VecAssemblyEnd(data);
+          return;
+        }
+
+        if(0 == line.size()) continue;
+
+        std::string temp = Tools::StringStrip(line);
+        std::vector<std::string> a = Tools::StringSplit(temp, ";");
+
+        std::vector<std::string> b = Tools::StringSplit(a[0], "=");
+        std::vector<std::string> c = Tools::StringSplit(b[0], "[");
+
+        std::string dofType = c[0];
+        int nodeId = std::stoi(Tools::StringSplit(c[1], "]")[0]);
+
+        VecSetValue(data, m_dofs->GetForType(nodeId, dofType), std::stod(b[1]), ADD_VALUES);
+      }
+    }
+    if(fin.eof()) break;
+  }
+}
+
+void GlobalData::ReadExternalForce(const std::string&fileName)
+{
+  ReadData(m_fhat, fileName, "ExternalForces");
+}
+
+void GlobalData::ReadInitialVelocity(const std::string&fileName)
+{
+  ReadData(m_velo, fileName, "InitialVelocity");
 }

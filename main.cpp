@@ -30,9 +30,9 @@ int main(int argc, char **args)
 
   GlobalData *globalDat = NONLINEARFEMIO::InputReader(rank, args);
 
-  std::shared_ptr<Solver> solver = std::make_shared<Solver>();
+  Solver *solver = new Solver();
 
-  std::shared_ptr<OutputManager> output = std::make_shared<OutputManager>();
+  OutputManager *output = new OutputManager();
 
   while(GlobalData::GetInstance()->m_active)
   {
@@ -41,7 +41,9 @@ int main(int argc, char **args)
   }
 
   std::cout << "PyFem analysis terminated successfully." << std::endl;
-
+  
+  delete solver;
+  delete output;
   GlobalData::DestoryInstance();
   ierr = PetscFinalize(); CHKERRQ(ierr);
 

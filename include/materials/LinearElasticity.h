@@ -26,11 +26,7 @@ private:
    * @Brief:  Compute the Tangent Modulue Matrix
    * 
    */
-  void ComputeDMatrix();
-
-private:
-  double m_E = 0.;
-  double m_nu = 0.;
+  virtual void ComputeDMatrix() override;
 };
 
 ReflectRegister(LinearElasticity, const nlohmann::json &)

@@ -145,7 +145,7 @@ std::vector<std::vector<double>> MatrixAdd(const double scale,
 }
 
 std::vector<double> MatrixAMultVecB(const std::vector<std::vector<double>>&A,
-                                     const std::vector<double>&b)
+                                    const std::vector<double>&b)
 {
   if(A[0].size() != b.size()) throw "Matrix and Vector is incompatible";
   std::vector<double> c(A.size(), 0.);
@@ -261,5 +261,38 @@ double VecDot(const std::vector<double> &a, const std::vector<double> &b)
     value += a[i] * b[i];
   
   return value;
+}
+
+Matrix VecReshape(const int rowNum, const int lineNum,
+                  const std::vector<double>&a)
+{
+  if(a.size() != rowNum * lineNum)
+    throw "the size of reshaping vector is incompatible!!";
+    
+  std::vector<double> temp(lineNum, 0.);
+  Matrix res(rowNum, temp);
+
+  int index = 0;
+  for(int rowIndex = 0; rowIndex < rowNum; rowIndex++){
+    for(int lineIndex = 0; lineIndex < lineNum; lineIndex++)
+    {
+      index = rowIndex * lineNum + lineIndex;
+      res[rowIndex][lineIndex] = a[index];
+    }
+  }
+
+  return res;
+}
+
+Matrix MatrixTranspose(const Matrix &A)
+{
+  std::vector<double> temp(A.size(), 0.);
+  Matrix B(A[0].size(), temp);
+
+  for(int i = 0; i < B.size(); i++)
+    for(int j = 0; j < B[0].size(); j++)
+      B[i][j] = A[j][i];
+
+  return B;
 }
 }

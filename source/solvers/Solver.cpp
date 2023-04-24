@@ -15,7 +15,8 @@ Solver::Solver()
 }
 
 Solver::~Solver()
-{}
+{
+}
 
 void Solver::Run()
 {

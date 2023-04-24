@@ -39,7 +39,9 @@ public:
    * @param iSam 
    * @return std::vector<double> 
    */
-  std::vector<double> GetStress(const std::shared_ptr<Kinematics>&kin, int iSam = -1);
+  std::vector<double> GetStress(const std::shared_ptr<Kinematics>&kin,
+                                const std::vector<double> &increDisp = std::vector<double>(),
+                                const Matrix &dphi = Matrix(), int iSam = -1);
 
   /**
    * @Brief:  Get the Tangent Modulue Matrix
@@ -58,9 +60,12 @@ public:
     m_mat->CommitHistory();
   }
 
-  inline double GetMaterialRho()
-  {
+  inline double GetMaterialRho(){
     return m_mat->ReturnRho();
+  }
+
+  inline double GetMaterialPara(const std::string &name){
+    return m_mat->SetMaterialParamter(name);
   }
 
 private:

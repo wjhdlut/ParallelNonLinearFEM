@@ -28,37 +28,9 @@ DofSpace::~DofSpace()
 
 void DofSpace::ReadFromFile(const std::string&fileName)
 {
-  std::ifstream fin(fileName, std::ios::in);
-  std::string line = "";
-  while(true)
-  {
-    getline(fin, line); line.erase(line.find("\r"));
+  ReadNodeConstraint(fileName);
 
-    if(line.npos != line.find("<NodeConstraints>"))
-    {
-      while(true)
-      {
-        getline(fin, line); line.erase(line.find("\r"));
-        line.erase(0, line.find_first_not_of(" "));
-        
-        if(line.size() == 0) continue;
-
-        if(line.npos != line.find("</NodeConstraints>")) return;
-
-        std::string tempStr = Tools::StringStrip(line);
-        std::vector<std::string> a = Tools::StringSplit(tempStr, ";");
-
-        std::vector<std::string> b = Tools::StringSplit(a[0], "=");
-        if(2 == b.size()){
-          std::vector<std::string> c = Tools::StringSplit(b[0], "[");
-          std::string dofType = c[0];
-          int nodeID = std::stoi(Tools::StringSplit(c[1],"]")[0]);
-          
-          Constrain(nodeID, dofType, std::stod(b[1]));
-        }
-      }
-    }
-  }
+  ReadRigidWall(fileName);
 }
 
 void DofSpace::Constrain(const int&nodeId, const std::string&dofType, const double&value)
@@ -208,4 +180,84 @@ PetscErrorCode DofSpace::Norm(Vec &r, double &error)
   ierr = VecDestroy(&tempVec);
 
   return ierr;
+}
+
+void DofSpace::ReadNodeConstraint(const std::string &fileName)
+{
+  std::ifstream fin(fileName, std::ios::in);
+  std::string line = "";
+  while(true)
+  {
+    getline(fin, line);
+    if(line.npos != line.find("\r"))
+      line.erase(line.find("\r"));
+
+    if(line.npos != line.find("<NodeConstraints>"))
+    {
+      while(true)
+      {
+        getline(fin, line);
+        if(line.npos !=line.find("\r"))
+          line.erase(line.find("\r"));
+        line.erase(0, line.find_first_not_of(" "));
+        
+        if(line.size() == 0) continue;
+
+        if(line.npos != line.find("</NodeConstraints>")) return;
+
+        std::string tempStr = Tools::StringStrip(line);
+        std::vector<std::string> a = Tools::StringSplit(tempStr, ";");
+
+        std::vector<std::string> b = Tools::StringSplit(a[0], "=");
+        if(2 == b.size()){
+          std::vector<std::string> c = Tools::StringSplit(b[0], "[");
+          std::string dofType = c[0];
+          int nodeID = std::stoi(Tools::StringSplit(c[1],"]")[0]);
+          
+          Constrain(nodeID, dofType, std::stod(b[1]));
+        }
+      }
+    }
+    if(fin.eof()) break;
+  }
+}
+
+void DofSpace::ReadRigidWall(const std::string &fileName)
+{
+  std::ifstream fin(fileName, std::ios::in);
+  std::string line = "";
+  while(true)
+  {
+    getline(fin, line);
+    if(line.npos != line.find("\r"))
+      line.erase(line.find("\r"));
+
+    if(line.npos != line.find("<RigidWall>"))
+    {
+      while(true)
+      {
+        getline(fin, line);
+        if(line.npos !=line.find("\r"))
+          line.erase(line.find("\r"));
+        line.erase(0, line.find_first_not_of(" "));
+        
+        if(line.size() == 0) continue;
+
+        if(line.npos != line.find("</RigidWall>")) return;
+
+        std::string tempStr = Tools::StringStrip(line);
+        std::vector<std::string> a = Tools::StringSplit(tempStr, ";");
+
+        std::vector<std::string> b = Tools::StringSplit(a[0], "=");
+        
+        if(2 > b.size()) throw "The input of RigidWall is wrong!";
+        m_rigidWall = std::make_shared<RigidWall>();
+        if(std::string::npos != b[0].find('x')) m_rigidWall->direction = 1;
+        if(std::string::npos != b[0].find('y')) m_rigidWall->direction = 2;
+        if(std::string::npos != b[0].find('z')) m_rigidWall->direction = 3;
+        m_rigidWall->coord = std::stod(b[1]);
+      }
+    }
+    if(fin.eof()) break;
+  }
 }

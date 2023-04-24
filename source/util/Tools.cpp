@@ -88,4 +88,22 @@ void GetParameter(std::string &value, const std::string &name, const nlohmann::j
   if(props.contains(name))
     value = props.at(name);
 }
+
+PetscErrorCode PrintVecIntoFile(const Vec&data, const std::string&fileName)
+{
+  PetscErrorCode ierr;
+  FILE *fr;
+  fr=fopen(fileName.c_str(), "w");
+  
+  int numOfVecSize;
+  double temp;
+  ierr = VecGetSize(data, &numOfVecSize);
+  for(int index = 0; index < numOfVecSize; index++){
+    ierr = VecGetValues(data, 1, &index, &temp);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD, fr, "%1.6e\n", temp);
+  }
+  fclose(fr);
+
+  return ierr;
+}
 }

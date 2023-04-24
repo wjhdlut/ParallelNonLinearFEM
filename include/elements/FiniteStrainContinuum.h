@@ -12,8 +12,6 @@ public:
 
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
 
-  virtual void GetMassMatrix(std::shared_ptr<ElementData> &elemDat) override;
-
 private:
   void GetKinematics(const std::vector<std::vector<double>> &dphi,
                      const std::vector<double>&elState);
@@ -24,8 +22,6 @@ private:
   void Stress2Matrix(const std::vector<double>&stress);
 
   void GetBNLMatrix(const Matrix&dphi);
-
-  void GetNMatrix(const std::vector<double> &h);
 
 private:
   std::shared_ptr<Kinematics> kin = nullptr;
@@ -49,8 +45,6 @@ private:
 
   // stress matrix
   std::vector<std::vector<double>> T; 
-
-  Matrix N;
 };
 
 ReflectRegister(FiniteStrainContinuum, const std::vector<int> &, const nlohmann::json &)

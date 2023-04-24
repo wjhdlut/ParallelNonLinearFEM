@@ -5,6 +5,7 @@ LinearElasticity::LinearElasticity(const nlohmann::json &props) : BaseMaterial(p
 {
   m_E = SetMaterialParamter("E");
   m_nu = SetMaterialParamter("nu");
+  ComputeDMatrix();
 }
 
 LinearElasticity::~LinearElasticity()

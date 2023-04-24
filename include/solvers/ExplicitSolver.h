@@ -39,9 +39,17 @@ private:
     return 1.e8*(t<1.0e-7);
   }
 
+  void DetermineTimeStepSize();
+  
 private:
   int m_maxCycle;
-  double m_dTime;
+  double m_dTime;                                  // time increment dt^(n-1/2)
+  double m_dtScale = 0.9;                          // time scale parameter
+  double m_dTime1 = 1.0e6;                         // time increment dt^(n+1/2)
+  double m_dTime101d = 1.0e6;
+  double m_endTime;
+  double m_time;
+  double m_elemDistortion;
 
   std::string m_lam;
 

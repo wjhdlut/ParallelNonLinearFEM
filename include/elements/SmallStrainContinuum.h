@@ -4,6 +4,7 @@
 
 #include <elements/Element.h>
 #include <util/ObjectFactory.h>
+#include <elements/shapefunctions/ElementShapeFunctions.h>
 
 class SmallStrainContinuum : public Element
 {
@@ -14,14 +15,19 @@ public:
 
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
 
-  virtual void GetMassMatrix(std::shared_ptr<ElementData> &elemDat) override {}
-
 private:
+  void ComputeElemTimeStep(const std::shared_ptr<ElementShapeFunctions> &res,
+                           const std::shared_ptr<ElementData> &elemDat);
+  
   void GetKinematics(const std::vector<double> &elState);
 
   void GetBMatrix(const Matrix &dphi);
 
+  void HourGlassTech(std::shared_ptr<ElementData>&elemDat,
+                     const std::shared_ptr<ElementShapeFunctions> &res);
+
 private:
+  double m_vol = 0;
   std::shared_ptr<Kinematics> kin = nullptr;
   
   double detJac = 0.;                                   // the Determinant of Jacobian Matrix

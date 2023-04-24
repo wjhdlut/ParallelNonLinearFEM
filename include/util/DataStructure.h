@@ -52,7 +52,6 @@ public:
   Vec m_fhat;
   Vec m_velo;
   Vec m_acce;
-
 private:
   GlobalData();
   ~GlobalData();
@@ -60,6 +59,12 @@ private:
   PetscErrorCode CreateVecSpace();
 
   PetscErrorCode DestroyVecSpace();
+
+  void ReadExternalForce(const std::string&fileName);
+
+  void ReadInitialVelocity(const std::string&fileName);
+
+  void ReadData(Vec &data, const std::string&fileName, const std::string &key);
 
 private:
   static GlobalData *m_globalData;

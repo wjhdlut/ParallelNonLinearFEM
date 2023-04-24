@@ -20,17 +20,26 @@ ElementSet::~ElementSet()
 void ElementSet::ReadFromFile(const std::string &fileName)
 {
   std::ifstream fin(fileName, std::ios::in);
+  if(!fin.is_open()){
+    std::cout << fileName << " open failed!!" << std::endl;
+    exit(-1);
+  }
+
   std::string line = "";
   std::regex pattern("[\\s]{2,}");
   while(true)
   {
-    getline(fin, line), line.erase(line.find("\r"));
+    getline(fin, line);
+    if(line.npos != line.find("\r"))
+      line.erase(line.find("\r"));
 
     if(line.npos != line.find("<Elements>"))
     {
       while(true)
       {
-        getline(fin, line), line.erase(line.find("\r"));
+        getline(fin, line);
+        if(line.npos != line.find("\r"))
+          line.erase(line.find("\r"));
 
         if(line.npos != line.find("</Elements>")) return;
 
@@ -109,9 +118,10 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
   // ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
 
   // Create PETSc object Vec
-  ierr = VecCreate(PETSC_COMM_WORLD, &B); CHKERRQ(ierr);
-  ierr = VecSetSizes(B, PETSC_DECIDE, numOfTolDof); CHKERRQ(ierr);
-  ierr = VecSetFromOptions(B); CHKERRQ(ierr);
+  ierr = VecSet(B, 0.);
+  // ierr = VecCreate(PETSC_COMM_WORLD, &B); CHKERRQ(ierr);
+  // ierr = VecSetSizes(B, PETSC_DECIDE, numOfTolDof); CHKERRQ(ierr);
+  // ierr = VecSetFromOptions(B); CHKERRQ(ierr);
 
   GlobalData::GetInstance()->ResetNodalOutput();
 
@@ -120,6 +130,7 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
   
   Vec &state = GlobalData::GetInstance()->m_state;
   Vec &Dstate = GlobalData::GetInstance()->m_Dstate;
+  Vec &velo   = GlobalData::GetInstance()->m_velo;
 
   // ierr = VecView(state, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   std::vector<double> elemMatrixValues;
@@ -128,26 +139,31 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
     nlohmann::json &elemPrpos = m_props.at(elementGroup.first);
     for(auto element : elementGroup.second)
     {
-      std::shared_ptr<Element> elemPtr = m_elem[element];
+      elemPtr = m_elem[element];
 
       // Get the element nodes
-      std::vector<int> elemNodes = elemPtr->GetNodes();
+      elemNodes = elemPtr->GetNodes();
 
       // Get the element coordinates
-      std::vector<std::vector<double>> elemCoords = m_nodes->GetNodeCoords(elemNodes);
+      elemCoords = m_nodes->GetNodeCoords(elemNodes);
 
       // Get the element degrees of freedom
-      std::vector<int> elemDofs = dofs->Get(elemNodes);
+      elemDofs = dofs->Get(elemNodes);
 
       // Get the element state
-      std::vector<double> elemState(elemDofs.size(), 0.), elemDstate(elemDofs.size(), 0.);
+      elemState.resize(elemDofs.size(), 0.), elemDstate.resize(elemDofs.size(), 0.);
       ierr = VecGetValues(state, elemDofs.size(), &elemDofs[0], &elemState[0]); CHKERRQ(ierr);
       ierr = VecGetValues(Dstate, elemDofs.size(), &elemDofs[0], &elemDstate[0]); CHKERRQ(ierr);
 
-      std::shared_ptr<ElementData> elemData = std::make_shared<ElementData>(elemState, elemDstate);
+      elemData = std::make_shared<ElementData>(elemState, elemDstate);
       elemData->m_coords = elemCoords;
+      ierr = VecGetValues(velo, elemDofs.size(), &elemDofs[0], &elemData->m_velo[0]);
+      
       elemPtr->MatReset();
+      elemPtr->SetTimeIncrementPara(m_dtK1, m_elemDistortion);
       elemPtr->GetTangentStiffness(elemData);
+      elemPtr->ReturnTimeIncrementPara(m_dtK1, m_elemDistortion);
+      // std::cout << "element = " << element << "m_dtK1 = " << m_dtK1 << " m_elemDistortion = " << m_elemDistortion << std::endl;
       
       for(auto label : elemData->m_outLabel)
         elemPtr->AppendNodalOutput(label, elemData->m_outputData);
@@ -184,6 +200,7 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
 
   ierr = VecAssemblyBegin(B); CHKERRQ(ierr);
   ierr = VecAssemblyEnd(B); CHKERRQ(ierr);
+
   return ierr;
 }
 

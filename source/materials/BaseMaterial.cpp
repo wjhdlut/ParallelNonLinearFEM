@@ -39,13 +39,15 @@ void BaseMaterial::CommitHistory()
     m_history.emplace_back(h);
 }
 
-std::vector<double> BaseMaterial::GetStress(const std::shared_ptr<Kinematics> &kin)
-{
+std::vector<double> BaseMaterial::GetStress(const std::shared_ptr<Kinematics> &kin,
+                                            const std::vector<double> &increDisp,
+                                            const Matrix &dhpi){
   return Math::MatrixAMultVecB(m_D, kin->strain);
 }
 
 double BaseMaterial::SetMaterialParamter(const std::string &name)
 {
+  if(!m_props.contains(name)) return 0.;
   if(m_props.at(name).is_string()){
     std::string E = m_props.at(name);
     return std::stod(E);

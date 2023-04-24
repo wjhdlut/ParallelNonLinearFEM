@@ -9,6 +9,12 @@
  *  and strain vector
  * 
  */
+
+/** ------------------------------------
+ *     F = [px/pX, px/pY, px/pZ 
+ *          py/pX, py/pY, py/pZ,
+ *          pz/pX, pz/pY, pz/pZ]
+ * ------------------------------------- */
 class Kinematics{
 public:
   inline Kinematics(const int dim){

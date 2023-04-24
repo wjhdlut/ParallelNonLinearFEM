@@ -20,6 +20,9 @@ struct ElementData
     for(int row = 0; row < nDof; row++){
       m_fint.emplace_back(0.);
       m_lumped.emplace_back(0.);
+      m_acce.emplace_back(0.);
+      m_velo.emplace_back(0.);
+
       std::vector<double> temp(nDof, 0.);
       m_stiff.emplace_back(temp);
       m_mass.emplace_back(temp);
@@ -28,11 +31,13 @@ struct ElementData
 
   std::vector<double> m_state;                   // element state variable vector such as displacement
   std::vector<double> m_Dstate;                  // increment of element state variable vector
-  std::vector<std::vector<double>> m_stiff;      // element stiffness matrix
+  std::vector<double> m_velo;                    // 
+  std::vector<double> m_acce;
   std::vector<double> m_fint;                    // element internal force vector
-  std::vector<std::vector<double>> m_mass;       // element mass matrix
-  std::vector<double> m_lumped;                  // 
   std::vector<std::string> m_outLabel;           // output variable name
+  std::vector<double> m_lumped;                  // 
+  std::vector<std::vector<double>> m_mass;       // element mass matrix
+  std::vector<std::vector<double>> m_stiff;      // element stiffness matrix
   std::vector<std::vector<double>> m_coords;     // element node coordinates
   std::vector<std::vector<double>> m_outputData; // output variable data
 };
@@ -101,7 +106,28 @@ public:
    */
   void CommitHistory();
 
-  virtual void GetMassMatrix(std::shared_ptr<ElementData>&elemDat) {}
+  /**
+   * @Brief: Compute Mass Matrix
+   * 
+   * @param elemDat 
+   */
+  virtual void GetMassMatrix(std::shared_ptr<ElementData>&elemDat);
+
+  /**
+   * @Brief: Compute the time step size
+   * 
+   * @param dtK1 
+   * @param elemDistortion 
+   */
+  inline void SetTimeIncrementPara(double dtK1 = 0., double elemDistortion = 0.){
+    m_dtK1 = dtK1;
+    m_elemDistortion = elemDistortion;
+  }
+
+  inline void ReturnTimeIncrementPara(double &dtK1, double &elemDistortion){
+    dtK1 = m_dtK1;
+    elemDistortion = m_elemDistortion;
+  }
 
 protected:
   /**
@@ -113,8 +139,14 @@ protected:
     return m_nodes.size() * m_dofType.size();
   }
 
+  void GetNMatrix(const std::vector<double> &h);
+
 protected:
-  double m_rho = 0.; 
+  bool m_reductedIntegration = false;
+  double m_rho = 0.;
+  double m_waveSpeed = 0.;
+  double m_dtK1 = 1.e6;
+  double m_elemDistortion = 1.;
   std::vector<std::string> m_dofType;                                 // Element Dof Type
   std::shared_ptr<MaterialManager> m_mat;                             // Mateirals
   nlohmann::json m_props;                                             // Whole modele Properties
@@ -128,6 +160,9 @@ protected:
   int order = 0;                                         // the Order of Gauss Integration
   std::string method = "Gauss";                          // the Method of Integration
   Matrix outputData;
+
+private:
+  Matrix N;
 };
 
 #endif // ELEMENT_H

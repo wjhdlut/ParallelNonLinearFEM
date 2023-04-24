@@ -180,6 +180,24 @@ double VecSum(const std::vector<double>&a);
  * @return double 
  */
 double VecDot(const std::vector<double> &a, const std::vector<double> &b);
+
+/**
+ * @Brief: convert Vector to rowNum*lineNum Matrix
+ * 
+ * @param rowNum 
+ * @param lineNum 
+ * @param a 
+ * @return Matrix 
+ */
+Matrix VecReshape(const int rowNum, const int lineNum, const std::vector<double> &a);
+
+/**
+ * @Brief: Transpose Matrix
+ * 
+ * @param A 
+ * @return Matrix 
+ */
+Matrix MatrixTranspose(const Matrix &A);
 };
 
 #endif // MATH_H

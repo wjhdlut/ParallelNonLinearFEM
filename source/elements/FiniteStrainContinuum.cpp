@@ -11,7 +11,7 @@ FiniteStrainContinuum::FiniteStrainContinuum(const std::vector<int> &elemNodes,
                       : Element(elemNodes, modelProps)
 {
   // m_dofType = {"u", "v"};
-  m_rho = m_mat->GetMaterialRho();
+  // m_rho = m_mat->GetMaterialRho();
 }
 
 FiniteStrainContinuum::~FiniteStrainContinuum()
@@ -48,7 +48,7 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     // compute deforamtion gradient
     GetKinematics(pHpX, elemDat->m_state);
 
-    sigma = m_mat->GetStress(kin);
+    sigma = m_mat->GetStress(kin, elemDat->m_Dstate);
     
     // compute tangent modulue matrix
     D = m_mat->GetTangMatrix();
@@ -82,36 +82,6 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     count += 1;
   }
 elemDat->m_outputData = Math::MatrixScale(1./xi.size(), outputData);
-}
-
-void FiniteStrainContinuum::GetMassMatrix(std::shared_ptr<ElementData>&elemDat)
-{
-  std::string elemType = ShapeFunctions::GetElemType(elemDat->m_coords);
-  ShapeFunctions::GetIntegrationPoints(xi, weight, elemType, order, method);
-
-  std::string elemName = elemType + "ShapeFunctions";
-  std::shared_ptr<ElementShapeFunctions>res = ObjectFactory::CreateObject<ElementShapeFunctions>(elemName);
-  if(nullptr == res) throw "Unkonwn type " + elemType;
-  
-  int count = 0;
-  for(auto iXi : xi)
-  {
-    res->GetShapeFunction(iXi);
-    
-    // compute jacobian matrix
-    jac = Math::MatrixATransMultB(elemDat->m_coords, res->pHpxi);
-    detJac = Math::MatrixDet(jac);
-
-    GetNMatrix(res->H);
-    elemDat->m_mass = Math::MatrixAdd(m_rho*weight[count]*detJac, elemDat->m_mass,
-                                      Math::MatrixATransMultB(N, N));
-    count += 1;
-  }
-  
-  // Compute lumped mass matrix
-  for(int i = 0; i < elemDat->m_mass.size(); i++){
-    elemDat->m_lumped[i] = Math::VecSum(elemDat->m_mass[i]);
-  }
 }
 
 void FiniteStrainContinuum::GetKinematics(const std::vector<std::vector<double>> &dphi,
@@ -195,18 +165,3 @@ void FiniteStrainContinuum::GetBNLMatrix(const Matrix &dphi)
   }
 }
 
-void FiniteStrainContinuum::GetNMatrix(const std::vector<double> &H)
-{
-  int numOfDof = m_dofType.size();
-  std::vector<double> temp(numOfDof*H.size());
-  N.resize(numOfDof, temp);
-
-  int lineIndex = 0;
-  for(auto iH : H)
-  {
-    for(int i = 0; i < numOfDof; i++)
-      N[i][lineIndex*numOfDof+i] = iH;
-    
-    lineIndex += 1;
-  }
-}

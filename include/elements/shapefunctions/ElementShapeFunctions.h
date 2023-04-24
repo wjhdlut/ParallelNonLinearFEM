@@ -4,6 +4,8 @@
 
 #include <vector>
 #include <string>
+#include <nlohmann/json.hpp>
+#include <elements/Element.h>
 
 /**
  * @Brief:   Base Class to Compute Element Shape Functions
@@ -37,11 +39,26 @@ public:
    */
   virtual void GetShapeFunction(const std::vector<double> &xi) = 0;
 
+  virtual std::vector<double> HourGlassTech(std::shared_ptr<ElementData> &elemDat,
+                                            const double &c,
+                                            const nlohmann::json &para,
+                                            const std::vector<std::vector<double>> &pHpX)
+  {
+    return std::vector<double>(0.);
+  }
+  
+  inline std::vector<std::vector<int>> *ReturnFaceMatrix(){
+    return &m_face;
+  }
+
 public:
   int numOfStress;                              // The number of stress
   std::vector<double> H;                        // The shape function
   std::vector<std::vector<double>> pHpxi;       // The derivative of shape function about local coordinate system
   std::vector<std::string> dofType;             // Element Dof Type
+
+protected:
+  std::vector<std::vector<int>> m_face;
 };
 
 #endif // ELEMENTSHAPEFUNCTIONS_H

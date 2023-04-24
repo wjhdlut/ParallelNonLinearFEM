@@ -81,6 +81,10 @@ std::string ReadBlock(nlohmann::json &db, const std::string &ln)
 void FileParse(nlohmann::json &db, const std::string &fileName)
 {
   std::ifstream inputFile(fileName, std::ios::in);
+  if(!inputFile.is_open()){
+    std::cout << fileName << " open failed!!" << std::endl;
+    exit(-1);
+  }
   
   std::string ln = "";
   std::string line = "";
@@ -90,7 +94,8 @@ void FileParse(nlohmann::json &db, const std::string &fileName)
     
     if(line.size() > 0 && line.substr(line.find_first_not_of(" "), 1) != "#")
     {
-      line.erase(line.find_last_of("\r"));
+      if(line.npos != line.find_last_of("\r"))
+        line.erase(line.find_last_of("\r"));
       ln.append(line);
     }
   }

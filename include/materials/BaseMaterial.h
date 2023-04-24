@@ -13,13 +13,18 @@ public:
   BaseMaterial(const nlohmann::json &props);
   virtual ~BaseMaterial();
 
-  virtual std::vector<double> GetStress(const std::shared_ptr<Kinematics>&kin);
+  virtual std::vector<double> GetStress(const std::shared_ptr<Kinematics>&kin,
+                                        const std::vector<double> &increDisp = std::vector<double>(),
+                                        const Matrix &dhpi = Matrix());
 
   void SetIter(int iIter);
 
   void CommitHistory();
 
+  double SetMaterialParamter(const std::string &name);
+
   inline std::vector<std::vector<double>> GetTangMatrix(){
+    if(0 == m_D.size()) ComputeDMatrix();
     return m_D;
   }
 
@@ -35,11 +40,11 @@ protected:
 
   virtual void ComputeDMatrix() = 0;
 
-  double SetMaterialParamter(const std::string &name);
-
 protected:
   int m_iIter = -1;
   double m_rho = 0.;
+  double m_E = 0.;
+  double m_nu = 0.;
   std::vector<std::unordered_map<std::string, double>> m_current;
   std::vector<std::unordered_map<std::string, double>> m_history;
   std::unordered_map<std::string, double> m_initHistory;
