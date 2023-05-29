@@ -13,7 +13,9 @@ SmallStrainContinuum::SmallStrainContinuum(const std::vector<int> &elemNodes,
 }
 
 SmallStrainContinuum::~SmallStrainContinuum()
-{}
+{
+
+}
 
 void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elemDat)
 {
@@ -27,7 +29,7 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
   std::shared_ptr<ElementShapeFunctions> res = ObjectFactory::CreateObject<ElementShapeFunctions>(elemName);
   if(nullptr == res) throw "Unknown type " + elemType;
   outputData = Math::MatrixZeros(elemDat->m_coords.size(), res->numOfStress);
-
+  
   int count = 0;
   Matrix tempMatrix;
   std::vector<double> tempVec;
@@ -106,11 +108,11 @@ void SmallStrainContinuum::GetBMatrix(const Matrix &dphi)
     int count = 0;
     for (auto dp : dphi)
     {
-      B[0][2 * count + 0] = dp[0];
-      B[1][2 * count + 1] = dp[1];
+      B[0][numOfDim * count + 0] = dp[0];
+      B[1][numOfDim * count + 1] = dp[1];
 
-      B[2][2 * count + 0] = dp[1];
-      B[2][2 * count + 1] = dp[0];
+      B[2][numOfDim * count + 0] = dp[1];
+      B[2][numOfDim * count + 1] = dp[0];
 
       count += 1;
     }
@@ -121,13 +123,15 @@ void SmallStrainContinuum::GetBMatrix(const Matrix &dphi)
     int count = 0;
     for(auto dp : dphi)
     {
-      B[0][2 * count + 0] = dp[0];
-      B[1][2 * count + 1] = dp[1];
-      B[2][2 * count + 2] = dp[2];
+      B[0][numOfDim * count + 0] = dp[0];
+      B[1][numOfDim * count + 1] = dp[1];
+      B[2][numOfDim * count + 2] = dp[2];
 
-      B[3][2 * count + 0] = dp[1], B[3][2 * count + 1] = dp[0];
-      B[4][2 * count + 1] = dp[2], B[4][2 * count + 2] = dp[1];
-      B[5][2 * count + 0] = dp[2], B[5][2 * count + 2] = dp[0];
+      B[3][numOfDim * count + 0] = dp[1], B[3][numOfDim * count + 1] = dp[0];
+      B[4][numOfDim * count + 1] = dp[2], B[4][numOfDim * count + 2] = dp[1];
+      B[5][numOfDim * count + 0] = dp[2], B[5][numOfDim * count + 2] = dp[0];
+
+      count += 1;
     }
   }
 }
@@ -185,6 +189,6 @@ void SmallStrainContinuum::HourGlassTech(std::shared_ptr<ElementData> &elemDat,
     double ah = qh * m_rho * pow(m_vol, 2./3.) / 4.;
 
     temp = Math::VecScale(ah, temp);
-    elemDat->m_fint = Math::VecAdd(1., elemDat->m_fint, temp);
+    elemDat->m_fint = Math::VecAdd(-1., elemDat->m_fint, temp);
   }
 }

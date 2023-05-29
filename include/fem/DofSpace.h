@@ -7,14 +7,15 @@
 #include <petscksp.h>
 
 struct RigidWall{
-  int direction;
-  double coord;
+  int direction = 0;
+  double coord = 0.;
 };
 
 class DofSpace
 {
 public:
   DofSpace(std::shared_ptr<ElementSet> elements, std::shared_ptr<NodeSet> nodes);
+
   ~DofSpace();
 
   void ReadFromFile(const std::string&fileName);
@@ -31,6 +32,11 @@ public:
     int indexRow = std::distance(m_IDmap.begin(), std::find(m_IDmap.begin(), m_IDmap.end(), nodeIds));
     int indexLine = std::distance(m_dofTypes.begin(), std::find(m_dofTypes.begin(), m_dofTypes.end(), dofType));
     return m_dofs[indexRow][indexLine];
+  }
+
+  inline std::vector<int> GetForType(const int nodeIds){
+    int indexRow = std::distance(m_IDmap.begin(), std::find(m_IDmap.begin(), m_IDmap.end(), nodeIds));
+    return m_dofs[indexRow];
   }
 
   inline std::vector<int> Get(const std::vector<int>&elemNodes){
@@ -94,6 +100,8 @@ private:
   void ReadNodeConstraint(const std::string &fileName);
 
   void ReadRigidWall(const std::string &fileName);
+
+  void RigidWallConstraint(Vec&da);
 
 private:
   std::vector<std::string> m_dofTypes;

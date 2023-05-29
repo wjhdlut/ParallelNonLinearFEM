@@ -53,6 +53,8 @@ public:
    */
   std::vector<std::vector<double>> GetNodeCoords(const std::vector<int> &nodeIds);
 
+  void UpdateNodeCoords(Vec &dDisp, const int numOfDof);
+
 public:
   std::map<int, std::vector<double>> m_nodeCoords;   // All Node Coordinates
 };

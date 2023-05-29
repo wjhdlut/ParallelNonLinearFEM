@@ -40,10 +40,12 @@ private:
   }
 
   void DetermineTimeStepSize();
+
+  void InitialStepComp();
   
 private:
   int m_maxCycle;
-  double m_dTime;                                  // time increment dt^(n-1/2)
+  double m_dTime = 0.;                             // time increment dt^(n-1/2)
   double m_dtScale = 0.9;                          // time scale parameter
   double m_dTime1 = 1.0e6;                         // time increment dt^(n+1/2)
   double m_dTime101d = 1.0e6;

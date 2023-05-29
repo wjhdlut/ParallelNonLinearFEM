@@ -30,20 +30,16 @@ public:
   void CommitHistory();
 
   inline void GetCurrentTimeIncrementPara(double dtK1,
-                                          double dtK101d,
                                           double elemDistortion = 0)
   {
     m_dtK1 = dtK1;
-    m_dtK101d = dtK101d;
     m_elemDistortion = elemDistortion;
   }
 
   inline void ReturnCurentTimeIncrementPara(double &dtK1,
-                                            double &dtK101d,
                                             double &elemDistortion)
   {
     dtK1 = m_dtK1;
-    dtK101d = m_dtK101d;
     elemDistortion = m_elemDistortion;
   }
 
@@ -72,6 +68,10 @@ private:
   
   PetscErrorCode AssembleMatrix(Mat &A, Vec&B, const int rank, const std::string&action);
 
+  inline void ResetDtime(){
+    m_dtK1 = 1.e6;
+  }
+
 private:
   std::shared_ptr<NodeSet> m_nodes;
   nlohmann::json m_props;
@@ -89,7 +89,6 @@ private:
 
 private:
   double m_dtK1 = 1.e6;
-  double m_dtK101d = 1.e6;
   double m_elemDistortion = 1.;
 };
 

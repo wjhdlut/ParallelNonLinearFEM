@@ -1,6 +1,6 @@
 
 #include <fstream>
-
+#include <util/ShapeFunctions.h>
 #include <io/MeshWriter.h>
 #include <util/DataStructure.h>
 #include <iostream>
@@ -18,24 +18,32 @@ void MeshWriter::Run()
   if(0 != (GlobalData::GetInstance()->m_cycle%m_interval)) return;
   
   // output vtk file
-  std::string filename = GlobalData::GetInstance()->m_prefix + "-" 
-                       + std::to_string(m_k) + ".vtu";
+  WriteVTKFile();
 
-  std::fstream vtkfile;
-  vtkfile.open(filename, std::ios::out);
-  
-  vtkfile << "<?xml version=\"1.0\"?>" << std::endl;
-  vtkfile << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\""
-          <<" byte_order=\"LittleEndian\" compressor=\"vtkZLibDataCompressor\">" << std::endl;
-  vtkfile << "<UnstructuredGrid>" << std::endl;
-  
-  vtkfile << "<Piece NumberOfPoints=\""
-          << std::to_string(GlobalData::GetInstance()->m_nodes->m_nodeCoords.size())
-          << "\" NumberOfCells=\""
-          << std::to_string(GlobalData::GetInstance()->m_elements->ElemGroupCount(m_elementGroup))
-          << "\">" << std::endl;
+  // write pvd file
+  WritePVDFile();
 
+  m_k += 1;
+}
+
+void MeshWriter::WritePointInfo(std::fstream &vtkfile)
+{
   vtkfile << "<PointData>" << std::endl;
+  WritePointDisplaceData(vtkfile);
+
+  // output stress information
+  WritePointStressData(vtkfile);
+
+  vtkfile << "</PointData>" << std::endl;
+  vtkfile << "<CellData>" << std::endl;
+  vtkfile << "</CellData>" << std::endl;
+
+  // output node coordinate information
+  WritePointCoordsData(vtkfile);
+}
+
+void MeshWriter::WritePointDisplaceData(std::fstream &vtkfile)
+{
   vtkfile << "<DataArray type=\"Float64\" Name=\"displacement\""
           << " NumberOfComponents=\"3\" format=\"ascii\" >" << std::endl;
 
@@ -48,11 +56,14 @@ void MeshWriter::Run()
       VecGetValues(GlobalData::GetInstance()->m_state, 1, &dofIndex, &nodeCoordValue);
       vtkfile << nodeCoordValue << "  ";
     }
-    if(node.second.size() < 3) vtkfile << "  0." << std::endl;
+    if(node.second.size() < 3) vtkfile << "  0.";
+    vtkfile << std::endl;
   }
   vtkfile << "</DataArray>" << std::endl;
+}
 
-  // output stress information
+void MeshWriter::WritePointStressData(std::fstream &vtkfile)
+{
   // output sigma_xx
   Matrix stress = GlobalData::GetInstance()->GetData("stresses");
   vtkfile << "<DataArray type=\"Float64\" Name=\"sigma_xx\""
@@ -86,12 +97,10 @@ void MeshWriter::Run()
     }
     vtkfile << "</DataArray>" << std::endl;
   }
+}
 
-  vtkfile << "</PointData>" << std::endl;
-  vtkfile << "<CellData>" << std::endl;
-  vtkfile << "</CellData>" << std::endl;
-
-  // output node coordinate information
+void MeshWriter::WritePointCoordsData(std::fstream &vtkfile)
+{
   vtkfile << "<Points>" << std::endl;
   vtkfile << "<DataArray type=\"Float64\" Name=\"Points\""
           << " NumberOfComponents=\"3\" format=\"ascii\">" << std::endl;
@@ -107,27 +116,50 @@ void MeshWriter::Run()
   }
   vtkfile << "</DataArray>" << std::endl;
   vtkfile << "</Points>" << std::endl;
+}
+
+void MeshWriter::WriteCellInfo(std::fstream &vtkfile)
+{
   vtkfile << "<Cells>" << std::endl;
   
   // output element connectivity
+  WriteElemConnecData(vtkfile);
+
+  WriteElemOffsetData(vtkfile);
+
+  WriteElemTypeData(vtkfile);
+
+  vtkfile << "</Cells>" << std::endl;}
+
+void MeshWriter::WriteElemConnecData(std::fstream &vtkfile)
+{
   vtkfile << "<DataArray type=\"Int64\" Name=\"connectivity\""
           << " format=\"ascii\">" << std::endl;
 
   std::vector<int> elemNode;
+  std::vector<std::vector<double>> elemCoords;
+  // std::string elemType = ShapeFunctions::GetElemType(elemDat->m_coords);
   for(auto elem : GlobalData::GetInstance()->m_elements->IterElementGroup(m_elementGroup))
   {
     elemNode = GlobalData::GetInstance()->m_elements->GetElementPtr()[elem]->GetNodes();
-
+    elemCoords = GlobalData::GetInstance()->m_nodes->GetNodeCoords(elemNode);
+    m_elemType.emplace_back( ShapeFunctions::GetElemType(elemCoords));
+    
     for(auto nodeID : elemNode)
       vtkfile << GlobalData::GetInstance()->m_dofs->GetIndex(nodeID) << "  "; 
 
     vtkfile << std::endl;
   }
   vtkfile << "</DataArray>" << std::endl;
+}
 
+void MeshWriter::WriteElemOffsetData(std::fstream &vtkfile)
+{
   vtkfile << "<DataArray type=\"Int64\" Name=\"offsets\""
           << " format=\"ascii\">" << std::endl;
+  
   int count = 1;
+  std::vector<int> elemNode;
   for(auto elem : GlobalData::GetInstance()->m_elements->IterElementGroup(m_elementGroup))
   {
     elemNode = GlobalData::GetInstance()->m_elements->GetElementPtr()[elem]->GetNodes();
@@ -135,22 +167,20 @@ void MeshWriter::Run()
     count += 1;
   }
   vtkfile << "</DataArray>" << std::endl;
+}
 
+void MeshWriter::WriteElemTypeData(std::fstream &vtkfile)
+{
   vtkfile << "<DataArray type=\"UInt8\" Name=\"types\""
           << " format=\"ascii\" RangeMin=\"9\" RangeMax=\"9\">" << std::endl;
   for(int i = 0; i < GlobalData::GetInstance()->m_elements->ElemGroupCount(m_elementGroup); i++)
-    vtkfile << 9 << std::endl;
+    vtkfile << m_cellType.at(m_elemType[i]) << std::endl;
   vtkfile << "</DataArray>" << std::endl;
+}
 
-  vtkfile << "</Cells>" << std::endl;
-  vtkfile << "</Piece>" << std::endl;
-  vtkfile << "</UnstructuredGrid>" << std::endl;
-  vtkfile << "</VTKFile>" << std::endl;
-  
-  vtkfile.close();
-
-  // write pvd file
-  filename = GlobalData::GetInstance()->m_prefix + ".pvd";
+void MeshWriter::WritePVDFile()
+{
+  std::string filename = GlobalData::GetInstance()->m_prefix + ".pvd";
   std::fstream pvdfile;
   pvdfile.open(filename, std::ios::out);
 
@@ -165,6 +195,33 @@ void MeshWriter::Run()
   pvdfile << "</VTKFile>" << std::endl;
 
   pvdfile.close();
+}
 
-  m_k += 1;
+void MeshWriter::WriteVTKFile()
+{
+  std::string filename = GlobalData::GetInstance()->m_prefix + "-" 
+                       + std::to_string(m_k) + ".vtu";
+
+  std::fstream vtkfile;
+  vtkfile.open(filename, std::ios::out);
+  
+  vtkfile << "<?xml version=\"1.0\"?>" << std::endl;
+  vtkfile << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\""
+          <<" byte_order=\"LittleEndian\" compressor=\"vtkZLibDataCompressor\">" << std::endl;
+  vtkfile << "<UnstructuredGrid>" << std::endl;
+  
+  vtkfile << "<Piece NumberOfPoints=\""
+          << std::to_string(GlobalData::GetInstance()->m_nodes->m_nodeCoords.size())
+          << "\" NumberOfCells=\""
+          << std::to_string(GlobalData::GetInstance()->m_elements->ElemGroupCount(m_elementGroup))
+          << "\">" << std::endl;
+
+  WritePointInfo(vtkfile);
+
+  WriteCellInfo(vtkfile);
+  vtkfile << "</Piece>" << std::endl;
+  vtkfile << "</UnstructuredGrid>" << std::endl;
+  vtkfile << "</VTKFile>" << std::endl;
+  
+  vtkfile.close();
 }

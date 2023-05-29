@@ -72,7 +72,7 @@ std::vector<double> Hexa8ShapeFunctions::HourGlassTech(std::shared_ptr<ElementDa
   if("STANDARD" == hourGlassPara.at("type"))
     return HourGlassStand(elemDat, c, para);
   else if("Flanagan-Belytschko" == hourGlassPara.at("type"))
-    return HourGlassFlangan(elemDat, para, pHpX);
+    return HourGlassFlangan(elemDat, c, pHpX);
 
   return std::vector<double>(0.);
 }
@@ -100,14 +100,17 @@ std::vector<double> Hexa8ShapeFunctions::HourGlassFlangan(std::shared_ptr<Elemen
   std::vector<std::vector<double>> gama(4, temp);
   for(int j = 0; j < 4; j++)
     for(int k = 0; k < 4; k++)
+    {
+      gama[j][k] = m_h[j][k];
       for(int i = 0; i < 3; i++)
-        gama[j][k] = m_h[j][k] - beat[i][j] * pHpX[k][i];
+        gama[j][k] = gama[j][k] - beat[i][j] * pHpX[k][i];
+    }
   
   for(int j = 0; j < 4; j++){
-    gama[j][4] = m_ss[0][j] - gama[j][2];
-    gama[j][5] = m_ss[1][j] - gama[j][3];
-    gama[j][6] = m_ss[2][j] - gama[j][0];
-    gama[j][7] = m_ss[3][j] - gama[j][1];
+    gama[j][4] = m_ss[j][0] - gama[j][2];
+    gama[j][5] = m_ss[j][1] - gama[j][3];
+    gama[j][6] = m_ss[j][2] - gama[j][0];
+    gama[j][7] = m_ss[j][3] - gama[j][1];
   }
 
   int index = 0;

@@ -6,6 +6,8 @@
 #include <util/ObjectFactory.h>
 #include <elements/shapefunctions/ElementShapeFunctions.h>
 
+#include <fstream>
+
 class SmallStrainContinuum : public Element
 {
 public:
@@ -32,8 +34,8 @@ private:
   
   double detJac = 0.;                                   // the Determinant of Jacobian Matrix
   /*jac = [pXpxi1 pXpxi2 pXpxi3,
-             pYpxi1 pYpxi2 pYpxi3,
-             pZpxi1 pZpxi2 pZpxi3];*/
+           pYpxi1 pYpxi2 pYpxi3,
+           pZpxi1 pZpxi2 pZpxi3];*/
   std::vector<std::vector<double>> jac;                  // the Jacobian Matrix
   std::vector<std::vector<double>> invJac;               // the Inverse Jacobian Matrix
 

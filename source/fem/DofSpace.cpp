@@ -1,6 +1,7 @@
 #include <fstream>
 #include <vector>
 #include <fem/DofSpace.h>
+#include <util/DataStructure.h>
 
 #include <iostream>
 
@@ -127,11 +128,14 @@ PetscErrorCode DofSpace::Solve(const Vec &K, const Vec &df, Vec&da)
 {
   PetscErrorCode ierr;
   
+  // computed acce
   ierr = VecPointwiseDivide(da, df, K); CHKERRQ(ierr);
   for(auto iConstrained : m_constrained)
     ierr = VecSetValue(da, iConstrained.first, m_constrainedFac*iConstrained.second, INSERT_VALUES); CHKERRQ(ierr);
   ierr = VecAssemblyBegin(da); CHKERRQ(ierr);
   ierr = VecAssemblyEnd(da); CHKERRQ(ierr);
+
+  if(nullptr != m_rigidWall) RigidWallConstraint(da);
 
   return ierr;
 }
@@ -259,5 +263,34 @@ void DofSpace::ReadRigidWall(const std::string &fileName)
       }
     }
     if(fin.eof()) break;
+  }
+}
+
+void DofSpace::RigidWallConstraint(Vec&da)
+{
+  if(0 != m_rigidWall->direction)
+  {
+    int index = std::abs(m_rigidWall->direction) - 1;
+    double temp = (m_rigidWall->direction < 0) ? -1. : 1.;
+    Vec &velo = GlobalData::GetInstance()->m_velo;
+    std::map<int, std::vector<double>> & nodeCoords = GlobalData::GetInstance()->m_nodes->m_nodeCoords;
+    
+    std::vector<int> dofIndex;
+    std::vector<double> iNodeVelo(m_dofTypes.size(), 0.), iNodeAcce(m_dofTypes.size(), 0.);
+    for(auto iNode : nodeCoords){
+      dofIndex = m_dofs[GetIndex(iNode.first)];
+      VecGetValues(velo, dofIndex.size(), &dofIndex[0], &iNodeVelo[0]);
+      VecGetValues(da, dofIndex.size(), &dofIndex[0], &iNodeAcce[0]);
+
+      if(temp*(m_rigidWall->coord-iNode.second[index]) >= 0.){
+        if(temp*iNodeVelo[index] < 0.) iNodeVelo[index] = 0.;
+        if(temp*iNodeAcce[index] < 0.) iNodeAcce[index] = 0.;
+
+        VecSetValues(velo, dofIndex.size(), &dofIndex[0], &iNodeVelo[0], INSERT_VALUES);
+        VecSetValues(da, dofIndex.size(), &dofIndex[0], &iNodeAcce[0], INSERT_VALUES);
+      }
+      VecAssemblyBegin(velo); VecAssemblyEnd(velo);
+      VecAssemblyBegin(da); VecAssemblyEnd(da);
+    }
   }
 }

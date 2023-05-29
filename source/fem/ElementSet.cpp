@@ -119,6 +119,7 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
 
   // Create PETSc object Vec
   ierr = VecSet(B, 0.);
+  Tools::PrintVecIntoFile(B, "B_ini.txt");
   // ierr = VecCreate(PETSC_COMM_WORLD, &B); CHKERRQ(ierr);
   // ierr = VecSetSizes(B, PETSC_DECIDE, numOfTolDof); CHKERRQ(ierr);
   // ierr = VecSetFromOptions(B); CHKERRQ(ierr);
@@ -134,9 +135,12 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
 
   // ierr = VecView(state, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   std::vector<double> elemMatrixValues;
+  ResetDtime();
   for(auto elementGroup : m_groups)
   {
     nlohmann::json &elemPrpos = m_props.at(elementGroup.first);
+    std::ofstream fint("elemfint.txt", std::ios::out);
+    std::ofstream findof("elemdof.txt", std::ios::out);
     for(auto element : elementGroup.second)
     {
       elemPtr = m_elem[element];
@@ -164,7 +168,11 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
       elemPtr->GetTangentStiffness(elemData);
       elemPtr->ReturnTimeIncrementPara(m_dtK1, m_elemDistortion);
       // std::cout << "element = " << element << "m_dtK1 = " << m_dtK1 << " m_elemDistortion = " << m_elemDistortion << std::endl;
-      
+      // for(int index_fint = 0; index_fint < elemData->m_fint.size(); index_fint++){
+      //   fint << elemData->m_fint[index_fint] << std::endl;
+      //   findof << elemDofs[index_fint]<< std::endl;
+      // }
+
       for(auto label : elemData->m_outLabel)
         elemPtr->AppendNodalOutput(label, elemData->m_outputData);
 
@@ -193,6 +201,8 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
         throw "assemleArray is only implemented for vectors and matrices.";
       }
     }
+    fint.close();
+    findof.close();
   }
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -200,6 +210,9 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
 
   ierr = VecAssemblyBegin(B); CHKERRQ(ierr);
   ierr = VecAssemblyEnd(B); CHKERRQ(ierr);
+
+  
+  Tools::PrintVecIntoFile(B, "B.txt");
 
   return ierr;
 }

@@ -3,6 +3,7 @@
 #include <regex>
 #include <iostream>
 #include <fem/NodeSet.h>
+#include <util/DataStructure.h>
 
 
 NodeSet::NodeSet()
@@ -77,4 +78,16 @@ std::vector<std::vector<double>> NodeSet::GetNodeCoords(const std::vector<int> &
   for(auto iNode : nodeIds)
     coords.emplace_back(GetNodeCoords(iNode));
   return coords;
+}
+
+void NodeSet::UpdateNodeCoords(Vec&dDisp, const int numOfDof)
+{
+  std::vector<int> indexDof;
+  std::vector<double> iNodeDDisp(numOfDof, 0.);
+  for(auto iNode = m_nodeCoords.begin(); iNode != m_nodeCoords.end(); iNode++)
+  {
+    indexDof = GlobalData::GetInstance()->m_dofs->GetForType(iNode->first);
+    VecGetValues(dDisp, numOfDof, &indexDof[0], &iNodeDDisp[0]);
+    iNode->second = Math::VecAdd(1., iNode->second, iNodeDDisp);
+  }
 }
