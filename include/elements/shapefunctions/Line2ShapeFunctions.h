@@ -10,7 +10,7 @@ public:
   Line2ShapeFunctions();
   ~Line2ShapeFunctions();
 
-  virtual void GetShapeFunction(const std::vector<double> &xi) override;
+  virtual void GetShapeFunction(const VectorXd &xi) override;
 };
 ReflectRegister(Line2ShapeFunctions)
 

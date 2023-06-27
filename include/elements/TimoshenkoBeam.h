@@ -25,13 +25,13 @@ private:
 
   void GetBt(const double &xi);
 
-  std::vector<double> ToElemCoordinates(const std::vector<double>&a, const Matrix &coords);
+  VectorXd ToElemCoordinates(const VectorXd&a, const MatrixXd &coords);
 
-  std::vector<double> ToGlobalCoordinates(const std::vector<double> &aBar, const Matrix &coords);
+  VectorXd ToGlobalCoordinates(const VectorXd &aBar, const MatrixXd &coords);
 
-  Matrix ToGlobalCoordinates(const Matrix &ABar, const Matrix &coords);
+  MatrixXd ToGlobalCoordinates(const MatrixXd &ABar, const MatrixXd &coords);
 
-  Matrix GetRotationMatrix(const Matrix &coords);
+  MatrixXd GetRotationMatrix(const MatrixXd &coords);
 
 private:
   double m_E = 0.;
@@ -50,13 +50,13 @@ private:
   double eps = 0., gam = 0., chi = 0.;
   double M = 0., Q = 0., N = 0.;
   double wght = 0.;
-  std::vector<double> ht;
-  std::vector<double> bu;
-  std::vector<double> bw;
-  std::vector<double> bt;
-  std::vector<double> hu;
-  std::vector<double> hw;
-  std::vector<double> aBar;
+  VectorXd ht;
+  VectorXd bu;
+  VectorXd bw;
+  VectorXd bt;
+  VectorXd hu;
+  VectorXd hw;
+  VectorXd aBar;
 };
 ReflectRegister(TimoshenkoBeam, const std::vector<int> &, const nlohmann::json &)
 

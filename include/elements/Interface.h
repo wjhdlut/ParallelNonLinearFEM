@@ -13,17 +13,17 @@ public:
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
 
 private:
-  Matrix GetRotation(const Matrix &coords, const std::vector<double> &state);
+  MatrixXd GetRotation(const MatrixXd &coords, const VectorXd &state);
   
-  void GetBMatrix(const std::vector<double> &H, const Matrix &R);
+  void GetBMatrix(const VectorXd &H, const MatrixXd &R);
 
-  void GetKinematics(const std::vector<double> &elState);
+  void GetKinematics(const VectorXd &elState);
 
 private:
   std::shared_ptr<Kinematics> kin = nullptr;
-  std::vector<std::vector<double>> B;                    // the Strain Matrix
-  std::vector<double> sigma;                             // the Stress Vector
-  std::vector<std::vector<double>> D;                    // the Tangent Matrix
+  MatrixXd B;                                 // the Strain Matrix
+  VectorXd sigma;                             // the Stress Vector
+  MatrixXd D;                                 // the Tangent Matrix
 };
 
 ReflectRegister(Interface, const std::vector<int> &, const nlohmann::json &)

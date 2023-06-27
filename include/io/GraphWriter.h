@@ -5,6 +5,9 @@
 #include <util/ObjectFactory.h>
 #include <petscvec.h>
 #include <fstream>
+#include <eigen3/Eigen/Dense>
+
+using namespace Eigen;
 
 class GraphWriter : public BaseModule
 {
@@ -19,7 +22,7 @@ private:
 
 private:
   std::vector<std::string> m_columns;
-  std::vector<std::vector<double>> m_data;
+  std::vector<VectorXd> m_data;
    std::fstream m_outFileStream;
   
   int index;

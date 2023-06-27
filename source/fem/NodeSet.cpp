@@ -52,11 +52,17 @@ void NodeSet::ReadFromFile(const std::string&fileName)
           if("//" == b[0].substr(0, 2) || "#" == b[0].substr(0, 1)) break;
 
           int nodeID = std::stoi(b[0]);
-          // m_nodeIndex.emplace_back(nodeID);
-          if(m_nodeCoords.count(nodeID) == 0)
-            m_nodeCoords.insert(std::pair<int, std::vector<double>>(nodeID, {}));
+
+          std::vector<double> coords;
           for(auto iterb = b.begin() + 1; iterb != b.end(); iterb++)
-            m_nodeCoords[nodeID].emplace_back(std::stod(*iterb));
+            coords.emplace_back(std::stod(*iterb));
+          
+          if(m_nodeCoords.count(nodeID) == 0){
+            m_nodeCoords[nodeID] = VectorXd::Zero(coords.size());
+            for(unsigned i = 0; i < coords.size(); i++)
+              m_nodeCoords[nodeID](i) = coords[i];
+          }
+          
         }
       }
     }
@@ -64,7 +70,7 @@ void NodeSet::ReadFromFile(const std::string&fileName)
   fin.close();
 }
 
-std::vector<double> NodeSet::GetNodeCoords(const int&nodeId)
+VectorXd NodeSet::GetNodeCoords(const int&nodeId)
 {
   if(0 == m_nodeCoords.count(nodeId)){
     throw "Node ID " + std::to_string(nodeId) + " does not exist";
@@ -72,22 +78,22 @@ std::vector<double> NodeSet::GetNodeCoords(const int&nodeId)
   return m_nodeCoords.at(nodeId);
 }
 
-std::vector<std::vector<double>> NodeSet::GetNodeCoords(const std::vector<int> &nodeIds)
+MatrixXd NodeSet::GetNodeCoords(const std::vector<int> &nodeIds)
 {
-  std::vector<std::vector<double>> coords;
-  for(auto iNode : nodeIds)
-    coords.emplace_back(GetNodeCoords(iNode));
+  MatrixXd coords = MatrixXd::Zero(nodeIds.size(), m_nodeCoords[nodeIds[0]].size());
+  for(int i = 0; i < nodeIds.size(); i++)
+    coords.row(i) = GetNodeCoords(nodeIds[i]);
   return coords;
 }
 
 void NodeSet::UpdateNodeCoords(Vec&dDisp, const int numOfDof)
 {
   std::vector<int> indexDof;
-  std::vector<double> iNodeDDisp(numOfDof, 0.);
+  VectorXd iNodeDDisp = VectorXd::Zero(numOfDof);
   for(auto iNode = m_nodeCoords.begin(); iNode != m_nodeCoords.end(); iNode++)
   {
     indexDof = GlobalData::GetInstance()->m_dofs->GetForType(iNode->first);
-    VecGetValues(dDisp, numOfDof, &indexDof[0], &iNodeDDisp[0]);
-    iNode->second = Math::VecAdd(1., iNode->second, iNodeDDisp);
+    VecGetValues(dDisp, numOfDof, &indexDof[0], &iNodeDDisp(0));
+    iNode->second += iNodeDDisp;
   }
 }

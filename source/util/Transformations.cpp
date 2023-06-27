@@ -3,161 +3,147 @@
 
 namespace Transformations
 {
-
-std::vector<double> ToElementCoordinates(const std::vector<double> &a,
-                                         const std::vector<std::vector<double>> &elemNodeCoords)
+VectorXd ToElementCoordinates(const VectorXd &a, const MatrixXd &elemNodeCoords)
 {
   return VecToElementCoordinates(a, elemNodeCoords);
 }
 
-std::vector<std::vector<double>> ToElementCoordinates(const std::vector<std::vector<double>> &A,
-                                                      const std::vector<std::vector<double>> &elemNodeCoords)
+MatrixXd ToElementCoordinates(const MatrixXd &A, const MatrixXd &elemNodeCoords)
 {
   return MatToElementCoordinates(A, elemNodeCoords);
 }
 
-std::vector<double> ToGlobalCoordinates(const std::vector<double> &a,
-                                        const std::vector<std::vector<double>> &elemNodeCoords)
+VectorXd ToGlobalCoordinates(const VectorXd &a, const MatrixXd &elemNodeCoords)
 {
   return VecToGLobalCoordinates(a, elemNodeCoords);
 }
 
-std::vector<std::vector<double>> ToGlobalCoordinates(const std::vector<std::vector<double>> &A,
-                                                     const std::vector<std::vector<double>> &elemNodeCoords)
+MatrixXd ToGlobalCoordinates(const MatrixXd &A, const MatrixXd &elemNodeCoords)
 {
   return MatToGlobalCoordinates(A, elemNodeCoords);
 }
 
-std::vector<double> VecToElementCoordinates(const std::vector<double> &a,
-                                            const std::vector<std::vector<double>> &elemNodeCoords)
+VectorXd VecToElementCoordinates(const VectorXd &a, const MatrixXd &elemNodeCoords)
 {
-  Matrix R = GetRotationMatrix(elemNodeCoords);
+  MatrixXd R = GetRotationMatrix(elemNodeCoords);
 
-  std::vector<double> aBar;
+  VectorXd aBar = VectorXd::Zero(a.size());
 
-  if(0 != a.size()%R.size()) throw "Vector does not have the right shape to be rotated";
+  if(0 != a.size()%R.rows()) throw "Vector does not have the right shape to be rotated";
 
-  std::vector<double> tempVec(R.size(), 0.);
-  std::vector<double> tempVecA;
-  for(int i = 0; i < a.size()/R.size(); i++)
+  VectorXd tempVec = VectorXd::Zero(R.rows());
+  for(int i = 0; i < a.size()/R.rows(); i++)
   {
-    tempVecA.clear();
-    tempVecA.insert(tempVecA.begin(), a.begin()+R.size()*i, a.begin()+R.size()*(i+1));
-    tempVec = Math::MatrixAMultVecB(R, tempVecA);
-    aBar.insert(aBar.end(), tempVec.begin(), tempVec.end());
+    for(int j = 0; j < R.rows(); j++)
+      tempVec(j) = a(i*R.rows() + j);
+    
+    tempVec = R * tempVec;
+    
+    for(int j = 0; j < R.rows(); j++)
+      aBar(i*R.rows() + j) = tempVec(j);
   }
 
   return aBar;
 }
 
-std::vector<std::vector<double>> MatToElementCoordinates(const std::vector<std::vector<double>> &A,
-                                                         const std::vector<std::vector<double>> &elemNodeCoords)
+MatrixXd MatToElementCoordinates(const MatrixXd &A, const MatrixXd &elemNodeCoords)
 {
-  Matrix R = GetRotationMatrix(elemNodeCoords);
+  MatrixXd R = GetRotationMatrix(elemNodeCoords);
 
-  std::vector<double> tempVec(A[0].size(), 0.);
-  Matrix aBar(A.size(), tempVec);
+  VectorXd tempVec = VectorXd::Zero(A.cols());
+  MatrixXd aBar(A.rows(), A.cols());
 
-  Matrix tempMatA, tempMat;
+  MatrixXd tempMat = MatrixXd::Zero(R.rows(), R.rows());
   
-  tempVec.clear();
-  if(0 != A[0].size() % R.size() || 0 != A.size() % R.size())
+  if(0 != A.cols() % R.rows() || 0 != A.rows() % R.rows())
     throw "Matrix does not have the right shape to be rotated";
   
-  for(int i = 0; i < A[0].size()/R.size(); i++)
+  for(int i = 0; i < A.rows()/R.rows(); i++)
   {
-    for(int j = 0; j < A.size()/R.size(); j++)
+    for(int j = 0; j < A.cols()/R.rows(); j++)
     {
-      tempMat.clear();
-      for(int jj = 0; jj < A.size(); jj++)
-      {
-        tempVec.insert(tempVec.begin(), A[j*R.size()+jj].begin()+R.size()*i, A[j*R.size()+jj].begin()+R.size()*(i+1));
-        tempMatA.emplace_back(tempVec);
-      }
-      tempMat = Math::MatrixAMultB(R, tempMatA);
-      tempMat = Math::MatrixAMultBTrans(tempMat, R);
+      for(int ii = 0; ii < R.rows(); ii++)
+        for(int jj = 0; jj < R.rows(); jj++)
+          tempMat(ii, jj) = A(i*R.rows() + ii, j*R.rows() + jj);
 
-      for(int ii = 0; ii < R.size(); ii++)
-        for(int jj = 0; jj < R.size(); jj++)
-          aBar[j*R.size() + ii][i*R.size() + jj] = tempMat[ii][jj];
+      tempMat = R * tempMat * R.transpose();
+
+      for(int ii = 0; ii < R.rows(); ii++)
+        for(int jj = 0; jj < R.rows(); jj++)
+          aBar(i*R.rows() + ii, j*R.rows() + jj) = tempMat(ii, jj);
     }
   }
 
   return aBar;
 }
 
-std::vector<std::vector<double>> GetRotationMatrix(const std::vector<std::vector<double>> &elemNodeCoords)
+MatrixXd GetRotationMatrix(const MatrixXd &elemNodeCoords)
 {
-  if(0 == elemNodeCoords.size()) return std::vector<std::vector<double>>(0);
+  if(0 == elemNodeCoords.rows()) return MatrixXd::Zero(0, 0);
 
-  if(2 != elemNodeCoords[0].size()) throw "Rotation matrix only implemented for 2D situation";
+  if(2 != elemNodeCoords.cols()) throw "Rotation matrix only implemented for 2D situation";
 
 
   // Compute the undeformed element length
-  double elemLength = Math::VecNorm(Math::VecAdd(-1., elemNodeCoords[1], elemNodeCoords[0]));
+  double elemLength = (elemNodeCoords.row(1) - elemNodeCoords.row(0)).norm();
 
   // rotate a globdal coordinate to an element coordinate
-  double sin_alpha = (elemNodeCoords[1][1] - elemNodeCoords[0][1])/elemLength;
-  double cos_alpha = (elemNodeCoords[1][0] - elemNodeCoords[0][0])/elemLength;
+  double sin_alpha = (elemNodeCoords(1, 1) - elemNodeCoords(0, 1))/elemLength;
+  double cos_alpha = (elemNodeCoords(1, 0) - elemNodeCoords(0, 0))/elemLength;
   
-  Matrix A = {{cos_alpha, sin_alpha},{-sin_alpha, cos_alpha}};
+  Matrix2d A;
+  A << cos_alpha, sin_alpha, -sin_alpha, cos_alpha;
   return A;
 }
 
-std::vector<double> VecToGLobalCoordinates(const std::vector<double> &a,
-                                           const std::vector<std::vector<double>> &elemNodeCoords)
+VectorXd VecToGLobalCoordinates(const VectorXd &a, const MatrixXd &elemNodeCoords)
 {
-  Matrix R = GetRotationMatrix(elemNodeCoords);
+  MatrixXd R = GetRotationMatrix(elemNodeCoords);
 
-  std::vector<double> aBar;
+  VectorXd aBar = VectorXd::Zero(a.size());
 
-  if(0 != a.size()%R.size()) throw "Vector does not have the right shape to be rotated";
+  if(0 != a.size()%R.rows()) throw "Vector does not have the right shape to be rotated";
 
-  std::vector<double> tempVec(R.size(), 0.);
-  std::vector<double> tempVecA;
+  VectorXd tempVec = VectorXd::Zero(R.rows());
 
-  for(int i = 0; i < a.size()/R.size(); i++)
+  for(int i = 0; i < a.size()/R.rows(); i++)
   {
-    tempVecA.clear();
-    tempVecA.insert(tempVecA.begin(), a.begin()+R.size()*i, a.begin()+R.size()*(i+1));
-    tempVec = Math::MatrixATransMultVecB(R, tempVecA);
-    aBar.insert(aBar.end(), tempVec.begin(), tempVec.end());
+    for(int j = 0; j < R.rows(); j++)
+      tempVec(j) = a(i*R.rows() + j);
+
+    tempVec = R * tempVec;
+
+    for(int j = 0; j < R.rows(); j++)
+      aBar(i*R.rows() + j) = tempVec(j);
   }
 
   return aBar;
 }
 
-std::vector<std::vector<double>> MatToGlobalCoordinates(const std::vector<std::vector<double>> &A,
-                                                        const std::vector<std::vector<double>> &elemNodeCoords)
+MatrixXd MatToGlobalCoordinates(const MatrixXd &A, const MatrixXd &elemNodeCoords)
 {
-  Matrix R = GetRotationMatrix(elemNodeCoords);
+  MatrixXd R = GetRotationMatrix(elemNodeCoords);
 
-  std::vector<double> tempVec(A[0].size(), 0.);
-  std::vector<std::vector<double>> aBar(A.size(), tempVec);
-
-  Matrix tempMatA, tempMat;
+  MatrixXd aBar = MatrixXd::Zero(A.rows(), A.cols());
+  MatrixXd tempMat = MatrixXd::Zero(R.rows(), R.cols());
   
-  tempVec.clear();
-  if(0 != A[0].size() % R.size() || 0 != A.size() % R.size())
+  if(0 != A.cols() % R.rows() || 0 != A.rows() % R.cols())
     throw "Matrix does not have the right shape to be rotated";
   
-  for(int i = 0; i < A[0].size()/R.size(); i++)
+  for(int i = 0; i < A.cols()/R.rows(); i++)
   {
-    for(int j = 0; j < A.size()/R.size(); j++)
+    for(int j = 0; j < A.rows()/R.rows(); j++)
     {
-      tempMatA.clear();
-      tempVec.clear();
-      for(int jj = 0; jj < R.size(); jj++)
-      {
-        tempVec.insert(tempVec.begin(), A[j*R.size()+jj].begin()+R.size()*i, A[j*R.size()+jj].begin()+R.size()*(i+1));
-        tempMatA.emplace_back(tempVec);
-      }
-      tempMat = Math::MatrixATransMultB(R, tempMatA);
-      tempMat = Math::MatrixAMultB(tempMat, R);
 
-      for(int ii = 0; ii < R.size(); ii++)
-        for(int jj = 0; jj < R.size(); jj++)
-          aBar[j*R.size() + ii][i*R.size() + jj] = tempMat[ii][jj];
+      for(int ii = 0; ii < R.rows(); ii++)
+        for(int jj = 0; jj < R.rows(); jj++)
+          tempMat(ii, jj) = A(i*R.rows() + ii, j*R.rows() + jj);
+
+      tempMat = R.transpose() * tempMat * R;
+
+      for(int ii = 0; ii < R.rows(); ii++)
+        for(int jj = 0; jj < R.rows(); jj++)
+          aBar(i*R.rows() + ii, j*R.rows() + jj) = tempMat(ii, jj);
     }
   }
 

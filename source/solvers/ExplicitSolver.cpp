@@ -7,7 +7,6 @@ ExplicitSolver::ExplicitSolver(const nlohmann::json &props) : BaseModule(props)
 {
   Tools::GetParameter(m_maxCycle, "maxCycle", m_myProps);
   Tools::GetParameter(m_endTime, "endTime", m_myProps);
-  // Tools::GetParameter(m_dTime1, "dtime", m_myProps);
   Tools::GetParameter(m_lam, "lam", m_myProps);
   
   VecDuplicate(GlobalData::GetInstance()->m_state, &m_lumped);
@@ -112,7 +111,7 @@ void ExplicitSolver::DetermineTimeStepSize(){
     m_dTime101d = m_dTime1;
   }
   m_dTime = m_dTime1;
-  Tools::GetParameter(m_dTime1, "dtime", m_myProps);
+  Tools::GetParameter(m_dTime, "dtime", m_myProps);
 }
 
 void ExplicitSolver::InitialStepComp()

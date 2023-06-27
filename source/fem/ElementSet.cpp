@@ -5,6 +5,7 @@
 #include <elements/Element.h>
 #include <util/ObjectFactory.h>
 #include <util/DataStructure.h>
+#include <elements/KirchhoffBeam.h>
 
 #include <iostream>
 
@@ -139,8 +140,7 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
   for(auto elementGroup : m_groups)
   {
     nlohmann::json &elemPrpos = m_props.at(elementGroup.first);
-    std::ofstream fint("elemfint.txt", std::ios::out);
-    std::ofstream findof("elemdof.txt", std::ios::out);
+    // std::ofstream fint("elemfint.txt", std::ios::out);
     for(auto element : elementGroup.second)
     {
       elemPtr = m_elem[element];
@@ -155,10 +155,11 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
       elemDofs = dofs->Get(elemNodes);
 
       // Get the element state
-      elemState.resize(elemDofs.size(), 0.), elemDstate.resize(elemDofs.size(), 0.);
-      ierr = VecGetValues(state, elemDofs.size(), &elemDofs[0], &elemState[0]); CHKERRQ(ierr);
-      ierr = VecGetValues(Dstate, elemDofs.size(), &elemDofs[0], &elemDstate[0]); CHKERRQ(ierr);
-
+      elemState.resize(elemDofs.size()), elemDstate.resize(elemDofs.size());
+      ierr = VecGetValues(state, elemDofs.size(), &elemDofs[0], &elemState(0)); CHKERRQ(ierr);
+      ierr = VecGetValues(Dstate, elemDofs.size(), &elemDofs[0], &elemDstate(0)); CHKERRQ(ierr);
+      
+      // Set the ElemData
       elemData = std::make_shared<ElementData>(elemState, elemDstate);
       elemData->m_coords = elemCoords;
       ierr = VecGetValues(velo, elemDofs.size(), &elemDofs[0], &elemData->m_velo[0]);
@@ -170,7 +171,7 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
       // std::cout << "element = " << element << "m_dtK1 = " << m_dtK1 << " m_elemDistortion = " << m_elemDistortion << std::endl;
       // for(int index_fint = 0; index_fint < elemData->m_fint.size(); index_fint++){
       //   fint << elemData->m_fint[index_fint] << std::endl;
-      //   findof << elemDofs[index_fint]<< std::endl;
+      //   // findof << elemDofs[index_fint]<< std::endl;
       // }
 
       for(auto label : elemData->m_outLabel)
@@ -183,26 +184,18 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
       else if(2 == rank && "getTangentStiffness" == action)
       {
         // Assemble Global Stiffness Matrix and Internal Force Vector
-        elemMatrixValues = Math::ConvertMatrixToVec(elemData->m_stiff);
+        // elemMatrixValues = Math::ConvertMatrixToVec(elemData->m_stiff);
+        // std::cout << elemData->m_stiff << std::endl;
         ierr = MatSetValues(A, elemDofs.size(), &elemDofs[0], elemDofs.size(), 
-                           &elemDofs[0], &elemMatrixValues[0], ADD_VALUES); CHKERRQ(ierr);        
-        ierr = VecSetValues(B, elemDofs.size(), &elemDofs[0], &(elemData->m_fint[0]), ADD_VALUES); CHKERRQ(ierr);
-      }
-      else if(2 == rank && "getMassMatrix" == action)
-      {
-        elemPtr->GetMassMatrix(elemData);
-        elemMatrixValues = Math::ConvertMatrixToVec(elemData->m_mass);
-        ierr = MatSetValues(A, elemDofs.size(), &elemDofs[0], elemDofs.size(),
-                           &elemDofs[0], &elemMatrixValues[0], ADD_VALUES); CHKERRQ(ierr);
-        ierr = VecSetValues(B, elemDofs.size(), &elemDofs[0], &(elemData->m_lumped[0]), ADD_VALUES); CHKERRQ(ierr);
+                           &elemDofs[0], &elemData->m_stiff(0, 0), ADD_VALUES); CHKERRQ(ierr);        
+        ierr = VecSetValues(B, elemDofs.size(), &elemDofs[0], &(elemData->m_fint(0)), ADD_VALUES); CHKERRQ(ierr);
       }
       else
       {
         throw "assemleArray is only implemented for vectors and matrices.";
       }
     }
-    fint.close();
-    findof.close();
+    // fint.close();
   }
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -226,11 +219,67 @@ void ElementSet::AssembleInternalForce(Vec &B)
 {
   Mat A;
   AssembleMatrix(A, B, 1, "getInternalForce");
+  MatDestroy(&A);
 }
 
-void ElementSet::AssembleMassMatrix(Mat &A, Vec &B)
+PetscErrorCode ElementSet::AssembleMassMatrix(Mat &A, Vec &B)
 {
-  AssembleMatrix(A, B, 2, "getMassMatrix");
+  int numOfNode = GlobalData::GetInstance()->m_dofs->m_dofs.size();
+  int numOfDof = GlobalData::GetInstance()->m_dofs->m_dofs.at(0).size();
+  int numOfTolDof = numOfNode * numOfDof;
+
+  // Create PETSc object Mat
+  PetscErrorCode ierr;
+  ierr = MatCreate(PETSC_COMM_WORLD, &A); CHKERRQ(ierr);
+  ierr = MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, numOfTolDof, numOfTolDof); CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A); CHKERRQ(ierr);
+  ierr = MatSetUp(A); CHKERRQ(ierr);
+
+  ierr = VecSet(B, 0.); CHKERRQ(ierr);
+
+  Vec &state = GlobalData::GetInstance()->m_state;
+  Vec &Dstate = GlobalData::GetInstance()->m_Dstate;
+
+  std::vector<double> elemMatrixValues;
+  for(auto elementGroup : m_groups)
+  {
+    nlohmann::json &elemPrpos = m_props.at(elementGroup.first);
+    
+    for(auto element : elementGroup.second)
+    {
+      elemPtr = m_elem[element];
+
+      // Get the element nodes
+      elemNodes = elemPtr->GetNodes();
+
+      // Get the element coordinates
+      elemCoords = m_nodes->GetNodeCoords(elemNodes);
+
+      // Get the element degrees of freedom
+      elemDofs = GlobalData::GetInstance()->m_dofs->Get(elemNodes);
+      
+      elemState.resize(elemDofs.size(), 0.), elemDstate.resize(elemDofs.size(), 0.);
+      ierr = VecGetValues(state, elemDofs.size(), &elemDofs[0], &elemState[0]); CHKERRQ(ierr);
+      ierr = VecGetValues(Dstate, elemDofs.size(), &elemDofs[0], &elemDstate[0]); CHKERRQ(ierr);
+      elemData = std::make_shared<ElementData>(elemState, elemDstate);
+      elemData->m_coords = elemCoords;
+      
+      // Compute Mass Matrix
+      elemPtr->GetMassMatrix(elemData);
+      // elemMatrixValues = Math::ConvertMatrixToVec(elemData->m_mass);
+      ierr = MatSetValues(A, elemDofs.size(), &elemDofs[0], elemDofs.size(),
+                          &elemDofs[0], &elemData->m_mass(0, 0), ADD_VALUES);  CHKERRQ(ierr);
+      ierr = VecSetValues(B, elemDofs.size(), &elemDofs[0], &(elemData->m_lumped[0]), ADD_VALUES); CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  // ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+
+  ierr = VecAssemblyBegin(B); CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(B); CHKERRQ(ierr);
+
+  return ierr;
 }
 
 void ElementSet::CommitHistory()

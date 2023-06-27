@@ -24,7 +24,7 @@ public:
    * 
    * @param xi   [in]  Gauss Points Coordinates
    */
-  virtual void GetShapeFunction(const std::vector<double> &xi);
+  virtual void GetShapeFunction(const VectorXd &xi);
 };
 
 ReflectRegister(Tetra4ShapeFunctions)

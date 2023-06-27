@@ -65,13 +65,13 @@ void MeshWriter::WritePointDisplaceData(std::fstream &vtkfile)
 void MeshWriter::WritePointStressData(std::fstream &vtkfile)
 {
   // output sigma_xx
-  Matrix stress = GlobalData::GetInstance()->GetData("stresses");
+  MatrixXd stress = GlobalData::GetInstance()->GetData("stresses");
   vtkfile << "<DataArray type=\"Float64\" Name=\"sigma_xx\""
           << " NumberOfComponents=\"1\" format=\"ascii\" >" << std::endl;
   for (auto node : GlobalData::GetInstance()->m_nodes->m_nodeCoords)
   {
     int index = GlobalData::GetInstance()->m_dofs->GetIndex(node.first);
-    vtkfile << stress[index][0] << std::endl;
+    vtkfile << stress(index, 0) << std::endl;
   }
   vtkfile << "</DataArray>" << std::endl;
 
@@ -81,19 +81,19 @@ void MeshWriter::WritePointStressData(std::fstream &vtkfile)
   for (auto node : GlobalData::GetInstance()->m_nodes->m_nodeCoords)
   {
     int index = GlobalData::GetInstance()->m_dofs->GetIndex(node.first);
-    vtkfile << stress[index][1] << std::endl;
+    vtkfile << stress(index, 1) << std::endl;
   }
   vtkfile << "</DataArray>" << std::endl;
 
   // output sigma_xy for two-dimension problem
-  if (stress[0].size() == 3)
+  if (stress.cols() == 3)
   {
     vtkfile << "<DataArray type=\"Float64\" Name=\"sigma_xy\""
             << " NumberOfComponents=\"1\" format=\"ascii\" >" << std::endl;
     for (auto node : GlobalData::GetInstance()->m_nodes->m_nodeCoords)
     {
       int index = GlobalData::GetInstance()->m_dofs->GetIndex(node.first);
-      vtkfile << stress[index][2] << std::endl;
+      vtkfile << stress(index, 2) << std::endl;
     }
     vtkfile << "</DataArray>" << std::endl;
   }
@@ -106,9 +106,9 @@ void MeshWriter::WritePointCoordsData(std::fstream &vtkfile)
           << " NumberOfComponents=\"3\" format=\"ascii\">" << std::endl;
   for(auto node : GlobalData::GetInstance()->m_nodes->m_nodeCoords)
   {
-    for(auto coord : node.second)
+    for(int i = 0; i < node.second.size(); i++)
     {
-      vtkfile << coord << "  ";
+      vtkfile << (node.second)(i) << "  ";
     }
     if(2 == node.second.size())
       vtkfile << "  0.";
@@ -137,7 +137,7 @@ void MeshWriter::WriteElemConnecData(std::fstream &vtkfile)
           << " format=\"ascii\">" << std::endl;
 
   std::vector<int> elemNode;
-  std::vector<std::vector<double>> elemCoords;
+  MatrixXd elemCoords;
   // std::string elemType = ShapeFunctions::GetElemType(elemDat->m_coords);
   for(auto elem : GlobalData::GetInstance()->m_elements->IterElementGroup(m_elementGroup))
   {

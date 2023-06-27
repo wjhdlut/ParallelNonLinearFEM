@@ -85,39 +85,45 @@ PetscErrorCode GlobalData::DestroyVecSpace()
   return ierr;
 }
 
-Matrix GlobalData::GetData(const std::string&outputName)
+MatrixXd GlobalData::GetData(const std::string&outputName)
 {
-  Matrix data    = m_outputData[outputName];
-  Matrix weights = m_outputData[outputName + "Weight"];
+  MatrixXd data    = m_outputData[outputName];
+  MatrixXd weights = m_outputData[outputName + "Weight"];
 
-  Matrix outputData;
-  std::vector<double> iRow;
+  MatrixXd outputData = MatrixXd::Zero(m_nodes->m_nodeCoords.size(), data.cols());
+  VectorXd iRow;
   
+  int count = 0;
   for(auto node : m_nodes->m_nodeCoords)
   {
     int index = m_dofs->GetIndex(node.first);
-    if(weights[index][0] != 0)
-      iRow = Math::VecScale(1./weights[index][0], data[index]);
+    if(weights(index, 0) != 0)
+      iRow = 1./weights(index, 0) * data.row(index);
     else
-      iRow = data[index];
+      iRow = data.row(index);
 
-    outputData.emplace_back(iRow);
+    outputData.row(count) = iRow;
+
+    count += 1;
   }
 
   return outputData;
 }
 
-std::vector<double> GlobalData::GetData(const std::string&outputName, const int nodeID)
+VectorXd GlobalData::GetData(const std::string&outputName, const int nodeID)
 {
-  Matrix data = m_outputData[outputName];
-  Matrix weights = m_outputData[outputName + "Weight"];
+  MatrixXd data = m_outputData[outputName];
+  MatrixXd weights = m_outputData[outputName + "Weight"];
   
   int index = m_dofs->GetIndex(nodeID);
-  int weightValue = weights[index][0];
-  std::vector<double> tempVec;
-  for(auto iData : data[index])
-    (0 != weightValue) ? tempVec.emplace_back(iData/weightValue) : tempVec.emplace_back(iData);
+  int weightValue = weights(index, 0);
+  
+  VectorXd tempVec(data.row(index).size());
+  // for(auto iData : data[index])
+  //   (0 != weightValue) ? tempVec.emplace_back(iData/weightValue) : tempVec.emplace_back(iData);
     
+  for(int i = 0; i < data.row(index).size(); i++)
+    tempVec(i) = (0 != weightValue) ? data(index, i) / weightValue : data(index, i);
   return tempVec;
 }
 
@@ -164,9 +170,9 @@ void GlobalData::PrintNodes()
 
     for(auto name : m_outputName)
     {
-      auto data = GetData(name, iNode.first);
-      for(auto iData : data)
-        std::cout << std::setw(13) << std::setiosflags(std::ios::scientific) << iData;
+      VectorXd data = GetData(name, iNode.first);
+      for(int i = 0; i < data.size(); i++)
+        std::cout << std::setw(13) << std::setiosflags(std::ios::scientific) << data(i);
     }
     std::cout << std::endl;
   }

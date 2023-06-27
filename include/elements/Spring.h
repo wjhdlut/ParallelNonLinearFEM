@@ -37,8 +37,8 @@ private:
   double elong = 0.;
   double Fs = 0.;
 
-  std::vector<double> a;
-  std::vector<double> Da;
+  VectorXd a;
+  VectorXd Da;
 };
 
 ReflectRegister(Spring, const std::vector<int> &, const nlohmann::json &)

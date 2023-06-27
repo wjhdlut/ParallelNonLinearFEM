@@ -7,7 +7,7 @@ Interface::Interface(const std::vector<int> &elemNodes, const nlohmann::json &mo
 {
   method = "NewtonCotes";
 
-  std::vector<double> temp(2, 0.);
+  Vector2d temp = Vector2d::Zero();
   SetHistoryParameter("normal", temp);
 
   CommitHistory();
@@ -18,7 +18,7 @@ Interface::~Interface()
 
 void Interface::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
 {
-  Matrix rot = GetRotation(elemDat->m_coords, elemDat->m_state);
+  MatrixXd rot = GetRotation(elemDat->m_coords, elemDat->m_state);
 
   std::string elemType = ShapeFunctions::GetElemType(elemDat->m_coords);
   ShapeFunctions::GetIntegrationPoints(xi, weight, elemType, order, method);
@@ -28,96 +28,90 @@ void Interface::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
   if(nullptr == res) throw "Unknown type " + elemType;
 
   elemDat->m_outLabel.emplace_back("tractions");
-  outputData = Math::MatrixZeros(elemDat->m_coords.size(), 2);
+  outputData = MatrixXd::Zero(elemDat->m_coords.rows(), 2);
 
   int count = 0;
-  Matrix tempMatrix;
-  for(auto iXi : xi)
+  MatrixXd tempMatrix;
+  for(int i = 0; i < xi.rows(); i++)
   {
-     res->GetShapeFunction(iXi);
+    res->GetShapeFunction(xi.row(i));
 
-     GetBMatrix(res->H, rot);
+    GetBMatrix(res->H, rot);
 
-     GetKinematics(elemDat->m_state);
+    GetKinematics(elemDat->m_state);
 
-     sigma = m_mat->GetStress(kin, elemDat->m_Dstate);
+    sigma = m_mat->GetStress(kin, elemDat->m_Dstate);
 
-     D = m_mat->GetTangMatrix();
+    D = m_mat->GetTangMatrix();
+    
+    elemDat->m_stiff += weight[i] * (B.transpose() * D * B);
 
-     tempMatrix = Math::MatrixAMultB(D, B);
-     elemDat->m_stiff = Math::MatrixATransMultB(B, tempMatrix);
-     elemDat->m_stiff = Math::MatrixScale(weight[count], elemDat->m_stiff);
-
-     elemDat->m_fint = Math::MatrixATransMultVecB(B, sigma);
-     elemDat->m_fint = Math::VecScale(weight[count], elemDat->m_fint);
-
-     tempMatrix = Math::VecOuter(std::vector<double>(elemDat->m_coords.size(), 1.), sigma);
-     elemDat->m_outputData = Math::MatrixAdd(1., elemDat->m_outputData, tempMatrix);
+    elemDat->m_fint += weight[i] * (B.transpose() * sigma);
+    
+    elemDat->m_outputData += Math::VecCross(VectorXd::Ones(elemDat->m_coords.rows()), sigma);
   }
 }
 
-Matrix Interface::GetRotation(const Matrix &coords, const std::vector<double> &state)
+MatrixXd Interface::GetRotation(const MatrixXd &coords, const VectorXd &state)
 {
-  Matrix midCoords = Math::MatrixZeros(2, 2);
+  Matrix2d midCoords = Matrix2d::Zero();
   
   for(int i = 0; i < 2; i++)
-    midCoords[i] = Math::VecAdd(0.5, coords[i], coords[2-i]);
+    midCoords.row(i) = 0.5 * (coords.row(i) + coords.row(2-i));
 
-  midCoords[0][0] += 0.5 * ( state[0] + state[4] );
-  midCoords[0][1] += 0.5 * ( state[1] + state[5] );
-  midCoords[1][0] += 0.5 * ( state[2] + state[6] );
-  midCoords[1][1] += 0.5 * ( state[3] + state[7] );
+  midCoords(0, 0) += 0.5 * ( state(0) + state(4) );
+  midCoords(0, 1) += 0.5 * ( state(1) + state(5) );
+  midCoords(1, 0) += 0.5 * ( state(2) + state(6) );
+  midCoords(1, 1) += 0.5 * ( state(3) + state(7) );
 
-  std::vector<double> ds = Math::VecAdd(-1., midCoords[1], midCoords[0]);
+  Vector2d ds = midCoords.row(1) - midCoords.row(0);
 
-  std::vector<double> normal = GetHistoryParameter("normal");
+  Vector2d normal = GetHistoryParameter("normal");
   
-  if(Math::VecNorm(normal) < 0.5){
-    normal[0] = ds[1] / Math::VecNorm(ds);
-    normal[1] = ds[0] / Math::VecNorm(ds);
+  if(normal.norm() < 0.5){
+    normal(0) = ds(1) / ds.norm();
+    normal(1) = ds(0) / ds.norm();
   }
   else{
-    std::vector<double> newNormal(normal.size(), 0.);
-    newNormal[0] = ds[1] / Math::VecNorm(ds);
-    newNormal[1] = ds[0] / Math::VecNorm(ds);
+    Vector2d newNormal(0., 0.);
+    newNormal[0] = ds[1] / ds.norm();
+    newNormal[1] = ds[0] / ds.norm();
 
-    if(Math::VecDot(newNormal, normal) < 0.)
-      Math::VecScale(-1., newNormal);
+    if(newNormal.dot(normal) < 0.)
+      newNormal = -1. * newNormal;
     
-    normal.swap(newNormal);
+    normal = newNormal;
   }
   SetHistoryParameter("normal", normal);
 
-  Matrix rot = {{normal[0], normal[1]}, {normal[1], normal[0]}};
+  Matrix2d rot;
+  rot << normal[0], normal[1], normal[1], normal[0];
 
   return rot;
 }
 
-void Interface::GetBMatrix(const std::vector<double> &H, const Matrix &R)
+void Interface::GetBMatrix(const VectorXd &H, const MatrixXd &R)
 {
   int numOfDim = m_dofType.size();
-  int numOfNode = H.size();
-  std::vector<double> temp(numOfDim*numOfNode, 0.);
-  B.resize(2, temp);
+  int numOfNode = H.rows();
+  B = MatrixXd::Zero(2, numOfDim*numOfNode);
 
-  B[0][0] = -R[0][0] * H[0], B[0][1] = -R[0][1] * H[0];
-  B[1][0] = -R[1][0] * H[0], B[1][1] = -R[1][1] * H[0];
+  B(0, 0) = -R(0, 0) * H(0), B(0, 1) = -R(0, 1) * H(0);
+  B(1, 0) = -R(1, 0) * H(0), B(1, 1) = -R(1, 1) * H(0);
 
-  B[0][2] = -R[0][0] * H[1], B[0][3] = -R[0][1] * H[1];
-  B[1][2] = -R[1][0] * H[1], B[1][3] = -R[1][1] * H[1];
+  B(0, 2) = -R(0, 0) * H(1), B(0, 3) = -R(0, 1) * H(1);
+  B(1, 2) = -R(1, 0) * H(1), B(1, 3) = -R(1, 1) * H(1);
 
-  B[0][4] = R[0][0] * H[0], B[0][5] = R[0][1] * H[0];
-  B[1][4] = R[1][0] * H[0], B[1][5] = R[1][1] * H[0];
+  B(0, 4) = R(0, 0) * H(0), B(0, 5) = R(0, 1) * H(0);
+  B(1, 4) = R(1, 0) * H(0), B(1, 5) = R(1, 1) * H(0);
 
-  B[0][6] = R[0][0] * H[1], B[0][7] = R[0][1] * H[1];
-  B[1][6] = R[1][0] * H[1], B[1][7] = R[1][1] * H[1];
+  B(0, 6) = R(0, 0) * H(1), B(0, 7) = R(0, 1) * H(1);
+  B(1, 6) = R(1, 0) * H(1), B(1, 7) = R(1, 1) * H(1);
 }
 
-void Interface::GetKinematics(const std::vector<double> &elState)
+void Interface::GetKinematics(const VectorXd &elState)
 {
   int numOfDim = 2;
-  
   kin = std::make_shared<Kinematics>(numOfDim);
-
-  kin->strain = Math::MatrixAMultVecB(B, elState);
+  kin->strain = B.transpose() * elState;
 }

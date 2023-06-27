@@ -2,35 +2,64 @@
 #define TRANSFORMATIONS_H
 
 #include <vector>
+#include <eigen3/Eigen/Dense>
 
+using namespace Eigen;
 
 namespace Transformations
 {
-std::vector<double> ToElementCoordinates(const std::vector<double> &a,
-                                         const std::vector<std::vector<double>> &elemNodeCoords);
+/**
+ * @Brief: Transform vector to element coornidate system
+ * 
+ * @param a 
+ * @param elemNodeCoords 
+ * @return VectorXd 
+ */
+VectorXd ToElementCoordinates(const VectorXd &a, const MatrixXd &elemNodeCoords);
 
-std::vector<std::vector<double>> ToElementCoordinates(const std::vector<std::vector<double>> &A,
-                                                      const std::vector<std::vector<double>> &elemNodeCoords);
+/**
+ * @Brief: Transform matrix to element coordinate system
+ * 
+ * @param A 
+ * @param elemNodeCoords 
+ * @return MatrixXd 
+ */
+MatrixXd ToElementCoordinates(const MatrixXd &A, const MatrixXd &elemNodeCoords);
 
-std::vector<double> ToGlobalCoordinates(const std::vector<double> &a,
-                                        const std::vector<std::vector<double>> &elemNodeCoords);
+/**
+ * @Brief: Transform vector to global coordinate system
+ * 
+ * @param a 
+ * @param elemNodeCoords 
+ * @return VectorXd 
+ */
+VectorXd ToGlobalCoordinates(const VectorXd &a, const MatrixXd &elemNodeCoords);
 
-std::vector<std::vector<double>> ToGlobalCoordinates(const std::vector<std::vector<double>> &A,
-                                                     const std::vector<std::vector<double>> &elemNodeCoords);
+/**
+ * @Brief: Transform matrix to global coordinate system
+ * 
+ * @param A 
+ * @param elemNodeCoords 
+ * @return MatrixXd 
+ */
+MatrixXd ToGlobalCoordinates(const MatrixXd &A, const MatrixXd &elemNodeCoords);
 
-std::vector<double> VecToElementCoordinates(const std::vector<double> &a,
-                                            const std::vector<std::vector<double>> &elemNodeCoords);
+/**
+ * @Brief:         
+ * 
+ * @param a 
+ * @param elemNodeCoords 
+ * @return VectorXd 
+ */
+VectorXd VecToElementCoordinates(const VectorXd &a, const MatrixXd &elemNodeCoords);
 
-std::vector<std::vector<double>> MatToElementCoordinates(const std::vector<std::vector<double>> &A,
-                                                         const std::vector<std::vector<double>> &elemNodeCoords);
+MatrixXd MatToElementCoordinates(const MatrixXd &A, const MatrixXd &elemNodeCoords);
 
-std::vector<double> VecToGLobalCoordinates(const std::vector<double> &a,
-                                           const std::vector<std::vector<double>> &elemNodeCoords);
+VectorXd VecToGLobalCoordinates(const VectorXd &a, const MatrixXd &elemNodeCoords);
 
-std::vector<std::vector<double>> MatToGlobalCoordinates(const std::vector<std::vector<double>> &A,
-                                                        const std::vector<std::vector<double>> &elemNodeCoords);
+MatrixXd MatToGlobalCoordinates(const MatrixXd &A, const MatrixXd &elemNodeCoords);
 
-std::vector<std::vector<double>> GetRotationMatrix(const std::vector<std::vector<double>> &elemNodeCoords);
+MatrixXd GetRotationMatrix(const MatrixXd &elemNodeCoords);
 
 }
 

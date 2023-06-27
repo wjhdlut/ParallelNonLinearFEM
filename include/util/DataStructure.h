@@ -25,9 +25,9 @@ public:
     m_outputName.clear();
   }
 
-  Matrix GetData(const std::string&outputName);
+  MatrixXd GetData(const std::string&outputName);
 
-  std::vector<double> GetData(const std::string&outputName, const int nodeID);
+  VectorXd GetData(const std::string&outputName, const int nodeID);
 
   void PrintNodes();
 
@@ -44,8 +44,7 @@ public:
   std::string m_prefix;
   
   std::vector<std::string> m_outputName;
-  
-  std::unordered_map<std::string, Matrix> m_outputData;
+  std::unordered_map<std::string, MatrixXd> m_outputData;
   Vec m_state;
   Vec m_Dstate;
   Vec m_fint;

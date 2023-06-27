@@ -56,7 +56,8 @@ private:
 
   const std::unordered_map<std::string, std::string> m_cellType = {{"Hexa8", "12"},
                                                                    {"Quad4", "9"},
-                                                                   {"Quad8", "9"}};
+                                                                   {"Quad8", "9"},
+                                                                   {"Tria3", "9"}};
 };
 
 ReflectRegister(MeshWriter, const nlohmann::json&)

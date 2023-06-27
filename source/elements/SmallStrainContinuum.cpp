@@ -5,6 +5,7 @@
 #include <elements/shapefunctions/ElementShapeFunctions.h>
 
 #include <algorithm>
+#include <iostream>
 
 SmallStrainContinuum::SmallStrainContinuum(const std::vector<int> &elemNodes,
                                            const nlohmann::json &modelProps)
@@ -14,7 +15,6 @@ SmallStrainContinuum::SmallStrainContinuum(const std::vector<int> &elemNodes,
 
 SmallStrainContinuum::~SmallStrainContinuum()
 {
-
 }
 
 void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elemDat)
@@ -28,26 +28,21 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
   std::string elemName = elemType + "ShapeFunctions";
   std::shared_ptr<ElementShapeFunctions> res = ObjectFactory::CreateObject<ElementShapeFunctions>(elemName);
   if(nullptr == res) throw "Unknown type " + elemType;
-  outputData = Math::MatrixZeros(elemDat->m_coords.size(), res->numOfStress);
+  outputData = MatrixXd::Zero(elemDat->m_coords.rows(), res->numOfStress);
   
-  int count = 0;
-  Matrix tempMatrix;
-  std::vector<double> tempVec;
-  for(auto iXi : xi)
+  for(int i = 0; i < xi.rows(); i++)
   {
     // compute shape functions
-    res->GetShapeFunction(iXi);
+    res->GetShapeFunction(xi.row(i));
 
     // compute jacobian matrix
-    jac = Math::MatrixATransMultB(elemDat->m_coords, res->pHpxi);
+    jac = elemDat->m_coords.transpose() * res->pHpxi;
 
-    detJac = Math::MatrixDet(jac);
-
-    ComputeElemTimeStep(res, elemDat);
+    // Compute time step based on the deformation
+    ComputeElemTimeStep(res, elemDat, jac.determinant());
 
     // compute the derivative of shape function about physical coordinate
-    invJac = Math::MatrixInverse(jac);
-    pHpX = Math::MatrixAMultB(res->pHpxi, invJac);
+    pHpX = res->pHpxi * jac.inverse();
 
     // compute strain matrix B
     GetBMatrix(pHpX);
@@ -61,134 +56,64 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
     D = m_mat->GetTangMatrix();
 
     // compute stiffness matrix
-    detJac *= weight[count];
-    tempMatrix = Math::MatrixATransMultB(B, Math::MatrixAMultB(D, B));
-    elemDat->m_stiff = Math::MatrixAdd(detJac, elemDat->m_stiff, tempMatrix);
+    elemDat->m_stiff += jac.determinant() * weight(i) * B.transpose() * D * B;
 
     // compute internal force vector
-    tempVec = Math::MatrixATransMultVecB(B, sigma);
-    elemDat->m_fint = Math::VecAdd(detJac, elemDat->m_fint, tempVec);
+    elemDat->m_fint += jac.determinant() * weight(i) * B.transpose() * sigma;
     
     // Hour-Glass method
-    HourGlassTech(elemDat, res);
+    HourGlassTech(elemDat, res, pHpX);
 
     // compute output stress matrix
-    tempMatrix = Math::VecOuter(std::vector<double>(elemDat->m_coords.size(), 1.0), sigma);
-    outputData = Math::MatrixAdd(1., outputData, tempMatrix);
-
-    count += 1;
+    outputData += Math::VecCross(VectorXd::Ones(elemDat->m_coords.rows()), sigma);
   }
-  elemDat->m_outputData = Math::MatrixScale(1./xi.size(), outputData);
+  elemDat->m_outputData = 1./xi.rows() * outputData;
 }
 
-void SmallStrainContinuum::GetKinematics(const std::vector<double> &elState)
+void SmallStrainContinuum::GetKinematics(const VectorXd &elState)
 {
   int numOfDim = 0;
-  if(3 == B.size())
+  if(3 == B.rows())
     numOfDim = 2;
-  else if (6 == B.size())
+  else if (6 == B.rows())
     numOfDim = 3;
   else
     throw "Size of Strain Matrix B in SmallStrainContinuum::GetKinematics is Wrong";
   
   kin = std::make_shared<Kinematics>(numOfDim);
-
-  kin->strain = Math::MatrixAMultVecB(B, elState);
+  kin->strain = B * elState;
 }
 
-void SmallStrainContinuum::GetBMatrix(const Matrix &dphi)
+void SmallStrainContinuum::GetBMatrix(const MatrixXd &dphi)
 {
-  int numOfDim = dphi[0].size();
-  int numOfNode = dphi.size();
-  std::vector<double> temp(numOfDim*numOfNode, 0.);
+  int numOfDim = dphi.cols();
+  int numOfNode = dphi.rows();
+  
   if (2 == numOfDim)
   {
-    B.resize(3, temp);
-
-    int count = 0;
-    for (auto dp : dphi)
+    B = MatrixXd::Zero(3, numOfDim*numOfNode);
+    
+    for(int i = 0; i < numOfNode; i++)
     {
-      B[0][numOfDim * count + 0] = dp[0];
-      B[1][numOfDim * count + 1] = dp[1];
+      B(0, numOfDim * i + 0) = dphi(i, 0);
+      B(1, numOfDim * i + 1) = dphi(i, 1);
 
-      B[2][numOfDim * count + 0] = dp[1];
-      B[2][numOfDim * count + 1] = dp[0];
-
-      count += 1;
+      B(2, numOfDim * i + 0) = dphi(i, 1);
+      B(2, numOfDim * i + 1) = dphi(i, 0);
     }
   }
   else if(3 == numOfDim){
-    B.resize(6, temp);
+    B = MatrixXd::Zero(6, numOfDim*numOfNode);
 
-    int count = 0;
-    for(auto dp : dphi)
+    for(int i = 0; i < numOfNode; i++)
     {
-      B[0][numOfDim * count + 0] = dp[0];
-      B[1][numOfDim * count + 1] = dp[1];
-      B[2][numOfDim * count + 2] = dp[2];
+      B(0, numOfDim * i + 0) = dphi(i, 0);
+      B(1, numOfDim * i + 1) = dphi(i, 1);
+      B(2, numOfDim * i + 2) = dphi(i, 2);
 
-      B[3][numOfDim * count + 0] = dp[1], B[3][numOfDim * count + 1] = dp[0];
-      B[4][numOfDim * count + 1] = dp[2], B[4][numOfDim * count + 2] = dp[1];
-      B[5][numOfDim * count + 0] = dp[2], B[5][numOfDim * count + 2] = dp[0];
-
-      count += 1;
+      B(3, numOfDim * i + 0) = dphi(i, 1), B(3, numOfDim * i + 1) = dphi(i, 0);
+      B(4, numOfDim * i + 1) = dphi(i, 2), B(4, numOfDim * i + 2) = dphi(i, 1);
+      B(5, numOfDim * i + 0) = dphi(i, 2), B(5, numOfDim * i + 2) = dphi(i, 0);
     }
-  }
-}
-
-void SmallStrainContinuum::ComputeElemTimeStep(const std::shared_ptr<ElementShapeFunctions> &res,
-                                               const std::shared_ptr<ElementData> &elemDat)
-{
-  int k1, k2, k3, k4;
-  double areal = 1.0e20, aream = 0.;
-  double e, g, f, atest;
-  double x13, x24, fs, ft;
-  for(int iFace = 0; iFace < res->ReturnFaceMatrix()->size(); iFace++)
-  {
-      k1 = res->ReturnFaceMatrix()->at(iFace)[0] - 1;
-      k2 = res->ReturnFaceMatrix()->at(iFace)[1] - 1;
-      k3 = res->ReturnFaceMatrix()->at(iFace)[2] - 1;
-      k4 = res->ReturnFaceMatrix()->at(iFace)[3] - 1;
-    
-    e = 0., f = 0., g = 0.;
-    for(int iDof = 0; iDof < m_dofType.size(); iDof++){
-      x13 = elemDat->m_coords[k3][iDof] - elemDat->m_coords[k1][iDof];
-      x24 = elemDat->m_coords[k4][iDof] - elemDat->m_coords[k2][iDof];
-
-      fs = x13 - x24;
-      ft = x13 + x24;
-      
-      
-      e += fs * fs;
-      f += fs * ft;
-      g += ft * ft;
-    }
-    atest = e*g - f*f;
-
-    aream = std::max(atest, aream);
-    areal = std::min(atest, areal);
-  }
-  m_vol = 8. * detJac;
-  double at = areal / aream;
-  double dt = 4 * m_vol / sqrt(aream);
-  
-  dt /= m_waveSpeed;
-  
-  m_dtK1 = std::min(m_dtK1, dt);
-  m_elemDistortion = std::min(m_elemDistortion, at);
-}
-
-void SmallStrainContinuum::HourGlassTech(std::shared_ptr<ElementData> &elemDat,
-                                         const std::shared_ptr<ElementShapeFunctions> &res)
-{
-  if(m_props.contains("hourGlass")){
-    const nlohmann::json &hourGlassPara = m_props.at("hourGlass");
-    std::vector<double> temp = res->HourGlassTech(elemDat, m_waveSpeed, hourGlassPara, pHpX);
-  
-    double qh = hourGlassPara.at("para");
-    double ah = qh * m_rho * pow(m_vol, 2./3.) / 4.;
-
-    temp = Math::VecScale(ah, temp);
-    elemDat->m_fint = Math::VecAdd(-1., elemDat->m_fint, temp);
   }
 }

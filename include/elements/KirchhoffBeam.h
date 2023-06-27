@@ -24,7 +24,7 @@ public:
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
 
 private:
-  std::vector<double> TolemCoordinate(const std::vector<double> &a, const Matrix &coord);
+  VectorXd TolemCoordinate(const VectorXd &a, const MatrixXd &coord);
 
   void GetBu(const double &xi);
 
@@ -32,11 +32,11 @@ private:
 
   void GetC(const double &xi);
 
-  std::vector<double> ToGlobalCoordinates(const std::vector<double> &aBar, const Matrix &coord);
+  VectorXd ToGlobalCoordinates(const VectorXd &aBar, const MatrixXd &coord);
 
-  Matrix ToGlobalCoordinates(const Matrix &ABar, const Matrix &coord);
+  MatrixXd ToGlobalCoordinates(const MatrixXd &ABar, const MatrixXd &coord);
 
-  Matrix GetRotationMatrix(const Matrix &coord);
+  MatrixXd GetRotationMatrix(const MatrixXd &coord);
 
 private:
   double m_E = 0.;
@@ -46,9 +46,9 @@ private:
   double m_l0 = 0.;
   double m_EA = 0.;
   double m_EI = 0.;
-  std::vector<double> m_Bu;
-  std::vector<double> m_Bw;
-  std::vector<double> m_C;
+  VectorXd m_Bu;
+  VectorXd m_Bw;
+  VectorXd m_C;
 
 private:
   double m_epsl = 0.;
@@ -58,10 +58,9 @@ private:
   double wght = 0.;
   double Jac = 0.;
   double tempDouble = 0.;
-  std::vector<double> tempVec;
-  std::vector<double> aBar;
-  std::vector<double> a0;
-  Matrix tempMat;
+  VectorXd aBar;
+  VectorXd a0;
+  MatrixXd tempMat;
 };
 ReflectRegister(KirchhoffBeam, const std::vector<int> &, const nlohmann::json &)
 

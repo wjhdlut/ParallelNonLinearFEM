@@ -2,202 +2,30 @@
 #define MATH_H
 
 #include <vector>
+#include <eigen3/Eigen/Dense>
 
-typedef std::vector<std::vector<double>> Matrix;
+using namespace Eigen;
 
 namespace Math
 {
 /**
- * @Brief: compute matrix mlutiplication A*B
- * 
- * @param A 
- * @param B 
- * @return std::vector<std::vector<double>> 
- */
-std::vector<std::vector<double>> MatrixAMultB(const std::vector<std::vector<double>> &A,
-                                             const std::vector<std::vector<double>> &B);
-
-/**
- * @Brief: compute matrix mlutiplication A^T*B
- * 
- * @param A 
- * @param B 
- * @return std::vector<std::vector<double>> 
- */
-std::vector<std::vector<double>> MatrixATransMultB(const std::vector<std::vector<double>> &A,
-                                                   const std::vector<std::vector<double>> &B);
-
-/**
- * @Brief: compute matrix mlutiplication A*B^T
- * 
- * @param A 
- * @param B 
- * @return std::vector<std::vector<double>> 
- */                                              
-std::vector<std::vector<double>> MatrixAMultBTrans(const std::vector<std::vector<double>> &A,
-                                                   const std::vector<std::vector<double>> &B);
-
-/**
- * @Brief:  compute the det of square matrix
- * 
- * @param A 
- * @return double 
- */
-double MatrixDet(const std::vector<std::vector<double>> &A);
-
-/**
- * @Brief:  compute the inverse of square matrix
- * 
- * @param A 
- * @return std::vector<std::vector<double>> 
- */
-std::vector<std::vector<double>> MatrixInverse(const std::vector<std::vector<double>> &A);
-
-/**
- * @Brief:  form unit matrix with rank dim
- * 
- * @param dim 
- * @return std::vector<std::vector<double>> 
- */
-std::vector<std::vector<double>> MatrixEye(const int dim);
-
-/**
- * @Brief: compute C = A + scale * B;
- * 
- * @param scale 
- * @param A 
- * @param B 
- * @return std::vector<std::vector<double>> 
- */
-std::vector<std::vector<double>> MatrixAdd(const double scale,
-                                 const std::vector<std::vector<double>>&A,
-                                 const std::vector<std::vector<double>>&B);
-
-/**
- * @Brief: compute c = a + scale * b;
- * 
- * @param scale 
- * @param a 
- * @param b 
- * @return std::vector<double> 
- */
-std::vector<double> VecAdd(const double scale, const std::vector<double>&a, const std::vector<double>&b);
-
-/**
- * @Brief:   compute result A*b
- * 
- * @param A   Matrix
- * @param b   vector
- * @return std::vector<double> 
- */
-std::vector<double> MatrixAMultVecB(const std::vector<std::vector<double>>&A,
-                                    const std::vector<double>&b);
-
-/**
- * @Brief:   compute result A^T*b
- * 
- * @param A   Matrix
- * @param b   vector
- * @return std::vector<double> 
- */
-std::vector<double> MatrixATransMultVecB(const Matrix&A,
-                                          const std::vector<double>&b);
-/**
- * @Brief:  form a zero matrix 
- * 
- * @param rowNum 
- * @param lineNum 
- * @return Matrix 
- */
-Matrix MatrixZeros(const int rowNum, const int lineNum);
-
-/**
- * @Brief:  compute result B = scale * A for matrix
- * 
- * @param scale 
- * @param A 
- * @return Matrix 
- */
-Matrix MatrixScale(const double scale, const Matrix&A);
-
-/**
- * @Brief:  compute result B = scale * A for vector
- * 
- * @param scale 
- * @param A 
- * @return std::vector<double> 
- */
-std::vector<double> VecScale(const double scale, const std::vector<double> &A);
-
-/**
- * @Brief: Compute the outer product of two vectors.
- * 
- * @param A = [A0, A1, ..., Am]
- * @param B = [B0, B1, ..., Bn]
- * @return Matrix = [A0*B0, A0*B1, A0*B2, ..., A0*Bn;
- *                   A1*B0, A1*B1, A1*B2, ..., A1*Bn;
- *                   ...;
- *                   Am*B0, Am*B1, Am*B2, ..., Am*Bn;]
- */
-Matrix VecOuter(const std::vector<double>&A, const std::vector<double>&B);
-
-/**
- * @Brief:  Convert Matrix to Vector
- * 
- * @param A 
- * @return std::vector<double> 
- */
-std::vector<double> ConvertMatrixToVec(const std::vector<std::vector<double>> &A);
-
-/**
- * @Brief: Output Matrix
- * 
- * @param A 
- */
-void MatrixOutput(const std::vector<std::vector<double>>&A);
-
-/**
- * @Brief: Compute Vector Normal
- * 
- * @param A 
- * @return double 
- */
-double VecNorm(const std::vector<double> &A);
-
-/**
- * @Brief: Compute Sum of all elements in Vector a
- * 
- * @param a 
- * @return double 
- */
-double VecSum(const std::vector<double>&a);
-
-/**
- * @Brief:  Compute the Dot of two vecters
+ * @Brief: Compute the cross of two vectors
  * 
  * @param a 
  * @param b 
- * @return double 
+ * @return MatrixXd 
  */
-double VecDot(const std::vector<double> &a, const std::vector<double> &b);
+MatrixXd VecCross(const VectorXd &vecA, const VectorXd &VecB);
 
 /**
- * @Brief: convert Vector to rowNum*lineNum Matrix
+ * @Brief: Convert vector to matrix
  * 
  * @param rowNum 
- * @param lineNum 
- * @param a 
- * @return Matrix 
+ * @param colNum 
+ * @param vec 
+ * @return MatrixXd 
  */
-Matrix VecReshape(const int rowNum, const int lineNum, const std::vector<double> &a);
-
-/**
- * @Brief: Transpose Matrix
- * 
- * @param A 
- * @return Matrix 
- */
-Matrix MatrixTranspose(const Matrix &A);
+MatrixXd ConvertVecToMat(const int rowNum, const int colNum, const VectorXd &vec);
 };
 
 #endif // MATH_H

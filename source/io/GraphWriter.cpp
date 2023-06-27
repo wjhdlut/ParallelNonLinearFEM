@@ -21,9 +21,9 @@ GraphWriter::~GraphWriter()
 
 void GraphWriter::Run()
 {
-  std::vector<double> data;
-  for(auto iColumns : m_columns){
-    const nlohmann::json &columnsData = m_myProps.at(iColumns);
+  VectorXd data = VectorXd::Zero(m_columns.size());
+  for(int i = 0; i < m_columns.size(); i++){
+    const nlohmann::json &columnsData = m_myProps.at(m_columns[i]);
     std::string type;
     Tools::GetParameter(type, "type", columnsData);
 
@@ -31,7 +31,8 @@ void GraphWriter::Run()
     Tools::GetParameter(nodeID, "node", columnsData);
     if(GlobalData::GetInstance()->m_outputName.end() != 
        std::find(GlobalData::GetInstance()->m_outputName.begin(),
-       GlobalData::GetInstance()->m_outputName.end(), type)){
+       GlobalData::GetInstance()->m_outputName.end(), type))  
+    {
       data = GlobalData::GetInstance()->GetData(type, nodeID);
     }
     else{
@@ -40,10 +41,9 @@ void GraphWriter::Run()
       index = GlobalData::GetInstance()->m_dofs->GetForType(nodeID, dofType);
       VecGetValues(tempV, 1, &index, &tempDouble);
       Tools::GetParameter(factor, "factor", columnsData);
-      tempDouble *= factor;
-      data.emplace_back(tempDouble);
+      data(i) = tempDouble * factor;
     }
-    m_outFileStream << tempDouble << "       ";
+    m_outFileStream << data(i) << "       ";
   }
   m_outFileStream << std::endl;
 

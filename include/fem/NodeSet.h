@@ -4,6 +4,9 @@
 #include <map>
 
 #include <util/Tools.h>
+#include <eigen3/Eigen/Dense>
+
+using namespace Eigen;
 
 class NodeSet
 {
@@ -43,7 +46,7 @@ public:
    * @param nodeId                 [in]  Node Index
    * @return std::vector<double>   [out] Node Coordinates
    */
-  std::vector<double> GetNodeCoords(const int&nodeId);
+  VectorXd GetNodeCoords(const int&nodeId);
 
   /**
    * @Brief:   Get Coordinates of Multiple Nodes 
@@ -51,12 +54,12 @@ public:
    * @param nodeIds                            [in]  Node Indexes
    * @return std::vector<std::vector<double>>  [out] Node Coordinates
    */
-  std::vector<std::vector<double>> GetNodeCoords(const std::vector<int> &nodeIds);
+  MatrixXd GetNodeCoords(const std::vector<int> &nodeIds);
 
   void UpdateNodeCoords(Vec &dDisp, const int numOfDof);
 
 public:
-  std::map<int, std::vector<double>> m_nodeCoords;   // All Node Coordinates
+  std::map<int, VectorXd> m_nodeCoords;   // All Node Coordinates
 };
 
 #endif // NODESET_H

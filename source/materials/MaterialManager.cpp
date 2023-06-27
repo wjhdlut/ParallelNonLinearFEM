@@ -17,9 +17,9 @@ void MaterialManager::Reset()
   iIter = -1;
 }
 
-std::vector<double> MaterialManager::GetStress(const std::shared_ptr<Kinematics>&kin,
-                                               const std::vector<double> &increDisp,
-                                               const Matrix &dphi, int iSam)
+VectorXd MaterialManager::GetStress(const std::shared_ptr<Kinematics>&kin,
+                                               const VectorXd &increDisp,
+                                               const MatrixXd &dphi, int iSam)
 {
   if(-1 == iSam){
     iIter += 1;

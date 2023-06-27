@@ -3,43 +3,46 @@
 
 #include <string>
 #include <vector>
-
+#include <eigen3/Eigen/Dense>
 #include <nlohmann/json.hpp>
 #include <materials/MaterialManager.h>
+#include <util/Math.h>
+
+using namespace Eigen;
 
 /**
  * @Brief:  element data data structure
  * 
  */
+
+class ElementShapeFunctions;
+
 struct ElementData
 {
-  inline ElementData(std::vector<double>&elemState, std::vector<double>&elemDstate){
+  inline ElementData(VectorXd&elemState, VectorXd&elemDstate){
     m_state = elemState;
     m_Dstate = elemDstate;
-    int nDof = elemState.size();
-    for(int row = 0; row < nDof; row++){
-      m_fint.emplace_back(0.);
-      m_lumped.emplace_back(0.);
-      m_acce.emplace_back(0.);
-      m_velo.emplace_back(0.);
+    
+    m_fint.setZero(elemState.size());
+    m_lumped.setZero(elemState.size());
+    m_acce.setZero(elemState.size());
+    m_velo.setZero(elemState.size());
 
-      std::vector<double> temp(nDof, 0.);
-      m_stiff.emplace_back(temp);
-      m_mass.emplace_back(temp);
-    }
+    m_stiff.setZero(elemState.size(), elemState.size());
+    m_mass.setZero(elemState.size(), elemState.size());
   }
 
-  std::vector<double> m_state;                   // element state variable vector such as displacement
-  std::vector<double> m_Dstate;                  // increment of element state variable vector
-  std::vector<double> m_velo;                    // 
-  std::vector<double> m_acce;
-  std::vector<double> m_fint;                    // element internal force vector
   std::vector<std::string> m_outLabel;           // output variable name
-  std::vector<double> m_lumped;                  // 
-  std::vector<std::vector<double>> m_mass;       // element mass matrix
-  std::vector<std::vector<double>> m_stiff;      // element stiffness matrix
-  std::vector<std::vector<double>> m_coords;     // element node coordinates
-  std::vector<std::vector<double>> m_outputData; // output variable data
+  VectorXd m_state;                       // element state variable vector such as displacement
+  VectorXd m_Dstate;                      // increment of element state variable vector
+  VectorXd m_velo;                        // 
+  VectorXd m_acce;
+  VectorXd m_fint;                        // element internal force vector
+  VectorXd m_lumped;                      // 
+  MatrixXd m_mass;                        // element mass matrix
+  MatrixXd m_stiff;                       // element stiffness matrix
+  MatrixXd m_coords;                      // element node coordinates
+  MatrixXd m_outputData;                  // output variable data
 };
 
 /**
@@ -77,11 +80,11 @@ public:
       m_mat->Reset();
   }
 
-  inline std::vector<double> GetHistoryParameter(const std::string&name){
+  inline VectorXd GetHistoryParameter(const std::string&name){
     return m_history[name];
   }
   
-  inline void SetHistoryParameter(const std::string&name, const std::vector<double> &value){
+  inline void SetHistoryParameter(const std::string&name, const VectorXd &value){
     m_current[name] = value;
   }
 
@@ -98,7 +101,7 @@ public:
    * @param outputName 
    * @param outMatrix 
    */
-  void AppendNodalOutput(const std::string&outputName, const Matrix&outMatrix);
+  void AppendNodalOutput(const std::string&outputName, const MatrixXd&outMatrix);
 
   /**
    * @Brief:
@@ -139,7 +142,15 @@ protected:
     return m_nodes.size() * m_dofType.size();
   }
 
-  void GetNMatrix(const std::vector<double> &h);
+  void GetNMatrix(const Eigen::VectorXd &h);
+
+  virtual void ComputeElemTimeStep(const std::shared_ptr<ElementShapeFunctions> &res,
+                                   const std::shared_ptr<ElementData> &elemDat,
+                                   const double detJac);
+
+  virtual void HourGlassTech(std::shared_ptr<ElementData>&elemDat,
+                             const std::shared_ptr<ElementShapeFunctions> &res,
+                             const MatrixXd &pHpX);
 
 protected:
   bool m_reductedIntegration = false;
@@ -147,22 +158,23 @@ protected:
   double m_waveSpeed = 0.;
   double m_dtK1 = 1.e6;
   double m_elemDistortion = 1.;
+  double m_vol = 0;
   std::vector<std::string> m_dofType;                                 // Element Dof Type
   std::shared_ptr<MaterialManager> m_mat;                             // Mateirals
   nlohmann::json m_props;                                             // Whole modele Properties
   std::vector<int> m_nodes;                                           // Element Node Index
-  std::unordered_map<std::string, std::vector<double>> m_history;     // History Data
-  std::unordered_map<std::string, std::vector<double>> m_current;     // Current Data
+  std::unordered_map<std::string, VectorXd> m_history;                // History Data
+  std::unordered_map<std::string, VectorXd> m_current;                // Current Data
 
 protected:
-  std::vector<std::vector<double>> xi;
-  std::vector<double> weight;
-  int order = 0;                                         // the Order of Gauss Integration
-  std::string method = "Gauss";                          // the Method of Integration
-  Matrix outputData;
+  MatrixXd xi;
+  VectorXd weight;
+  int order = 0;                                                      // the Order of Gauss Integration
+  std::string method = "Gauss";                                       // the Method of Integration
+  MatrixXd outputData;
 
 private:
-  Matrix N;
+  MatrixXd N;
 };
 
 #endif // ELEMENT_H

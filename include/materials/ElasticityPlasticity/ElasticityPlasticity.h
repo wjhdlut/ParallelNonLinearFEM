@@ -4,6 +4,7 @@
 #include <materials/BaseMaterial.h>
 #include <util/ObjectFactory.h>
 #include <materials/LinearElasticity.h>
+#include <util/Math.h>
 
 class ElasticityPlasticity : public BaseMaterial
 {
@@ -12,16 +13,16 @@ public:
 
   ~ElasticityPlasticity();
 
-  virtual std::vector<double> GetStress(const std::shared_ptr<Kinematics> &kin,
-                                        const std::vector<double> &increDisp,
-                                        const Matrix &dphi = Matrix()) override;
+  virtual VectorXd GetStress(const std::shared_ptr<Kinematics> &kin,
+                             const VectorXd &increDisp,
+                             const MatrixXd &dphi = MatrixXd::Zero(0, 0)) override;
 
 private:
   virtual void ComputeDMatrix() override;
 
-  void StressRotation(std::vector<double> &stress,
-                      const std::vector<double> &increDisp,
-                      const Matrix &dphi);
+  void StressRotation(VectorXd &stress,
+                      const VectorXd &increDisp,
+                      const MatrixXd &dphi);
 
 private:
   double m_K;
@@ -30,7 +31,7 @@ private:
   double m_yieldStress;
   double m_waveSpeed;
   std::string m_rateType;
-  std::vector<double> m_oneVec = {1., 1., 1., 0., 0., 0.};
+  VectorXd m_oneVec;
 
   std::shared_ptr<LinearElasticity> lineMat;
 };

@@ -7,10 +7,10 @@
 namespace ShapeFunctions
 {
 
-std::string GetElemType(const std::vector<std::vector<double>>&elemCoords)
+std::string GetElemType(const MatrixXd&elemCoords)
 {
-  int numOfNode = elemCoords.size();
-  int numOfDim = elemCoords[0].size();
+  int numOfNode = elemCoords.rows();
+  int numOfDim  = elemCoords.cols();
 
   // 1-d element
   if(1 == numOfDim){
@@ -65,32 +65,36 @@ std::string GetElemType(const std::vector<std::vector<double>>&elemCoords)
   }
 }
 
-void GaussScheme(std::vector<double>&xi, std::vector<double>&weight, const int order)
+void GaussScheme(VectorXd&xi, VectorXd&weight, const int order)
 {
+  xi.resize(order), weight.resize(order);
   if(1 == order){
-    xi.emplace_back(0.), weight.emplace_back(2.);
+    xi(0) = 0., weight(0) = 2.;
   }
   if(2 == order){
-    xi.emplace_back(-0.577350269189626), weight.emplace_back(1.);
-    xi.emplace_back(+0.577350269189626), weight.emplace_back(1.);
+    xi(0) = -0.577350269189626, weight(0) = 1.;
+    xi(1) = +0.577350269189626, weight(1) = 1.;
   }
   if(3 == order){
-    xi.emplace_back(-0.774596669241483), weight.emplace_back(0.555555555555556);
-    xi.emplace_back(+0.),                weight.emplace_back(0.888888888888889);
-    xi.emplace_back(+0.774596669241483), weight.emplace_back(0.555555555555556);
+    xi(0) = -0.774596669241483, weight(0) = 0.555555555555556;
+    xi(1) = +0.,                weight(1) = 0.888888888888889;
+    xi(2) = +0.774596669241483, weight(2) = 0.555555555555556;
   }
 }
 
-void TriaScheme(std::vector<std::vector<double>>&xi, std::vector<double>&weight, const int order)
+void TriaScheme(MatrixXd&xi, VectorXd&weight, const int order)
 {
+  xi.resize(order, 2), weight.resize(order);
   if(1 == order){
-    xi = {{1./3., 1./3.}};
-    weight.emplace_back(1.0);
+    xi(0, 0) = 1./3., xi(0, 1) = 1./3.;
+    weight(0) = 1.0;
   }
   else if(3 == order){
     double r1 = 1./6., r2 = 2./3.;
-    xi = {{r1, r1}, {r2, r1}, {r1, r2}};
-    weight = {1./3., 1./3., 1./3.};
+    xi(0, 0) = r1, xi(0, 1) = r1;
+    xi(1, 0) = r2, xi(1, 1) = r1;
+    xi(2, 0) = r1, xi(2, 1) = r2;
+    weight << 1./3., 1./3., 1./3.;
   }
   else if(7 == order){
     double r1 = 0.1012865073235;
@@ -98,29 +102,36 @@ void TriaScheme(std::vector<std::vector<double>>&xi, std::vector<double>&weight,
     double r4 = 0.4701420641051;
     double r6 = 0.0597158717898;
     double r7 = 1.0/3.0;
-    xi = {{r1, r1}, {r2, r1}, {r1, r2}, {r4, r6}, {r4, r4}, {r6, r4}, {r7, r7}};
+    // xi = {{r1, r1}, {r2, r1}, {r1, r2}, {r4, r6}, {r4, r4}, {r6, r4}, {r7, r7}};
+    xi(0, 0) = r1, xi(0, 1) = r1;
+    xi(1, 0) = r2, xi(1, 1) = r1;
+    xi(2, 0) = r1, xi(2, 1) = r2;
+    xi(3, 0) = r4, xi(3, 1) = r6;
+    xi(4, 0) = r4, xi(4, 1) = r4;
+    xi(5, 0) = r6, xi(5, 1) = r4;
+    xi(6, 0) = r7, xi(6, 1) = r7;
 
     double w1 = 0.1259391805448;
     double w4 = 0.1323941527885;
     double w7 = 0.225;
-    weight = {w1, w1, w1, w4, w4, w4, w7};
+    weight << w1, w1, w1, w4, w4, w4, w7;
   }
   
 }
 
-void GetIntegrationPoints(std::vector<std::vector<double>>&xi, std::vector<double>&weight,
-                          const std::string&elemType, const int order, const::std::string &method)
+void GetIntegrationPoints(MatrixXd&xi, VectorXd&weight, const std::string&elemType,
+                          const int order, const::std::string &method)
 {
   if(0 != xi.size()) return;
   int stdOrder = 0;
-  std::vector<double> xi1d;
-  std::vector<double> weight1d;
+  VectorXd xi1d, weight1d;
   if(elemType.npos != elemType.find("Line")){
     // 1-d element
     if("Line2" == elemType) stdOrder = 2;
     if("Line3" == elemType) stdOrder = 3;
     GaussScheme(xi1d, weight1d, stdOrder + order);
-    xi.emplace_back(xi1d);
+    xi.resize(1, xi1d.size());
+    xi << xi1d;
     weight = weight1d;
   }
   else if(elemType.npos != elemType.find("Tria")){
@@ -135,13 +146,14 @@ void GetIntegrationPoints(std::vector<std::vector<double>>&xi, std::vector<doubl
     if("Quad4" == elemType) stdOrder = 2;
     if( "Quad8" == elemType || "Quad9" == elemType) stdOrder = 3;
     GaussScheme(xi1d, weight1d, stdOrder + order);
+    xi.resize(std::pow(stdOrder + order, 2), 2);
+    weight.resize(std::pow(stdOrder + order, 2));
+    int index = 0;
     for(int i = 0; i < stdOrder + order; i++){
       for(int j = 0; j < stdOrder + order; j++){
-        std::vector<double> iXi;
-        iXi.emplace_back(xi1d[i]);
-        iXi.emplace_back(xi1d[j]);
-        xi.emplace_back(iXi);
-        weight.emplace_back(weight1d[i] * weight1d[j]);
+        xi(index, 0) = xi1d(i), xi(index, 1) = xi1d(j);
+        weight(index) = (weight1d(i) * weight1d(j));
+        index += 1;
       }
     }
   }
@@ -149,22 +161,22 @@ void GetIntegrationPoints(std::vector<std::vector<double>>&xi, std::vector<doubl
     // 3-d hexahedron element
     if("Hexa8" == elemType) stdOrder = 2;
     GaussScheme(xi1d, weight1d, stdOrder + order);
+    xi.resize(std::pow(stdOrder + order, 3), 3);
+    weight.resize(std::pow(stdOrder + order, 3));
+    int index = 0;
     for(int i = 0; i < stdOrder + order; i++){
       for(int j = 0; j < stdOrder + order; j++){
         for(int k = 0; k < stdOrder + order; k++){
-          std::vector<double> iXi;
-          iXi.emplace_back(xi1d[i]);
-          iXi.emplace_back(xi1d[j]);
-          iXi.emplace_back(xi1d[k]);
-          xi.emplace_back(iXi);
-          weight.emplace_back(weight1d[i] * weight1d[j] * weight1d[k]);
+          xi(index, 0) = xi1d(i), xi(index, 1) = xi1d(j), xi(index, 2) = xi1d(k);
+          weight(index) = weight1d(i) * weight1d(j) * weight1d(k);
+          index += 1;
         }
       }
     }
   }
 }
 
-void GetElemShapeData(std::vector<std::vector<double>>&elemCoords, const int order,
+void GetElemShapeData(MatrixXd&elemCoords, const int order,
                       const std::string &method, const std::string&elemType)
 {
   // std::string realElemType = ("Default" == elemType) ? GetElemType(elemCoords) : elemType;

@@ -49,7 +49,7 @@ private:
   double m_dtScale = 0.9;                          // time scale parameter
   double m_dTime1 = 1.0e6;                         // time increment dt^(n+1/2)
   double m_dTime101d = 1.0e6;
-  double m_endTime;
+  double m_endTime = 1.0;
   double m_time;
   double m_elemDistortion;
 

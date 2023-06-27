@@ -105,7 +105,7 @@ private:
 
 private:
   std::vector<std::string> m_dofTypes;
-  std::map<int, std::vector<double>> *m_nodeCoords;
+  std::map<int, VectorXd>  *m_nodeCoords;
   std::unordered_map<int, double> m_constrained;
   double m_constrainedFac = 1.;
   std::vector<int> m_IDmap;

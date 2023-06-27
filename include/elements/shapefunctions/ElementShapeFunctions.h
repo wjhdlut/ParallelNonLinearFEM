@@ -17,6 +17,8 @@
             ...,
             pHnpxi1 pHnpxi2 pHnpxi3]*/
 
+struct ElementData;
+
 class ElementShapeFunctions
 {
 public:
@@ -37,28 +39,36 @@ public:
    * 
    * @param xi                [in]  Gauss Coordinate
    */
-  virtual void GetShapeFunction(const std::vector<double> &xi) = 0;
+  virtual void GetShapeFunction(const VectorXd &xi) = 0;
 
-  virtual std::vector<double> HourGlassTech(std::shared_ptr<ElementData> &elemDat,
-                                            const double &c,
-                                            const nlohmann::json &para,
-                                            const std::vector<std::vector<double>> &pHpX)
+  virtual VectorXd HourGlassTech(std::shared_ptr<ElementData> &elemDat,
+                                 const double &c,
+                                 const nlohmann::json &para,
+                                 const MatrixXd &pHpX)
   {
-    return std::vector<double>(0.);
+    return VectorXd::Zero(0);
   }
   
-  inline std::vector<std::vector<int>> *ReturnFaceMatrix(){
+  inline MatrixXi *ReturnFaceMatrix(){
     return &m_face;
+  }
+
+  virtual double ComputeElemTimeStep(double &dtK1, double &elemDistortion,
+                                     const std::shared_ptr<ElementData> &elemDat,
+                                     const double detJac, const double waveSpeed)
+  {
+    return 0.;
   }
 
 public:
   int numOfStress;                              // The number of stress
-  std::vector<double> H;                        // The shape function
-  std::vector<std::vector<double>> pHpxi;       // The derivative of shape function about local coordinate system
+  VectorXd H;                                   // The shape function
+  MatrixXd pHpxi;                               // The derivative of shape function about local coordinate system
   std::vector<std::string> dofType;             // Element Dof Type
 
 protected:
-  std::vector<std::vector<int>> m_face;
+  MatrixXi m_face;
+  std::vector<std::string> m_dofType;
 };
 
 #endif // ELEMENTSHAPEFUNCTIONS_H

@@ -32,12 +32,11 @@ public:
 
 private:
   void GetStrain(double &epsilon, double &dEpsilon,
-                 const std::vector<double> &a, const std::vector<double> &a0);
+                 const VectorXd &a, const VectorXd &a0);
 
-  void GetBMatrix(const std::vector<double> &a);
+  void GetBMatrix(const VectorXd &a);
 
-  std::vector<std::vector<double>> GetNonLinearStiffMatrix(const double &sigma,
-                                                           const double &area);
+  MatrixXd GetNonLinearStiffMatrix(const double &sigma, const double &area);
 
 private:
   double m_l0 = 0.;
@@ -48,13 +47,13 @@ private:
   double dEpsilon = 0.;
   double dSigma = 0.;
 
-  std::vector<double> B;
-  std::vector<double> a;
-  std::vector<double> Da;
-  std::vector<double> a0;
-  std::vector<double> sigma;
-  Matrix KL;
-  Matrix KNL;
+  VectorXd B;
+  VectorXd a;
+  VectorXd Da;
+  VectorXd a0;
+  VectorXd sigma;
+  MatrixXd KL;
+  MatrixXd KNL;
 };
 
 ReflectRegister(Truss, const std::vector<int> &, const nlohmann::json &)

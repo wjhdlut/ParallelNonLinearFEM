@@ -10,7 +10,7 @@ public:
   Line3ShapeFunctions();
   ~Line3ShapeFunctions();
 
-  virtual void GetShapeFunction(const std::vector<double> &xi);
+  virtual void GetShapeFunction(const VectorXd &xi);
 };
 ReflectRegister(Line3ShapeFunctions)
 

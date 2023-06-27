@@ -273,7 +273,7 @@ void DofSpace::RigidWallConstraint(Vec&da)
     int index = std::abs(m_rigidWall->direction) - 1;
     double temp = (m_rigidWall->direction < 0) ? -1. : 1.;
     Vec &velo = GlobalData::GetInstance()->m_velo;
-    std::map<int, std::vector<double>> & nodeCoords = GlobalData::GetInstance()->m_nodes->m_nodeCoords;
+    std::map<int, VectorXd> & nodeCoords = GlobalData::GetInstance()->m_nodes->m_nodeCoords;
     
     std::vector<int> dofIndex;
     std::vector<double> iNodeVelo(m_dofTypes.size(), 0.), iNodeAcce(m_dofTypes.size(), 0.);

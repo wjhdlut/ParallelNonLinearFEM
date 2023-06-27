@@ -25,7 +25,7 @@ public:
   
   void AssembleInternalForce(Vec &B);
   
-  void AssembleMassMatrix(Mat &A, Vec &B);
+  PetscErrorCode AssembleMassMatrix(Mat &A, Vec &B);
 
   void CommitHistory();
 
@@ -83,9 +83,9 @@ private:
   std::shared_ptr<ElementData> elemData;
   std::vector<int> elemNodes;
   std::vector<int> elemDofs;
-  std::vector<double> elemState;
-  std::vector<double> elemDstate;
-  std::vector<std::vector<double>> elemCoords;
+  VectorXd elemState;
+  VectorXd elemDstate;
+  MatrixXd elemCoords;
 
 private:
   double m_dtK1 = 1.e6;

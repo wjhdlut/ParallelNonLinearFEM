@@ -37,7 +37,7 @@ public:
    * 
    * @param xi   [in]  Gauss Points Coordinates
    */
-  virtual void GetShapeFunction(const std::vector<double> &xi) override;
+  virtual void GetShapeFunction(const VectorXd &xi) override;
 };
 
 ReflectRegister(Quad4ShapeFunctions)

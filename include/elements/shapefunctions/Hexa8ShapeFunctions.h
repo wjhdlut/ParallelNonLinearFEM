@@ -43,34 +43,31 @@ public:
    * 
    * @param xi     [in]  Gauss Points Coordinates
    */
-  virtual void GetShapeFunction(const std::vector<double> &xi) override;
+  virtual void GetShapeFunction(const VectorXd &xi) override;
 
-  virtual std::vector<double> HourGlassTech(std::shared_ptr<ElementData> &elemDat,
-                                            const double &c,
-                                            const nlohmann::json &hourGlassPara,
-                                            const std::vector<std::vector<double>> &pHpX) override;
+  virtual VectorXd HourGlassTech(std::shared_ptr<ElementData> &elemDat,
+                                 const double &c,
+                                 const nlohmann::json &hourGlassPara,
+                                 const MatrixXd &pHpX) override;
   
+  virtual double ComputeElemTimeStep(double &dtK1, double &elemDistortion,
+                                   const std::shared_ptr<ElementData> &elemDat,
+                                   const double detJac, const double waveSpeed) override;
 private:
-  std::vector<double> HourGlassFlangan(std::shared_ptr<ElementData> &elemDat,
-                                       const double &c,
-                                       const std::vector<std::vector<double>> &pHpX);
+  VectorXd HourGlassFlangan(std::shared_ptr<ElementData> &elemDat,
+                            const double &c,
+                            const MatrixXd &pHpX);
   
-  std::vector<double> HourGlassStand(std::shared_ptr<ElementData> &elemDat,
-                                     const double &c,
-                                     const double &para);
+  VectorXd HourGlassStand(std::shared_ptr<ElementData> &elemDat,
+                          const double &c,
+                          const double &para);
 
 private:
-  std::vector<std::vector<double>> beat;
-  std::vector<std::vector<double>> hgr;
-  std::vector<std::vector<double>> m_h = {{1, -1, 1, -1},
-                                          {1, 1, -1, -1},
-                                          {1, -1, -1, 1},
-                                          {1, -1, 1, -1}};
+  MatrixXd beat;
+  MatrixXd hgr;
+  Matrix4d m_h;
                                           
-  std::vector<std::vector<double>> m_ss = {{2., -2., 2., -2.},
-                                           {-2., -2., 2., 2.},
-                                           {-2., 2., 2., -2.},
-                                           {0., 0., 0., 0.}};
+  Matrix4d m_ss;
 };
 
 ReflectRegister(Hexa8ShapeFunctions)
