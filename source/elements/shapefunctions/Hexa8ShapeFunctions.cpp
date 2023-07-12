@@ -1,13 +1,15 @@
 #include <elements/shapefunctions/Hexa8ShapeFunctions.h>
 
+#include <iostream>
+
 Hexa8ShapeFunctions::Hexa8ShapeFunctions()
 {
-  H.resize(8);
-  pHpxi.resize(8, 3);
+  H = VectorXd::Zero(8);
+  pHpxi = MatrixXd::Zero(8, 3);
 
   numOfStress = 6;
   
-  m_face.resize(6, 4);
+  m_face = MatrixXi::Zero(6, 4);
   m_face(0, 0) = 1, m_face(0, 1) = 2, m_face(0, 2) = 3, m_face(0, 3) = 4;
   m_face(1, 0) = 5, m_face(1, 1) = 6, m_face(1, 2) = 7, m_face(1, 3) = 8;
   m_face(2, 0) = 1, m_face(2, 1) = 2, m_face(2, 2) = 6, m_face(2, 3) = 5;
@@ -110,8 +112,7 @@ VectorXd Hexa8ShapeFunctions::HourGlassFlangan(std::shared_ptr<ElementData> &ele
     beat(i, 3) = x1256 + x3478;
   }
   
-  MatrixXd gama(4, 8);
-  gama.setZero();
+  MatrixXd gama = MatrixXd::Zero(4, 8);
   for(int j = 0; j < 4; j++)
     for(int k = 0; k < 4; k++)
     {
@@ -128,7 +129,7 @@ VectorXd Hexa8ShapeFunctions::HourGlassFlangan(std::shared_ptr<ElementData> &ele
   }
 
   int index = 0;
-  MatrixXd g(pHpX.cols(), gama.rows());
+  MatrixXd g = MatrixXd::Zero(pHpX.cols(), gama.rows());
   for(int i = 0; i < pHpX.cols(); i++){
     for(int k = 0; k < gama.rows(); k++){
       for(int j = 0; j < pHpX.rows(); j++){
@@ -140,7 +141,7 @@ VectorXd Hexa8ShapeFunctions::HourGlassFlangan(std::shared_ptr<ElementData> &ele
   
   VectorXd temp = VectorXd::Zero(elemDat->m_fint.size());
   MatrixXd tempMat = g * gama;
-  for(int i = 0; i < pHpX.size(); i++){
+  for(int i = 0; i < pHpX.rows(); i++){
     for(int j = 0; j < pHpX.cols(); j++){
       index = pHpX.cols() * i + j;
       temp(index) -= c * tempMat(j, i);
@@ -207,6 +208,7 @@ double Hexa8ShapeFunctions::ComputeElemTimeStep(double &dtK1, double &elemDistor
   double areal = 1.0e20, aream = 0.;
   double e, g, f, atest;
   double x13, x24, fs, ft;
+  // std::cout << "m_coords = \n" << elemDat->m_coords << std::endl;
   for(int iFace = 0; iFace < m_face.rows(); iFace++)
   {
       k1 = m_face(iFace, 0) - 1;
@@ -216,13 +218,13 @@ double Hexa8ShapeFunctions::ComputeElemTimeStep(double &dtK1, double &elemDistor
     
     e = 0., f = 0., g = 0.;
     for(int iDof = 0; iDof < m_dofType.size(); iDof++){
-      x13 = (elemDat->m_coords(k3, iDof) + elemDat->m_state(m_dofType.size() * k3 + iDof))
-          - (elemDat->m_coords(k1, iDof) + elemDat->m_state(m_dofType.size() * k1 + iDof));
-      x24 = (elemDat->m_coords(k4, iDof) + elemDat->m_state(m_dofType.size() * k4 + iDof))
-          - (elemDat->m_coords(k2, iDof) + elemDat->m_state(m_dofType.size() * k2 + iDof));
+      // x13 = (elemDat->m_coords(k3, iDof) + elemDat->m_state(m_dofType.size() * k3 + iDof))
+      //     - (elemDat->m_coords(k1, iDof) + elemDat->m_state(m_dofType.size() * k1 + iDof));
+      // x24 = (elemDat->m_coords(k4, iDof) + elemDat->m_state(m_dofType.size() * k4 + iDof))
+      //     - (elemDat->m_coords(k2, iDof) + elemDat->m_state(m_dofType.size() * k2 + iDof));
 
-      // x13 = elemDat->m_coords[k3][iDof] - elemDat->m_coords[k1][iDof];
-      // x24 = elemDat->m_coords[k4][iDof] - elemDat->m_coords[k2][iDof];
+      x13 = elemDat->m_coords(k3, iDof) - elemDat->m_coords(k1, iDof);
+      x24 = elemDat->m_coords(k4, iDof) - elemDat->m_coords(k2, iDof);
 
       fs = x13 - x24;
       ft = x13 + x24;

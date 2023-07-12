@@ -101,7 +101,7 @@ void Element::GetMassMatrix(std::shared_ptr<ElementData>&elemDat)
     res->GetShapeFunction(xi.row(i));
     
     // compute jacobian matrix
-    jac = elemDat->m_coords * res->pHpxi;
+    jac = elemDat->m_coords.transpose() * res->pHpxi;
     detJac = jac.determinant();
 
     GetNMatrix(res->H);

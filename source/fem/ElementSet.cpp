@@ -5,7 +5,6 @@
 #include <elements/Element.h>
 #include <util/ObjectFactory.h>
 #include <util/DataStructure.h>
-#include <elements/KirchhoffBeam.h>
 
 #include <iostream>
 
@@ -140,7 +139,7 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
   for(auto elementGroup : m_groups)
   {
     nlohmann::json &elemPrpos = m_props.at(elementGroup.first);
-    // std::ofstream fint("elemfint.txt", std::ios::out);
+    std::ofstream fint("elemfint.txt", std::ios::out);
     for(auto element : elementGroup.second)
     {
       elemPtr = m_elem[element];
@@ -155,7 +154,8 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
       elemDofs = dofs->Get(elemNodes);
 
       // Get the element state
-      elemState.resize(elemDofs.size()), elemDstate.resize(elemDofs.size());
+      elemState = VectorXd::Zero(elemDofs.size());
+      elemDstate = VectorXd::Zero(elemDofs.size());
       ierr = VecGetValues(state, elemDofs.size(), &elemDofs[0], &elemState(0)); CHKERRQ(ierr);
       ierr = VecGetValues(Dstate, elemDofs.size(), &elemDofs[0], &elemDstate(0)); CHKERRQ(ierr);
       
@@ -169,10 +169,10 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
       elemPtr->GetTangentStiffness(elemData);
       elemPtr->ReturnTimeIncrementPara(m_dtK1, m_elemDistortion);
       // std::cout << "element = " << element << "m_dtK1 = " << m_dtK1 << " m_elemDistortion = " << m_elemDistortion << std::endl;
-      // for(int index_fint = 0; index_fint < elemData->m_fint.size(); index_fint++){
-      //   fint << elemData->m_fint[index_fint] << std::endl;
-      //   // findof << elemDofs[index_fint]<< std::endl;
-      // }
+      for(int index_fint = 0; index_fint < elemData->m_fint.size(); index_fint++){
+        fint << elemData->m_fint[index_fint] << std::endl;
+        // findof << elemDofs[index_fint]<< std::endl;
+      }
 
       for(auto label : elemData->m_outLabel)
         elemPtr->AppendNodalOutput(label, elemData->m_outputData);
@@ -195,7 +195,7 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
         throw "assemleArray is only implemented for vectors and matrices.";
       }
     }
-    // fint.close();
+    fint.close();
   }
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -258,7 +258,8 @@ PetscErrorCode ElementSet::AssembleMassMatrix(Mat &A, Vec &B)
       // Get the element degrees of freedom
       elemDofs = GlobalData::GetInstance()->m_dofs->Get(elemNodes);
       
-      elemState.resize(elemDofs.size(), 0.), elemDstate.resize(elemDofs.size(), 0.);
+      elemState = VectorXd::Zero(elemDofs.size());
+      elemDstate = VectorXd::Zero(elemDofs.size());
       ierr = VecGetValues(state, elemDofs.size(), &elemDofs[0], &elemState[0]); CHKERRQ(ierr);
       ierr = VecGetValues(Dstate, elemDofs.size(), &elemDofs[0], &elemDstate[0]); CHKERRQ(ierr);
       elemData = std::make_shared<ElementData>(elemState, elemDstate);
