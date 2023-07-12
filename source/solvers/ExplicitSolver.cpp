@@ -12,6 +12,7 @@ ExplicitSolver::ExplicitSolver(const nlohmann::json &props) : BaseModule(props)
   
   VecDuplicate(GlobalData::GetInstance()->m_state, &m_lumped);
   GlobalData::GetInstance()->m_elements->AssembleMassMatrix(m_mass, m_lumped);
+  Tools::PrintVecIntoFile(m_lumped, "lumped.txt");
 
   InitialStepComp();
 }
@@ -41,16 +42,16 @@ void ExplicitSolver::Run()
  
  // update velocity, acceleration, displacement and increment displacement
   VecAXPY(velo, 0.5*m_dTime, acce);
-  // Tools::PrintVecIntoFile(acce, "acce.txt");
-  // Tools::PrintVecIntoFile(velo, "velo.txt");
+  Tools::PrintVecIntoFile(acce, "acce.txt");
+  Tools::PrintVecIntoFile(velo, "velo.txt");
   VecAXPY(disp, m_dTime, velo);
-  // Tools::PrintVecIntoFile(disp, "disp.txt");
+  Tools::PrintVecIntoFile(disp, "disp.txt");
   VecCopy(velo, dDisp);
   VecScale(dDisp, m_dTime);
-  // Tools::PrintVecIntoFile(disp, "dDisp.txt");
+  Tools::PrintVecIntoFile(disp, "dDisp.txt");
 
   GlobalData::GetInstance()->m_elements->AssembleInternalForce(fint);
-  // Tools::PrintVecIntoFile(fint, "fint.txt");
+  Tools::PrintVecIntoFile(fint, "fint.txt");
 
   double lam = LamExpression(GlobalData::GetInstance()->m_time);
   GlobalData::GetInstance()->m_dofs->SetConstrainFactor(lam);
@@ -59,6 +60,7 @@ void ExplicitSolver::Run()
   VecDuplicate(fhat, &res); VecCopy(fhat, res);
   VecScale(res, lam); VecAXPY(res, -1., fint);
   // std::cout << "res = " << std::endl;
+  Tools::PrintVecIntoFile(res, "res.txt");
   // VecView(res, PETSC_VIEWER_STDOUT_WORLD);
 
   GlobalData::GetInstance()->m_dofs->Solve(m_lumped, res, acce);

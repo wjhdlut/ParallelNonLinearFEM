@@ -168,10 +168,10 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
       elemPtr->GetTangentStiffness(elemData);
       elemPtr->ReturnTimeIncrementPara(m_dtK1, m_elemDistortion);
       // std::cout << "element = " << element << "m_dtK1 = " << m_dtK1 << " m_elemDistortion = " << m_elemDistortion << std::endl;
-      // for(int index_fint = 0; index_fint < elemData->m_fint.size(); index_fint++){
-      //   fint << elemData->m_fint[index_fint] << std::endl;
-      //   findof << elemDofs[index_fint]<< std::endl;
-      // }
+      for(int index_fint = 0; index_fint < elemData->m_fint.size(); index_fint++){
+        fint << elemData->m_fint[index_fint] << std::endl;
+        // findof << elemDofs[index_fint]<< std::endl;
+      }
 
       for(auto label : elemData->m_outLabel)
         elemPtr->AppendNodalOutput(label, elemData->m_outputData);
