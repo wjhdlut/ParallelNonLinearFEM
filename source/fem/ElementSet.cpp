@@ -204,9 +204,6 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
   ierr = VecAssemblyBegin(B); CHKERRQ(ierr);
   ierr = VecAssemblyEnd(B); CHKERRQ(ierr);
 
-  
-  Tools::PrintVecIntoFile(B, "B.txt");
-
   return ierr;
 }
 

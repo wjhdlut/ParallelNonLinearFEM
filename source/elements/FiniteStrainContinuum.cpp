@@ -71,18 +71,10 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     
     // Hour-Glass method
     HourGlassTech(elemDat, res, pHpX);
-    // std::cout << "xi = \n" << xi.row(iGaussPoint) << std::endl;
-    // std::cout << "B = \n" << B << std::endl;
-    // std::cout << "Bnl = \n" << Bnl << std::endl;
-    // std::cout << "D = \n" << D << std::endl;
-    // std::cout << "sigma = \n" << sigma << std::endl;
-    // std::cout << "T = \n" << T<< std::endl;
 
     // compute output stress matrix
     outputData += Math::VecCross(VectorXd::Ones(elemDat->m_coords.rows()), sigma);
   }
-  // std::cout << "elemDat->m_stiff\n" << elemDat->m_stiff << std::endl;
-  // std::cout << "elemDat->m_fint\n" << elemDat->m_fint << std::endl;
   elemDat->m_outputData = 1./xi.rows() * outputData;
 }
 
