@@ -46,15 +46,18 @@ public:
   virtual void GetShapeFunction(const VectorXd &xi) override;
 
   virtual VectorXd HourGlassTech(std::shared_ptr<ElementData> &elemDat,
+                                 const VectorXd &elemNodeDisp, 
                                  const double &c,
                                  const nlohmann::json &hourGlassPara,
                                  const MatrixXd &pHpX) override;
   
   virtual double ComputeElemTimeStep(double &dtK1, double &elemDistortion,
-                                   const std::shared_ptr<ElementData> &elemDat,
+                                   const MatrixXd &elemNodeCoords,
+                                   const VectorXd &elemNodeDisp,
                                    const double detJac, const double waveSpeed) override;
 private:
   VectorXd HourGlassFlangan(std::shared_ptr<ElementData> &elemDat,
+                            const VectorXd &elemNodeDisp,
                             const double &c,
                             const MatrixXd &pHpX);
   

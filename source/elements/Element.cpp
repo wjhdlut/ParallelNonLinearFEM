@@ -127,14 +127,16 @@ void Element::GetNMatrix(const VectorXd &H)
 }
 
 void Element::ComputeElemTimeStep(const std::shared_ptr<ElementShapeFunctions> &res,
-                                  const std::shared_ptr<ElementData> &elemDat,
+                                  const MatrixXd &elemNodeCoords,
+                                  const VectorXd &elemNodeDisp,
                                   const double detJac)
 {
-  m_vol = res->ComputeElemTimeStep(m_dtK1, m_elemDistortion, elemDat, detJac, m_waveSpeed);
-  // std::cout << "dtK1 = " << m_dtK1 << std::endl;
+  m_vol = res->ComputeElemTimeStep(m_dtK1, m_elemDistortion, elemNodeCoords,
+                                   elemNodeDisp, detJac, m_waveSpeed);
 }
 
 void Element::HourGlassTech(std::shared_ptr<ElementData>&elemDat,
+                            const VectorXd &elemNodeDisp,
                             const std::shared_ptr<ElementShapeFunctions> &res,
                             const MatrixXd &pHpX)
 {
@@ -143,6 +145,7 @@ void Element::HourGlassTech(std::shared_ptr<ElementData>&elemDat,
     double qh = hourGlassPara.at("para");
     double ah = qh * m_rho * pow(m_vol, 2./3.) / 4.;
     
-    elemDat->m_fint -= ah * res->HourGlassTech(elemDat, m_waveSpeed, hourGlassPara, pHpX);
+    elemDat->m_fint -= ah * res->HourGlassTech(elemDat, elemNodeDisp, m_waveSpeed,
+                                               hourGlassPara, pHpX);
   }
 }

@@ -34,10 +34,10 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
 
     // compute jacobian matrix
     jac = elemDat->m_coords.transpose() * res->pHpxi;
-    // jac = Math::MatrixATransMultB(elemDat->m_coords, res->pHpxi);
 
     // Compute time step based on the deformation
-    ComputeElemTimeStep(res, elemDat, jac.determinant());
+    ComputeElemTimeStep(res, elemDat->m_coords,
+                        elemDat->m_state, jac.determinant());
     
     // compute the derivative of shape function about physical coordinate
     pHpX = res->pHpxi * jac.inverse();
@@ -70,7 +70,7 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     elemDat->m_fint += jac.determinant() * weight[iGaussPoint] * (B.transpose() * sigma);
     
     // Hour-Glass method
-    HourGlassTech(elemDat, res, pHpX);
+    HourGlassTech(elemDat, elemDat->m_state, res, pHpX);
 
     // compute output stress matrix
     outputData += Math::VecCross(VectorXd::Ones(elemDat->m_coords.rows()), sigma);

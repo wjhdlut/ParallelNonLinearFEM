@@ -77,6 +77,7 @@ void Hexa8ShapeFunctions::GetShapeFunction(const VectorXd &xi)
 }
 
 VectorXd Hexa8ShapeFunctions::HourGlassTech(std::shared_ptr<ElementData> &elemDat,
+                                            const VectorXd &elemNodeDisp,
                                             const double &c,
                                             const nlohmann::json &hourGlassPara,
                                             const MatrixXd &pHpX)
@@ -85,26 +86,47 @@ VectorXd Hexa8ShapeFunctions::HourGlassTech(std::shared_ptr<ElementData> &elemDa
   if("STANDARD" == hourGlassPara.at("type"))
     return HourGlassStand(elemDat, c, para);
   else if("Flanagan-Belytschko" == hourGlassPara.at("type"))
-    return HourGlassFlangan(elemDat, c, pHpX);
+    return HourGlassFlangan(elemDat, elemNodeDisp, c, pHpX);
 
   return VectorXd::Zero(0);
 }
 
 VectorXd Hexa8ShapeFunctions::HourGlassFlangan(std::shared_ptr<ElementData> &elemDat,
+                                               const VectorXd &elemNodeDisp,
                                                const double &c,
                                                const MatrixXd &pHpX)
 {
   double x3478, x2358, x1467, x1256;
   beat.resize(3, 4);
   for(int i = 0; i < 3; i++){
-    x3478 = elemDat->m_coords(2, i) - elemDat->m_coords(3, i)
-          - elemDat->m_coords(6, i) + elemDat->m_coords(7, i);
-    x2358 = elemDat->m_coords(1, i) - elemDat->m_coords(2, i)
-          - elemDat->m_coords(4, i) + elemDat->m_coords(7, i);
-    x1467 = elemDat->m_coords(0, i) - elemDat->m_coords(3, i)
-          - elemDat->m_coords(5, i) + elemDat->m_coords(6, i);
-    x1256 = elemDat->m_coords(0, i) - elemDat->m_coords(1, i)
-          - elemDat->m_coords(4, i) + elemDat->m_coords(5, i);
+    x3478 = (elemDat->m_coords(2, i) + elemNodeDisp( 6 + i))
+          - (elemDat->m_coords(3, i) + elemNodeDisp( 9 + i))
+          - (elemDat->m_coords(6, i) + elemNodeDisp(18 + i))
+          + (elemDat->m_coords(7, i) + elemNodeDisp(21 + i));
+    
+    x2358 = (elemDat->m_coords(1, i) + elemNodeDisp( 3 + i))
+          - (elemDat->m_coords(2, i) + elemNodeDisp( 6 + i))
+          - (elemDat->m_coords(4, i) + elemNodeDisp(12 + i))
+          + (elemDat->m_coords(7, i) + elemNodeDisp(21 + i));
+
+    x1467 = (elemDat->m_coords(0, i) + elemNodeDisp( 0 + i))
+          - (elemDat->m_coords(3, i) + elemNodeDisp( 9 + i))
+          - (elemDat->m_coords(5, i) + elemNodeDisp(15 + i))
+          + (elemDat->m_coords(6, i) + elemNodeDisp(18 + i));
+
+    x1256 = (elemDat->m_coords(0, i) + elemNodeDisp( 0 + i))
+          - (elemDat->m_coords(1, i) + elemNodeDisp( 3 + i))
+          - (elemDat->m_coords(4, i) + elemNodeDisp(12 + i))
+          + (elemDat->m_coords(5, i) + elemNodeDisp(15 + i));
+
+    // x3478 = elemDat->m_coords(2, i) - elemDat->m_coords(3, i)
+    //       - elemDat->m_coords(6, i) + elemDat->m_coords(7, i);
+    // x2358 = elemDat->m_coords(1, i) - elemDat->m_coords(2, i)
+    //       - elemDat->m_coords(4, i) + elemDat->m_coords(7, i);
+    // x1467 = elemDat->m_coords(0, i) - elemDat->m_coords(3, i)
+    //       - elemDat->m_coords(5, i) + elemDat->m_coords(6, i);
+    // x1256 = elemDat->m_coords(0, i) - elemDat->m_coords(1, i)
+    //       - elemDat->m_coords(4, i) + elemDat->m_coords(5, i);
 
     beat(i, 0) = x1467 - x2358;
     beat(i, 1) = x1467 + x2358;
@@ -201,14 +223,14 @@ VectorXd Hexa8ShapeFunctions::HourGlassStand(std::shared_ptr<ElementData> &elemD
 }
 
 double Hexa8ShapeFunctions::ComputeElemTimeStep(double &dtK1, double &elemDistortion,
-                                              const std::shared_ptr<ElementData> &elemDat,
-                                              const double detJac,  const double waveSpeed)
+                                                const MatrixXd &elemNodeCoords,
+                                                const VectorXd &elemNodeDisp,
+                                                const double detJac,  const double waveSpeed)
 {
   int k1, k2, k3, k4;
   double areal = 1.0e20, aream = 0.;
   double e, g, f, atest;
   double x13, x24, fs, ft;
-  // std::cout << "m_coords = \n" << elemDat->m_coords << std::endl;
   for(int iFace = 0; iFace < m_face.rows(); iFace++)
   {
       k1 = m_face(iFace, 0) - 1;
@@ -218,13 +240,13 @@ double Hexa8ShapeFunctions::ComputeElemTimeStep(double &dtK1, double &elemDistor
     
     e = 0., f = 0., g = 0.;
     for(int iDof = 0; iDof < m_dofType.size(); iDof++){
-      // x13 = (elemDat->m_coords(k3, iDof) + elemDat->m_state(m_dofType.size() * k3 + iDof))
-      //     - (elemDat->m_coords(k1, iDof) + elemDat->m_state(m_dofType.size() * k1 + iDof));
-      // x24 = (elemDat->m_coords(k4, iDof) + elemDat->m_state(m_dofType.size() * k4 + iDof))
-      //     - (elemDat->m_coords(k2, iDof) + elemDat->m_state(m_dofType.size() * k2 + iDof));
-
-      x13 = elemDat->m_coords(k3, iDof) - elemDat->m_coords(k1, iDof);
-      x24 = elemDat->m_coords(k4, iDof) - elemDat->m_coords(k2, iDof);
+      x13 = (elemNodeCoords(k3, iDof) + elemNodeDisp(m_dofType.size() * k3 + iDof))
+          - (elemNodeCoords(k1, iDof) + elemNodeDisp(m_dofType.size() * k1 + iDof));
+      x24 = (elemNodeCoords(k4, iDof) + elemNodeDisp(m_dofType.size() * k4 + iDof))
+          - (elemNodeCoords(k2, iDof) + elemNodeDisp(m_dofType.size() * k2 + iDof));
+      
+      // x13 = nodeCoords(k3, iDof) - nodeCoords(k1, iDof);
+      // x24 = nodeCoords(k4, iDof) - nodeCoords(k2, iDof);
 
       fs = x13 - x24;
       ft = x13 + x24;

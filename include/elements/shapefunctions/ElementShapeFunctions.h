@@ -42,6 +42,7 @@ public:
   virtual void GetShapeFunction(const VectorXd &xi) = 0;
 
   virtual VectorXd HourGlassTech(std::shared_ptr<ElementData> &elemDat,
+                                 const VectorXd &elemNodeDisp,
                                  const double &c,
                                  const nlohmann::json &para,
                                  const MatrixXd &pHpX)
@@ -54,7 +55,8 @@ public:
   }
 
   virtual double ComputeElemTimeStep(double &dtK1, double &elemDistortion,
-                                     const std::shared_ptr<ElementData> &elemDat,
+                                     const MatrixXd &elemNodeCoords,
+                                     const VectorXd &elemNodeDisp,
                                      const double detJac, const double waveSpeed)
   {
     return 0.;

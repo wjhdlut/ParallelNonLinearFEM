@@ -39,7 +39,8 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
     jac = elemDat->m_coords.transpose() * res->pHpxi;
 
     // Compute time step based on the deformation
-    ComputeElemTimeStep(res, elemDat, jac.determinant());
+    ComputeElemTimeStep(res, elemDat->m_coords, 
+                        VectorXd::Zero(elemDat->m_state.size()), jac.determinant());
 
     // compute the derivative of shape function about physical coordinate
     pHpX = res->pHpxi * jac.inverse();
@@ -62,7 +63,7 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
     elemDat->m_fint += jac.determinant() * weight(i) * B.transpose() * sigma;
     
     // Hour-Glass method
-    HourGlassTech(elemDat, res, pHpX);
+    HourGlassTech(elemDat, VectorXd::Zero(elemDat->m_state.size()), res, pHpX);
 
     // compute output stress matrix
     outputData += Math::VecCross(VectorXd::Ones(elemDat->m_coords.rows()), sigma);

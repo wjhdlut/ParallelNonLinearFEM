@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "/home/wangjianhua/ExampleCpp/build-ParallelNonLinearFEM-Desktop-Debug/ParallelNonlinearFEM",
-            "args": ["/home/wangjianhua/ExampleCpp/ParallelNonLinearFEM/input/TaylorBar/TaylorBar.pro"],
+            "args": ["/home/wangjianhua/ExampleCpp/ParallelNonLinearFEM/input/TaylorBar/TaylorBar_FiniteStrain/TaylorBar_FiniteStrain.pro"],
             "stopAtEntry": false,
             "cwd": "/home/wangjianhua/ExampleCpp/build-ParallelNonLinearFEM-Desktop-Debug/",
             "environment": [],

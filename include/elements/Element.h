@@ -145,10 +145,12 @@ protected:
   void GetNMatrix(const Eigen::VectorXd &h);
 
   virtual void ComputeElemTimeStep(const std::shared_ptr<ElementShapeFunctions> &res,
-                                   const std::shared_ptr<ElementData> &elemDat,
+                                   const MatrixXd &elemNodeCoords,
+                                   const VectorXd &elemNodeDisp,
                                    const double detJac);
 
   virtual void HourGlassTech(std::shared_ptr<ElementData>&elemDat,
+                             const VectorXd &elemNodeDisp,
                              const std::shared_ptr<ElementShapeFunctions> &res,
                              const MatrixXd &pHpX);
 
