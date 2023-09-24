@@ -18,8 +18,8 @@ void MaterialManager::Reset()
 }
 
 VectorXd MaterialManager::GetStress(const std::shared_ptr<Kinematics>&kin,
-                                               const VectorXd &increDisp,
-                                               const MatrixXd &dphi, int iSam)
+                                    const VectorXd &increDisp,
+                                    const MatrixXd &dphi, int iSam)
 {
   if(-1 == iSam){
     iIter += 1;

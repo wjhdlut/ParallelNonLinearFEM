@@ -98,26 +98,27 @@ VectorXd Hexa8ShapeFunctions::HourGlassFlangan(std::shared_ptr<ElementData> &ele
 {
   double x3478, x2358, x1467, x1256;
   beat.resize(3, 4);
+  MatrixXd nodeDispMat = Map<const MatrixXd>(elemNodeDisp.data(), 3, 8).transpose();
   for(int i = 0; i < 3; i++){
-    x3478 = (elemDat->m_coords(2, i) + elemNodeDisp( 6 + i))
-          - (elemDat->m_coords(3, i) + elemNodeDisp( 9 + i))
-          - (elemDat->m_coords(6, i) + elemNodeDisp(18 + i))
-          + (elemDat->m_coords(7, i) + elemNodeDisp(21 + i));
+    x3478 = (elemDat->m_coords(2, i) + nodeDispMat(2, i))
+          - (elemDat->m_coords(3, i) + nodeDispMat(3, i))
+          - (elemDat->m_coords(6, i) + nodeDispMat(6, i))
+          + (elemDat->m_coords(7, i) + nodeDispMat(7, i));
     
-    x2358 = (elemDat->m_coords(1, i) + elemNodeDisp( 3 + i))
-          - (elemDat->m_coords(2, i) + elemNodeDisp( 6 + i))
-          - (elemDat->m_coords(4, i) + elemNodeDisp(12 + i))
-          + (elemDat->m_coords(7, i) + elemNodeDisp(21 + i));
+    x2358 = (elemDat->m_coords(1, i) + nodeDispMat(1, i))
+          - (elemDat->m_coords(2, i) + nodeDispMat(2, i))
+          - (elemDat->m_coords(4, i) + nodeDispMat(4, i))
+          + (elemDat->m_coords(7, i) + nodeDispMat(7, i));
 
-    x1467 = (elemDat->m_coords(0, i) + elemNodeDisp( 0 + i))
-          - (elemDat->m_coords(3, i) + elemNodeDisp( 9 + i))
-          - (elemDat->m_coords(5, i) + elemNodeDisp(15 + i))
-          + (elemDat->m_coords(6, i) + elemNodeDisp(18 + i));
+    x1467 = (elemDat->m_coords(0, i) + nodeDispMat(0, i))
+          - (elemDat->m_coords(3, i) + nodeDispMat(3, i))
+          - (elemDat->m_coords(5, i) + nodeDispMat(5, i))
+          + (elemDat->m_coords(6, i) + nodeDispMat(6, i));
 
-    x1256 = (elemDat->m_coords(0, i) + elemNodeDisp( 0 + i))
-          - (elemDat->m_coords(1, i) + elemNodeDisp( 3 + i))
-          - (elemDat->m_coords(4, i) + elemNodeDisp(12 + i))
-          + (elemDat->m_coords(5, i) + elemNodeDisp(15 + i));
+    x1256 = (elemDat->m_coords(0, i) + nodeDispMat(0, i))
+          - (elemDat->m_coords(1, i) + nodeDispMat(1, i))
+          - (elemDat->m_coords(4, i) + nodeDispMat(4, i))
+          + (elemDat->m_coords(5, i) + nodeDispMat(5, i));
 
     // x3478 = elemDat->m_coords(2, i) - elemDat->m_coords(3, i)
     //       - elemDat->m_coords(6, i) + elemDat->m_coords(7, i);

@@ -134,6 +134,7 @@ PetscErrorCode DofSpace::Solve(const Vec &K, const Vec &df, Vec&da)
     ierr = VecSetValue(da, iConstrained.first, m_constrainedFac*iConstrained.second, INSERT_VALUES); CHKERRQ(ierr);
   ierr = VecAssemblyBegin(da); CHKERRQ(ierr);
   ierr = VecAssemblyEnd(da); CHKERRQ(ierr);
+  Tools::PrintVecIntoFile(da, "da.txt");
 
   if(nullptr != m_rigidWall) RigidWallConstraint(da);
 
@@ -273,18 +274,26 @@ void DofSpace::RigidWallConstraint(Vec&da)
     int index = std::abs(m_rigidWall->direction) - 1;
     double temp = (m_rigidWall->direction < 0) ? -1. : 1.;
     Vec &velo = GlobalData::GetInstance()->m_velo;
-    std::map<int, VectorXd> & nodeCoords = GlobalData::GetInstance()->m_nodes->m_nodeCoords;
+    std::map<int, VectorXd> &nodeCoords = GlobalData::GetInstance()->m_nodes->m_nodeCoords;
+    const Vec &disp = GlobalData::GetInstance()->m_state;
     
     std::vector<int> dofIndex;
-    std::vector<double> iNodeVelo(m_dofTypes.size(), 0.), iNodeAcce(m_dofTypes.size(), 0.);
+    VectorXd iNodeDisp = VectorXd::Zero(m_dofTypes.size());
+    std::vector<double> iNodeVelo(m_dofTypes.size(), 0.);
+    std::vector<double> iNodeAcce(m_dofTypes.size(), 0.);
     for(auto iNode : nodeCoords){
       dofIndex = m_dofs[GetIndex(iNode.first)];
       VecGetValues(velo, dofIndex.size(), &dofIndex[0], &iNodeVelo[0]);
       VecGetValues(da, dofIndex.size(), &dofIndex[0], &iNodeAcce[0]);
+      VecGetValues(disp, dofIndex.size(), &dofIndex[0], &iNodeDisp[0]);
+      VectorXd nodeCoordCurrent = iNode.second + iNodeDisp;
+      // std::cout << "nodeCoordCurrent = " << nodeCoordCurrent << std::endl;
+      // std::cout << temp*(m_rigidWall->coord-nodeCoordCurrent(index)) << std::endl;
+      // std::cout << (temp*(m_rigidWall->coord-nodeCoordCurrent(index)) >= 1.e-10) << std::endl;
 
-      if(temp*(m_rigidWall->coord-iNode.second[index]) >= 0.){
-        if(temp*iNodeVelo[index] < 0.) iNodeVelo[index] = 0.;
-        if(temp*iNodeAcce[index] < 0.) iNodeAcce[index] = 0.;
+      if(temp*(m_rigidWall->coord-nodeCoordCurrent(index)) >= 0.){
+        if(temp*iNodeVelo[index] <= 0.) iNodeVelo[index] = 0.;
+        if(temp*iNodeAcce[index] <= 0.) iNodeAcce[index] = 0.;
 
         VecSetValues(velo, dofIndex.size(), &dofIndex[0], &iNodeVelo[0], INSERT_VALUES);
         VecSetValues(da, dofIndex.size(), &dofIndex[0], &iNodeAcce[0], INSERT_VALUES);

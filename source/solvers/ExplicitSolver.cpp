@@ -12,6 +12,8 @@ ExplicitSolver::ExplicitSolver(const nlohmann::json &props) : BaseModule(props)
   VecDuplicate(GlobalData::GetInstance()->m_state, &m_lumped);
   GlobalData::GetInstance()->m_elements->AssembleMassMatrix(m_mass, m_lumped);
 
+  Tools::PrintVecIntoFile(m_lumped, "mass.txt");
+
   InitialStepComp();
 }
 

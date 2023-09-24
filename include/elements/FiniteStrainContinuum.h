@@ -1,8 +1,13 @@
-#ifndef FINITESTRAINCONTINUUE_H
-#define FINITESTRAINCONTINUUE_H
+#ifndef FINITESTRAINCONTINUUM_H
+#define FINITESTRAINCONTINUUM_H
 
 #include <elements/Element.h>
 #include <util/ObjectFactory.h>
+
+/**
+ * @Brief:  Total Lagrange Formulation
+ * 
+ */
 
 class FiniteStrainContinuum : public Element
 {
@@ -33,10 +38,10 @@ private:
   MatrixXd jac;                                         // the Jacobian Matrix
   MatrixXd invJac;                                      // the Inverse Jacobian Matrix
 
-  /* pHpX = [pH1pX1 pH1pX2 pH1pX3,
-             pH2pX1 pH2pX2 pH2pX3,
+  /* pHpX = [pH1pX pH1pY pH1pZ,
+             pH2pX pH2pY pH2pZ,
              ...
-             pHnpX1 pHnpX2 pHnpX3,]*/
+             pHnpX pHnpY pHnpZ]*/
   MatrixXd pHpX;                                        // the Derivative of Shape Function
   MatrixXd B;                                           // the Strain Matrix
   VectorXd sigma;                                       // the Stress Vector
@@ -49,4 +54,4 @@ private:
 
 ReflectRegister(FiniteStrainContinuum, const std::vector<int> &, const nlohmann::json &)
 
-#endif // FINITESTRAINCONTINUUE_H
+#endif // FINITESTRAINCONTINUUM_H
