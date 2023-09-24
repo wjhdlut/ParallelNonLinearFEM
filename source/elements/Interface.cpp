@@ -24,7 +24,8 @@ void Interface::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
   ShapeFunctions::GetIntegrationPoints(xi, weight, elemType, order, method);
 
   std::string elemName = elemType + "ShapeFunctions";
-  std::shared_ptr<ElementShapeFunctions> res = ObjectFactory::CreateObject<ElementShapeFunctions>(elemName);
+  std::shared_ptr<ElementShapeFunctions> res
+              = ObjectFactory::CreateObject<ElementShapeFunctions>(elemName);
   if(nullptr == res) throw "Unknown type " + elemType;
 
   elemDat->m_outLabel.emplace_back("tractions");

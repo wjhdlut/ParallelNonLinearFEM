@@ -60,6 +60,13 @@ public:
 
 public:
   std::map<int, VectorXd> m_nodeCoords;   // All Node Coordinates
+
+private:
+  std::string m_coordSysType = "Rectangular";  // Type of Coordinate system
+
+private:
+  VectorXd TransCoordCylToRec(const std::vector<double> &coord);
+  const double Pi = 3.1415926;
 };
 
 #endif // NODESET_H

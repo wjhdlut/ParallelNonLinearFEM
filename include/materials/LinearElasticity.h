@@ -27,6 +27,13 @@ private:
    * 
    */
   virtual void ComputeDMatrix() override;
+
+private:
+  void For3D();
+
+  void ForPlaneStrain();
+
+  void ForPlaneStress();
 };
 
 ReflectRegister(LinearElasticity, const nlohmann::json &)

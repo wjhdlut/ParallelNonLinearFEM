@@ -51,7 +51,7 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
     GetKinematics(elemDat->m_state);
 
     // compute stress vector
-    sigma = m_mat->GetStress(kin, elemDat->m_Dstate, pHpX);
+    sigma = m_mat->GetStress(kin);
  
     // compute tangent modulue matrix
     D = m_mat->GetTangMatrix();

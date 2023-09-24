@@ -20,12 +20,14 @@ using namespace Eigen;
  * ------------------------------------- */
 class Kinematics{
 public:
+  // Initial the Deformation Gradient and
+  // Green Strain Tensor
   inline Kinematics(const int dim){
     F.setIdentity(dim, dim);
-    E.resize(dim, dim);
+    E = MatrixXd::Zero(dim, dim);
 
     int numOfStrain = dim * (dim + 1)/2;
-    strain.resize(numOfStrain);
+    strain = VectorXd::Zero(numOfStrain);
 
     numOfDim = dim;
   }

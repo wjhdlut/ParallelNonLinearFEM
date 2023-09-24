@@ -8,6 +8,7 @@ ElasticityPlasticity::ElasticityPlasticity(const nlohmann::json &matProps) : Bas
   m_rho = SetMaterialParamter("rho");
   m_yieldStress = SetMaterialParamter("yieldStress");
   m_plaMod = SetMaterialParamter("tanMod");
+  
   m_waveSpeed = sqrt(m_E*(1.-m_nu)/(1+m_nu)*(1-2.*m_nu)*m_rho);
 
   if(matProps.contains("rateType"))

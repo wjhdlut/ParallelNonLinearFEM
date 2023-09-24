@@ -1,7 +1,8 @@
 #include <materials/BaseMaterial.h>
 
 BaseMaterial::BaseMaterial(const nlohmann::json &props) : m_props(props)
-{}
+{
+}
 
 BaseMaterial::~BaseMaterial()
 {}

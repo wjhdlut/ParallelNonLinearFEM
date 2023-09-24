@@ -25,6 +25,7 @@ void NodeSet::ReadFromFile(const std::string&fileName)
 
   std::regex pattern("[\\s]{2,}");
   std::regex intPattern();
+  std::regex cylindrical("[Cc][Yy][Ll][Ii][Nn][Dd][Rr][Ii][Cc][Aa][Ll]");
   std::smatch result;
   while(true)
   {
@@ -33,6 +34,9 @@ void NodeSet::ReadFromFile(const std::string&fileName)
       line.erase(line.find("\r"));
     if(line.npos != line.find("<Nodes>"))
     {
+      if(std::regex_search(line, result, cylindrical))
+        m_coordSysType = "Cylindrical";
+      
       while(true)
       {
         getline(fin, line);
@@ -58,9 +62,16 @@ void NodeSet::ReadFromFile(const std::string&fileName)
             coords.emplace_back(std::stod(*iterb));
           
           if(m_nodeCoords.count(nodeID) == 0){
-            m_nodeCoords[nodeID] = VectorXd::Zero(coords.size());
-            for(unsigned i = 0; i < coords.size(); i++)
-              m_nodeCoords[nodeID](i) = coords[i];
+            if("Cylindrical" == m_coordSysType){
+              // Cylindrical Coordinate
+              m_nodeCoords[nodeID] = TransCoordCylToRec(coords);
+            }
+            else{
+              // Rectangular Coordinate
+              m_nodeCoords[nodeID] = VectorXd::Zero(coords.size());
+              for(unsigned i = 0; i < coords.size(); i++)
+                m_nodeCoords[nodeID](i) = coords[i];
+            }
           }
           
         }
@@ -96,4 +107,22 @@ void NodeSet::UpdateNodeCoords(Vec&dDisp, const int numOfDof)
     VecGetValues(dDisp, numOfDof, &indexDof[0], &iNodeDDisp(0));
     iNode->second += iNodeDDisp;
   }
+}
+
+VectorXd NodeSet::TransCoordCylToRec(const std::vector<double> &coord)
+{
+  VectorXd coordRecSys;
+  if(5 == coord.size()){
+    coordRecSys = VectorXd::Zero(3);
+    coordRecSys(0) = coord[0] + coord[3] * cos(coord[4]/180*Pi);
+    coordRecSys(1) = coord[1] + coord[3] * sin(coord[4]/180*Pi);
+    coordRecSys(2) = coord[2];
+  }
+  else if(4 == coord.size()){
+    coordRecSys = VectorXd::Zero(2);
+    coordRecSys(0) = coord[0] + coord[2] * cos(coord[3]/180*Pi);
+    coordRecSys(1) = coord[1] + coord[2] * sin(coord[3]/180*Pi);
+  }
+
+  return coordRecSys;
 }

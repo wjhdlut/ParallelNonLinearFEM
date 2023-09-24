@@ -11,6 +11,8 @@ FiniteStrainContinuumUL::FiniteStrainContinuumUL(const std::vector<int> &elemNod
 {
   // m_dofType = {"u", "v"};
   // m_rho = m_mat->GetMaterialRho();
+  // SetHistoryParameter("sigma", VectorXd::Zero(6));
+  // CommitHistory();
 }
 
 FiniteStrainContinuumUL::~FiniteStrainContinuumUL()
@@ -24,7 +26,9 @@ void FiniteStrainContinuumUL::GetTangentStiffness(std::shared_ptr<ElementData>&e
   ShapeFunctions::GetIntegrationPoints(xi, weight, elemType, order, method);
   
   std::string elemName = elemType + "ShapeFunctions";
-  std::shared_ptr<ElementShapeFunctions>res = ObjectFactory::CreateObject<ElementShapeFunctions>(elemName);
+  std::shared_ptr<ElementShapeFunctions>res
+                 = ObjectFactory::CreateObject<ElementShapeFunctions>(elemName);
+  
   if(nullptr == res) throw "Unkonwn type " + elemType;
   outputData.setZero(elemDat->m_coords.rows(), res->numOfStress);
 
@@ -41,7 +45,6 @@ void FiniteStrainContinuumUL::GetTangentStiffness(std::shared_ptr<ElementData>&e
     // Compute time step based on the deformation
     ComputeElemTimeStep(res, elemDat->m_coords,
                         elemDat->m_state, jac.determinant());
-    
     pHpX = res->pHpxi * Jac.inverse();
 
     // compute the derivative of shape function about 
@@ -52,7 +55,6 @@ void FiniteStrainContinuumUL::GetTangentStiffness(std::shared_ptr<ElementData>&e
     GetKinematics(pHpX, elemDat->m_state);
 
     // compute tangent modulue matrix
-    // D = m_mat->GetTangMatrix(kin->F);
     D = m_mat->GetTangMatrix();
     
     // compute strain matrix
@@ -60,9 +62,11 @@ void FiniteStrainContinuumUL::GetTangentStiffness(std::shared_ptr<ElementData>&e
     kin->strain = B * elemDat->m_state;
     
     // compute linear stiffness matrix
-    elemDat->m_stiff += jac.determinant() * weight[iGaussPoint] * (B.transpose() * m_mat->GetTangMatrix() * B);
+    elemDat->m_stiff += jac.determinant() * weight[iGaussPoint]
+                      * (B.transpose() * m_mat->GetTangMatrix() * B);
 
     // compute stress matrix
+    sigma = GetHistoryParameter("sigma");
     sigma = m_mat->GetStress(kin, elemDat->m_Dstate);
     Stress2Matrix(sigma);
     

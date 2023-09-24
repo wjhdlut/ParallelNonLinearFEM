@@ -24,7 +24,8 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
   ShapeFunctions::GetIntegrationPoints(xi, weight, elemType, order, method);
   
   std::string elemName = elemType + "ShapeFunctions";
-  std::shared_ptr<ElementShapeFunctions>res = ObjectFactory::CreateObject<ElementShapeFunctions>(elemName);
+  std::shared_ptr<ElementShapeFunctions>res
+              = ObjectFactory::CreateObject<ElementShapeFunctions>(elemName);
   if(nullptr == res) throw "Unkonwn type " + elemType;
   outputData.setZero(elemDat->m_coords.rows(), res->numOfStress);
 
@@ -54,7 +55,8 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     // kin->strain = B * elemDat->m_Dstate;
     
     // compute linear stiffness matrix
-    elemDat->m_stiff += jac.determinant() * weight[iGaussPoint] * (B.transpose() * m_mat->GetTangMatrix() * B);
+    elemDat->m_stiff += jac.determinant() * weight[iGaussPoint]
+                     * (B.transpose() * m_mat->GetTangMatrix() * B);
 
     // compute stress matrix
     sigma = m_mat->GetStress(kin, elemDat->m_Dstate);
