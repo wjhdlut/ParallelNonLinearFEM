@@ -2,12 +2,17 @@
 
 Line2ShapeFunctions::Line2ShapeFunctions()
 {
-  H.resize(2);
-  pHpxi.resize(2, 1);
+  Initialize();
 }
 
 Line2ShapeFunctions::~Line2ShapeFunctions()
 {}
+
+void Line2ShapeFunctions::Initialize()
+{
+  H.resize(2);
+  pHpxi.resize(2, 1);
+}
 
 void Line2ShapeFunctions::GetShapeFunction(const VectorXd &xi)
 {

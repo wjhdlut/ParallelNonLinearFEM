@@ -28,15 +28,13 @@ public:
     return m_D;
   }
   
-  inline MatrixXd GetTangentMatrix(const MatrixXd &F)
-  {
+  inline MatrixXd GetTangentMatrix(const MatrixXd &F){
     if(0 == m_D.rows()) ComputeDMatrix();
     TangentDMatrixToInitial(F);
     return m_D;
   }
 
-  inline double ReturnRho()
-  {
+  inline double ReturnRho(){
     return m_rho;
   }
 

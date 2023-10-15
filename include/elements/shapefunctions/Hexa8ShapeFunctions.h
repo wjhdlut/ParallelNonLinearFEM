@@ -64,6 +64,11 @@ private:
   VectorXd HourGlassStand(std::shared_ptr<ElementData> &elemDat,
                           const double &c,
                           const double &para);
+  /**
+   * @Brief: Inilize Element Variables
+   * 
+   */
+  virtual void Initialize();
 
 private:
   MatrixXd beat;

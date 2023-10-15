@@ -2,19 +2,7 @@
 
 ElasticityPlasticity::ElasticityPlasticity(const nlohmann::json &matProps) : BaseMaterial(matProps)
 {
-  lineMat = std::make_shared<LinearElasticity>(matProps);
-  m_E   = SetMaterialParamter("E");
-  m_nu  = SetMaterialParamter("nu");
-  m_rho = SetMaterialParamter("rho");
-  m_yieldStress = SetMaterialParamter("yieldStress");
-  m_plaMod = SetMaterialParamter("tanMod");
-  
-  m_waveSpeed = sqrt(m_E*(1.-m_nu)/(1+m_nu)*(1-2.*m_nu)*m_rho);
-
-  if(matProps.contains("rateType"))
-    m_rateType = matProps.at("rateType");
-
-  m_oneVec << 1., 1., 1., 0., 0., 0.;
+  Initialize();
 }
 
 ElasticityPlasticity::~ElasticityPlasticity()
@@ -24,14 +12,14 @@ ElasticityPlasticity::~ElasticityPlasticity()
 
 void ElasticityPlasticity::ComputeDMatrix()
 {
-  m_D = lineMat->GetTangMatrix();
+  m_D = m_lineMat->GetTangMatrix();
 }
 
 VectorXd ElasticityPlasticity::GetStress(const std::shared_ptr<Kinematics> &kin,
                                          const VectorXd &increDisp,
                                          const MatrixXd &dphi)
 {
-  VectorXd stress = lineMat->GetStress(kin);
+  VectorXd stress = m_lineMat->GetStress(kin);
   if("Jaumann" == m_rateType)
     StressRotation(stress, increDisp, dphi);
 
@@ -91,4 +79,21 @@ void ElasticityPlasticity::StressRotation(VectorXd &stress,
     rotStress(5) = rotVec(3) * (stress(2) - stress(0)) + rotVec(0) * stress(4) - rotVec(2) * stress(3);
   }
   stress += rotStress;
+}
+
+void ElasticityPlasticity::Initialize()
+{
+  m_lineMat = std::make_shared<LinearElasticity>(m_props);
+  m_E   = SetMaterialParamter("E");
+  m_nu  = SetMaterialParamter("nu");
+  m_rho = SetMaterialParamter("rho");
+  m_yieldStress = SetMaterialParamter("yieldStress");
+  m_plaMod = SetMaterialParamter("tanMod");
+  
+  m_waveSpeed = sqrt(m_E*(1.-m_nu)/(1+m_nu)*(1-2.*m_nu)*m_rho);
+
+  if(m_props.contains("rateType"))
+    m_rateType = m_props.at("rateType");
+
+  m_oneVec << 1., 1., 1., 0., 0., 0.;
 }

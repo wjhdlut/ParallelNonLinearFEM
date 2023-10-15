@@ -2,12 +2,17 @@
 
 Line3ShapeFunctions::Line3ShapeFunctions()
 {
-  H.resize(3, 0.);
-  pHpxi.resize(3, 1);
+  Initialize();
 }
 
 Line3ShapeFunctions::~Line3ShapeFunctions()
 {}
+
+void Line3ShapeFunctions::Initialize()
+{
+  H.resize(3, 0.);
+  pHpxi.resize(3, 1);
+}
 
 void Line3ShapeFunctions::GetShapeFunction(const VectorXd &xi)
 {

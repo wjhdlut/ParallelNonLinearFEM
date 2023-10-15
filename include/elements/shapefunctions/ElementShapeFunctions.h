@@ -40,7 +40,17 @@ public:
    * @param xi                [in]  Gauss Coordinate
    */
   virtual void GetShapeFunction(const VectorXd &xi) = 0;
-
+  
+  /**
+   * @Brief: Compute Element Hourglass Force
+   * 
+   * @param elemDat 
+   * @param elemNodeDisp 
+   * @param c 
+   * @param para 
+   * @param pHpX 
+   * @return VectorXd 
+   */
   virtual VectorXd HourGlassTech(std::shared_ptr<ElementData> &elemDat,
                                  const VectorXd &elemNodeDisp,
                                  const double &c,
@@ -50,10 +60,26 @@ public:
     return VectorXd::Zero(0);
   }
   
+  /**
+   * @Brief: Return Element Matrix
+   * 
+   * @return MatrixXi* 
+   */
   inline MatrixXi *ReturnFaceMatrix(){
     return &m_face;
   }
-
+  
+  /**
+   * @Brief: Compute Element Time Step
+   * 
+   * @param dtK1 
+   * @param elemDistortion 
+   * @param elemNodeCoords 
+   * @param elemNodeDisp 
+   * @param detJac 
+   * @param waveSpeed 
+   * @return double 
+   */
   virtual double ComputeElemTimeStep(double &dtK1, double &elemDistortion,
                                      const MatrixXd &elemNodeCoords,
                                      const VectorXd &elemNodeDisp,
@@ -61,6 +87,13 @@ public:
   {
     return 0.;
   }
+
+protected:
+  /**
+   * @Brief: Inilize Element Variables
+   * 
+   */
+  virtual void Initialize() = 0;
 
 public:
   int numOfStress;                              // The number of stress

@@ -10,39 +10,12 @@
 Element::Element(const std::vector<int> &elemNodes, const nlohmann::json &modelProps)
         : m_nodes(elemNodes)
 {
-  for(auto iter = modelProps.begin(); iter != modelProps.end(); iter++)
-  {
-    if("material" == iter.key())
-    {
-      const nlohmann::json &matProps = iter.value();
-      m_mat = std::make_shared<MaterialManager>(matProps);
-      double E = m_mat->GetMaterialPara("E");
-      double nu = m_mat->GetMaterialPara("nu");
-      m_rho = m_mat->GetMaterialPara("rho");
-      m_waveSpeed = sqrt(E*(1.-nu)/((1+nu)*(1-2.*nu)*m_rho));
-    }
-    else if("dim" == iter.key())
-    {
-      if("2D" == modelProps["dim"])
-        m_dofType = {"u", "v"};
-      if("3D" == modelProps["dim"])
-        m_dofType = {"u", "v", "w"};
-    }
-    else if("reducedIntegration" == iter.key())
-    {
-      m_reductedIntegration = modelProps["reducedIntegration"];
-    }
-    else{
-      m_props[iter.key()] = iter.value();
-    }
-  }
-  if(!modelProps.contains("dim")) m_dofType = {"u", "v"};
+  Initialize(modelProps);
 }
 
 Element::~Element()
 {
 }
-
 
 void Element::AppendNodalOutput(const std::string&outputName, const MatrixXd&outMatrix)
 {
@@ -91,7 +64,8 @@ void Element::GetMassMatrix(std::shared_ptr<ElementData>&elemDat)
   ShapeFunctions::GetIntegrationPoints(xi, weight, elemType, order, method);
 
   std::string elemName = elemType + "ShapeFunctions";
-  std::shared_ptr<ElementShapeFunctions>res = ObjectFactory::CreateObject<ElementShapeFunctions>(elemName);
+  std::shared_ptr<ElementShapeFunctions>res
+               = ObjectFactory::CreateObject<ElementShapeFunctions>(elemName);
   if(nullptr == res) throw "Unkonwn type " + elemType;
   
   MatrixXd jac;
@@ -148,4 +122,33 @@ void Element::HourGlassTech(std::shared_ptr<ElementData>&elemDat,
     elemDat->m_fint -= ah * res->HourGlassTech(elemDat, elemNodeDisp, m_waveSpeed,
                                                hourGlassPara, pHpX);
   }
+}
+
+void Element::Initialize(const nlohmann::json &modelProps)
+{
+  for(auto iter = modelProps.begin(); iter != modelProps.end(); iter++)
+  {
+    if("material" == iter.key()){
+      const nlohmann::json &matProps = iter.value();
+      m_mat = std::make_shared<MaterialManager>(matProps);
+      double E = m_mat->GetMaterialPara("E");
+      double nu = m_mat->GetMaterialPara("nu");
+      m_rho = m_mat->GetMaterialPara("rho");
+      m_waveSpeed = sqrt(E*(1.-nu)/((1+nu)*(1-2.*nu)*m_rho));
+    }
+    else if("dim" == iter.key()){
+      if("2D" == modelProps["dim"])
+        m_dofType = {"u", "v"};
+      if("3D" == modelProps["dim"])
+        m_dofType = {"u", "v", "w"};
+    }
+    else if("reducedIntegration" == iter.key()){
+      m_reductedIntegration = modelProps["reducedIntegration"];
+    }
+    else{
+      m_props[iter.key()] = iter.value();
+    }
+  }
+  
+  if(!modelProps.contains("dim")) m_dofType = {"u", "v"};
 }

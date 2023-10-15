@@ -141,18 +141,42 @@ protected:
   inline int DofCount(){
     return m_nodes.size() * m_dofType.size();
   }
-
+  
+  /**
+   * @Brief: Compute Shape Function Matrix
+   * 
+   * @param h 
+   */
   void GetNMatrix(const Eigen::VectorXd &h);
 
+  /**
+   * @Brief: Compute Element Time Step
+   * 
+   * @param res 
+   * @param elemNodeCoords 
+   * @param elemNodeDisp 
+   * @param detJac 
+   */
   virtual void ComputeElemTimeStep(const std::shared_ptr<ElementShapeFunctions> &res,
                                    const MatrixXd &elemNodeCoords,
                                    const VectorXd &elemNodeDisp,
                                    const double detJac);
-
+  
+  /**
+   * @Brief: Compute Hourglass Force For Explicit Dynamic Problem
+   * 
+   * @param elemDat 
+   * @param elemNodeDisp 
+   * @param res 
+   * @param pHpX 
+   */
   virtual void HourGlassTech(std::shared_ptr<ElementData>&elemDat,
                              const VectorXd &elemNodeDisp,
                              const std::shared_ptr<ElementShapeFunctions> &res,
                              const MatrixXd &pHpX);
+  
+private:
+  void Initialize(const nlohmann::json & modelProps);
 
 protected:
   bool m_reductedIntegration = false;

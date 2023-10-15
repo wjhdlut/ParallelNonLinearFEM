@@ -4,6 +4,14 @@
 
 Hexa8ShapeFunctions::Hexa8ShapeFunctions()
 {
+  Initialize();
+};
+
+Hexa8ShapeFunctions::~Hexa8ShapeFunctions()
+{}
+
+void Hexa8ShapeFunctions::Initialize()
+{
   H = VectorXd::Zero(8);
   pHpxi = MatrixXd::Zero(8, 3);
 
@@ -28,10 +36,7 @@ Hexa8ShapeFunctions::Hexa8ShapeFunctions()
   m_ss(3, 0) = 0., m_ss(3, 1) = 0., m_ss(3, 2) =0., m_ss(3, 3) = 0.;
   
   m_dofType = {"u", "v", "w"};
-};
-
-Hexa8ShapeFunctions::~Hexa8ShapeFunctions()
-{}
+}
 
 void Hexa8ShapeFunctions::GetShapeFunction(const VectorXd &xi)
 {

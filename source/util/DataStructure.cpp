@@ -45,6 +45,8 @@ void GlobalData::ReadFromFile(const std::string&fileName)
   ReadExternalForce(fileName);
 
   ReadInitialVelocity(fileName);
+
+  ReadEdgeLoadsData(fileName);
 }
 
 PetscErrorCode GlobalData::CreateVecSpace()
@@ -186,15 +188,13 @@ void GlobalData::ReadData(Vec &data, const std::string&fileName, const std::stri
 
   while(true){
     getline(fin, line);
-    if(line.npos != line.find("\r"))
-      line.erase(line.find("\r"));
+    if(line.npos != line.find("\r")) line.erase(line.find("\r"));
 
     if(line.npos != line.find(('<' + key + '>')))
     {
       while(true){
         getline(fin, line);
-        if(line.npos != line.find("\r"))
-          line.erase(line.find("\r"));
+        if(line.npos != line.find("\r")) line.erase(line.find("\r"));
         line.erase(0, line.find_first_not_of(" "));
         if(0 == line.size()) continue;
         if(line.npos != line.find(("</" + key + '>'))){
@@ -229,4 +229,80 @@ void GlobalData::ReadExternalForce(const std::string&fileName)
 void GlobalData::ReadInitialVelocity(const std::string&fileName)
 {
   ReadData(m_velo, fileName, "InitialVelocity");
+}
+
+void GlobalData::ReadEdgeLoadsData(const std::string &fileName)
+{
+  std::ifstream fin(fileName, std::ios::in);
+  std::string line = "";
+
+  while(true){
+    getline(fin, line);
+
+    if(line.npos != line.find("\r")) line.erase(line.find("\r"));
+
+    if(line.npos != line.find(("<EdgeLoads>")))
+    {
+      while(true){
+        getline(fin, line);
+        if(line.npos != line.find("\r")) line.erase(line.find("\r"));
+
+        line.erase(0, line.find_first_not_of(" "));
+
+        if(0 == line.size()) continue;
+
+        if(line.npos != line.find("</EdgeLoads>")){
+          return;
+        }
+
+        std::string temp = Tools::StringStrip(line);
+        std::vector<std::string> a = Tools::StringSplit(temp, ";");
+        std::vector<std::string> b = Tools::StringSplit(a[0], " ");
+        
+        int elemID = std::stoi(b[0]);
+        int numOfNode = std::stoi(b[1]);
+        
+        // read edge load information
+        std::shared_ptr<Element> elemPtr = m_elements->GetElementPtr()[elemID];
+        int numOfNodeDof = elemPtr->GetDofType().size();
+        std::unordered_map<int, std::vector<double>> nodeForcePres;
+        for(int iNode = 0; iNode < numOfNode; iNode++){
+          int nodeId = std::stoi(b[2+iNode]);
+          nodeForcePres.insert(std::pair<int, std::vector<double>>(nodeId, {}));
+          for(int iDof = 0; iDof < numOfNodeDof; iDof++)
+            nodeForcePres[nodeId].emplace_back(std::stod(b[2 + numOfNode + iDof*numOfNode + iNode]));
+        }
+        
+        std::vector<int> nodeChk = CheckNodeBoundary( elemPtr->GetNodes());
+        
+      }
+    }
+    if(fin.eof()) break;
+  }
+}
+
+std::vector<int> GlobalData::CheckNodeBoundary(const std::unordered_map<int, std::vector<double>> &nodeForcePres,
+                                               const std::unordered_map<int, std::vector<int>> &elemNodeOrdered,
+                                               const std::vector<int> &elemNodeIndex)
+{
+  std::vector<int> nodeChk;
+  nodeChk.resize(elemNodeIndex.size(), 0);
+        
+  for(auto iter : nodeForcePres){
+    int index = std::distance(elemNodeIndex.begin(), iter.first);
+    nodeChk[index] = 1;
+  }
+
+  bool found = false;
+  for(auto iter : nodeForcePres)
+  {
+    for(int iNode = 0; iNode < elemNodeIndex.size(); iNode++)
+    {
+      if((0 != nodeChk[iNode] && )
+      || (0 == nodeChk[iNode] && ))
+      {
+
+      }
+    }
+  }
 }

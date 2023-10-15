@@ -3,14 +3,19 @@
 
 Tria3ShapeFunctions::Tria3ShapeFunctions()
 {
+  Initialize();
+}
+
+Tria3ShapeFunctions::~Tria3ShapeFunctions()
+{}
+
+void Tria3ShapeFunctions::Initialize()
+{
   H.resize(3);
   pHpxi.resize(3, 2);
 
   numOfStress = 3;
 }
-
-Tria3ShapeFunctions::~Tria3ShapeFunctions()
-{}
 
 void Tria3ShapeFunctions::GetShapeFunction(const VectorXd &xi)
 {

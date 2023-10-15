@@ -2,14 +2,19 @@
 
 Quad8ShapeFunctions::Quad8ShapeFunctions()
 {
-  H.resize(8);
-  pHpxi.resize(8, 2);
-  numOfStress = 3;
-  // dofType = {"u", "v"};
+  Initialize();
 };
 
 Quad8ShapeFunctions::~Quad8ShapeFunctions()
 {}
+
+void Quad8ShapeFunctions::Initialize()
+{
+  H.resize(8);
+  pHpxi.resize(8, 2);
+  numOfStress = 3;
+  // dofType = {"u", "v"};
+}
 
 void Quad8ShapeFunctions::GetShapeFunction(const VectorXd &xi)
 {

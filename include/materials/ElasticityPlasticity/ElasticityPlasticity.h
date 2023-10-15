@@ -17,14 +17,16 @@ public:
                              const VectorXd &increDisp,
                              const MatrixXd &dphi = MatrixXd::Zero(0, 0)) override;
 
-private:
+protected:
   virtual void ComputeDMatrix() override;
 
   void StressRotation(VectorXd &stress,
                       const VectorXd &increDisp,
                       const MatrixXd &dphi);
 
-private:
+  void Initialize();
+
+protected:
   double m_K;
   double m_G;
   double m_plaMod;
@@ -33,7 +35,7 @@ private:
   std::string m_rateType;
   VectorXd m_oneVec;
 
-  std::shared_ptr<LinearElasticity> lineMat;
+  std::shared_ptr<LinearElasticity> m_lineMat;
 };
 ReflectRegister(ElasticityPlasticity, const nlohmann::json &)
 

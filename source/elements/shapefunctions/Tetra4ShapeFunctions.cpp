@@ -2,14 +2,19 @@
 
 Tetra4ShapeFunctions::Tetra4ShapeFunctions()
 {
+  Initialize();
+}
+
+Tetra4ShapeFunctions::~Tetra4ShapeFunctions()
+{}
+
+void Tetra4ShapeFunctions::Initialize()
+{
   H.resize(4);
   pHpxi.resize(4, 3);
 
   numOfStress = 6;
 }
-
-Tetra4ShapeFunctions::~Tetra4ShapeFunctions()
-{}
 
 void Tetra4ShapeFunctions::GetShapeFunction(const VectorXd &xi)
 {

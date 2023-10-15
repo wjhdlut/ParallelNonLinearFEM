@@ -25,6 +25,13 @@ public:
    * @param xi   [in]  Gauss Points Coordinates
    */
   virtual void GetShapeFunction(const VectorXd &xi);
+
+private:
+  /**
+   * @Brief: Inilize Element Variables
+   * 
+   */
+  virtual void Initialize();
 };
 
 ReflectRegister(Tetra4ShapeFunctions)

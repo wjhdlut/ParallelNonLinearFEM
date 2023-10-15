@@ -38,6 +38,13 @@ public:
    * @param xi   [in]  Gauss Points Coordinates
    */
   virtual void GetShapeFunction(const VectorXd &xi) override;
+
+private:
+  /**
+   * @Brief: Inilize Element Variables
+   * 
+   */
+  virtual void Initialize();
 };
 
 ReflectRegister(Quad8ShapeFunctions)
