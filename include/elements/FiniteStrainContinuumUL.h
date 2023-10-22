@@ -12,7 +12,10 @@
 class FiniteStrainContinuumUL : public Element
 {
 public:
-  FiniteStrainContinuumUL(const std::vector<int> &elemNodes, const nlohmann::json &modelProps);
+  FiniteStrainContinuumUL(const std::string &elemShape,
+                          const std::vector<int> &elemNodes,
+                          const nlohmann::json &modelProps);
+
   ~FiniteStrainContinuumUL();
 
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
@@ -63,6 +66,7 @@ private:
   MatrixXd nodeCoord;
 };
 
-ReflectRegister(FiniteStrainContinuumUL, const std::vector<int> &, const nlohmann::json &)
+ReflectRegister(FiniteStrainContinuumUL, const std::string &,
+                const std::vector<int> &, const nlohmann::json &)
 
 #endif // FINITESTRAINCONTINUUMUL_H

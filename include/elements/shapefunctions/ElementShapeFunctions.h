@@ -42,6 +42,28 @@ public:
   virtual void GetShapeFunction(const VectorXd &xi) = 0;
   
   /**
+   * @Brief: Compute the Boundary Shape Function
+   * 
+   * @param boundaryH 
+   * @param pboundaryHpxi 
+   */
+  inline virtual void GetBoundaryShapeFunction(VectorXd &boundaryH,
+                                               MatrixXd &pboundaryHpxi,
+                                               const VectorXd &boundaryXi){
+
+  }
+
+  /**
+   * @Brief: Get the Boundary Integration Point
+   * 
+   * @param boundaryXi 
+   * @param boundaryWeight 
+   */
+  inline virtual void GetBoundaryIntegrationPoint(MatrixXd &boundaryXi, VectorXd &boundaryWeight){
+
+  }
+  
+  /**
    * @Brief: Compute Element Hourglass Force
    * 
    * @param elemDat 
@@ -70,6 +92,15 @@ public:
   }
   
   /**
+   * @Brief: Return Dof Type m_dofType
+   * 
+   * @return std::vector<std::string> 
+   */
+  inline std::vector<std::string> ReturnDofType(){
+    return m_dofType;
+  }
+  
+  /**
    * @Brief: Compute Element Time Step
    * 
    * @param dtK1 
@@ -88,22 +119,34 @@ public:
     return 0.;
   }
 
+  inline std::unordered_map<int, std::vector<int>> ReturnElemNodeOrdered(){
+    return SetElemNodeOrdered();
+  }
+
 protected:
   /**
    * @Brief: Inilize Element Variables
    * 
    */
   virtual void Initialize() = 0;
+  
+  /**
+   * @Brief: Set the Element Node Ordered object
+   * 
+   * @return std::unordered_map<int, std::vector<int>> 
+   */
+  inline virtual std::unordered_map<int, std::vector<int>> SetElemNodeOrdered(){
+    return std::unordered_map<int, std::vector<int>> {};
+  }
 
 public:
   int numOfStress;                              // The number of stress
   VectorXd H;                                   // The shape function
   MatrixXd pHpxi;                               // The derivative of shape function about local coordinate system
-  std::vector<std::string> dofType;             // Element Dof Type
 
 protected:
   MatrixXi m_face;
-  std::vector<std::string> m_dofType;
+  std::vector<std::string> m_dofType;           // Element Dof Type
 };
 
 #endif // ELEMENTSHAPEFUNCTIONS_H

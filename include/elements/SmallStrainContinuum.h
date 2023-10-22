@@ -10,7 +10,9 @@
 class SmallStrainContinuum : public Element
 {
 public:
-  SmallStrainContinuum(const std::vector<int> &elemNodes, const nlohmann::json &modelProps);
+  SmallStrainContinuum(const std::string &elemShape,
+                       const std::vector<int> &elemNodes,
+                       const nlohmann::json &modelProps);
   
   ~SmallStrainContinuum();
 
@@ -20,6 +22,8 @@ private:
   void GetKinematics(const VectorXd &elState);
 
   void GetBMatrix(const MatrixXd &dphi);
+
+  void Initialize(const std::string &elemShape);
 
 private:
   std::shared_ptr<Kinematics> kin = nullptr;
@@ -41,6 +45,7 @@ private:
   MatrixXd D;                                          // the Tangent Matrix
 };
 
-ReflectRegister(SmallStrainContinuum, const std::vector<int> &, const nlohmann::json &)
+ReflectRegister(SmallStrainContinuum, const std::string &,
+                const std::vector<int> &, const nlohmann::json &)
 
 #endif // SMALLSTRAINCONTINUUM_H

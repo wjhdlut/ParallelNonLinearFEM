@@ -13,9 +13,18 @@
 #include <util/Transformations.h>
 #include <util/Tools.h>
 
-KirchhoffBeam::KirchhoffBeam(const std::vector<int>&elemNode,
+KirchhoffBeam::KirchhoffBeam(const std::string &elemShape,
+                             const std::vector<int>&elemNode,
                              const nlohmann::json &modelProps)
               : Element(elemNode, modelProps)
+{
+  Initialize();
+}
+
+KirchhoffBeam::~KirchhoffBeam()
+{}
+
+void KirchhoffBeam::Initialize()
 {
   m_dofType = {"u", "v", "rz"};
 
@@ -33,9 +42,6 @@ KirchhoffBeam::KirchhoffBeam(const std::vector<int>&elemNode,
   xi = MatrixXd::Zero(3, 1);
   xi << -sqrt(3./5.), 0., sqrt(3./5.);
 }
-
-KirchhoffBeam::~KirchhoffBeam()
-{}
 
 void KirchhoffBeam::GetTangentStiffness(std::shared_ptr<ElementData>&elemDat)
 {

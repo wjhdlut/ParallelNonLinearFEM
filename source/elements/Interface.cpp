@@ -2,8 +2,18 @@
 #include <util/ShapeFunctions.h>
 #include <elements/shapefunctions/ElementShapeFunctions.h>
 
-Interface::Interface(const std::vector<int> &elemNodes, const nlohmann::json &modelProps)
+Interface::Interface(const std::string &elemShape,
+                     const std::vector<int> &elemNodes,
+                     const nlohmann::json &modelProps)
           : Element(elemNodes, modelProps)
+{
+  Initialize(elemShape);
+}
+
+Interface::~Interface()
+{}
+
+void Interface::Initialize(const std::string &elemShape)
 {
   method = "NewtonCotes";
 
@@ -11,22 +21,13 @@ Interface::Interface(const std::vector<int> &elemNodes, const nlohmann::json &mo
   SetHistoryParameter("normal", temp);
 
   CommitHistory();
-}
 
-Interface::~Interface()
-{}
+  SetDofType(elemShape);
+}
 
 void Interface::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
 {
   MatrixXd rot = GetRotation(elemDat->m_coords, elemDat->m_state);
-
-  std::string elemType = ShapeFunctions::GetElemType(elemDat->m_coords);
-  ShapeFunctions::GetIntegrationPoints(xi, weight, elemType, order, method);
-
-  std::string elemName = elemType + "ShapeFunctions";
-  std::shared_ptr<ElementShapeFunctions> res
-              = ObjectFactory::CreateObject<ElementShapeFunctions>(elemName);
-  if(nullptr == res) throw "Unknown type " + elemType;
 
   elemDat->m_outLabel.emplace_back("tractions");
   outputData = MatrixXd::Zero(elemDat->m_coords.rows(), 2);
@@ -35,9 +36,9 @@ void Interface::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
   MatrixXd tempMatrix;
   for(int i = 0; i < xi.rows(); i++)
   {
-    res->GetShapeFunction(xi.row(i));
+    m_elemShapePtr->GetShapeFunction(xi.row(i));
 
-    GetBMatrix(res->H, rot);
+    GetBMatrix(m_elemShapePtr->H, rot);
 
     GetKinematics(elemDat->m_state);
 

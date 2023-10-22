@@ -18,7 +18,9 @@
 class KirchhoffBeam : public Element
 {
 public:
-  KirchhoffBeam(const std::vector<int> &elemNode, const nlohmann::json &modelProps);
+  KirchhoffBeam(const std::string &elemShape,
+                const std::vector<int> &elemNode,
+                const nlohmann::json &modelProps);
   ~KirchhoffBeam();
 
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
@@ -37,6 +39,8 @@ private:
   MatrixXd ToGlobalCoordinates(const MatrixXd &ABar, const MatrixXd &coord);
 
   MatrixXd GetRotationMatrix(const MatrixXd &coord);
+
+  void Initialize();
 
 private:
   double m_E = 0.;
@@ -62,6 +66,7 @@ private:
   VectorXd a0;
   MatrixXd tempMat;
 };
-ReflectRegister(KirchhoffBeam, const std::vector<int> &, const nlohmann::json &)
+ReflectRegister(KirchhoffBeam, const std::string &,
+                const std::vector<int> &, const nlohmann::json &)
 
 #endif  // KIRCHHOFFBEAM_H

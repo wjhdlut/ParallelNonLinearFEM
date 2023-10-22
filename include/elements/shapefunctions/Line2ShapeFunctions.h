@@ -37,6 +37,7 @@ private:
    * 
    */
   virtual void Initialize();
+
 };
 ReflectRegister(Line2ShapeFunctions)
 

@@ -17,6 +17,11 @@ using namespace Eigen;
 
 class ElementShapeFunctions;
 
+
+/**
+ * @Brief: Element Basic Data
+ * 
+ */
 struct ElementData
 {
   inline ElementData(VectorXd&elemState, VectorXd&elemDstate){
@@ -52,7 +57,8 @@ struct ElementData
 class Element
 {
 public:
-  Element(const std::vector<int> &elemNodes, const nlohmann::json &modelProps);
+  Element(const std::vector<int> &elemNodes,
+          const nlohmann::json &modelProps);
   
   virtual ~Element();
 
@@ -73,7 +79,6 @@ public:
   inline std::vector<std::string> GetDofType(){
     return m_dofType;
   }
-
   
   inline void MatReset(){
     if(m_mat != nullptr)
@@ -131,6 +136,15 @@ public:
     dtK1 = m_dtK1;
     elemDistortion = m_elemDistortion;
   }
+  
+  /**
+   * @Brief: Compute Components of the Equivalent Nodal Loads based on Edge Load Data
+   * 
+   * @param nodeForcePres 
+   * @return VectorXd 
+   */
+  virtual VectorXd CompEquivalentNodeForce(const std::unordered_map<int, VectorXd> &nodeCoord,
+                                           const std::unordered_map<int, std::vector<double>> &nodeForcePres);
 
 protected:
   /**
@@ -157,8 +171,7 @@ protected:
    * @param elemNodeDisp 
    * @param detJac 
    */
-  virtual void ComputeElemTimeStep(const std::shared_ptr<ElementShapeFunctions> &res,
-                                   const MatrixXd &elemNodeCoords,
+  virtual void ComputeElemTimeStep(const MatrixXd &elemNodeCoords,
                                    const VectorXd &elemNodeDisp,
                                    const double detJac);
   
@@ -172,11 +185,29 @@ protected:
    */
   virtual void HourGlassTech(std::shared_ptr<ElementData>&elemDat,
                              const VectorXd &elemNodeDisp,
-                             const std::shared_ptr<ElementShapeFunctions> &res,
                              const MatrixXd &pHpX);
   
+  /**
+   * @Brief: Set the Dof Type m_dofType for Different Element
+   * 
+   */
+  void SetDofType(const std::string &elemShape);
+ 
+  /**
+   * @Brief: Check Whether a Given Set of Local Element Node Correspond to
+   *         One of the Element Boundaries (Edges in 2-D and Faces in 3-D).
+   *         if it does, Returns the Local Node Numbers Ordered for Numerical
+   *         Integration on Boundary.
+   * 
+   * @param nodeChk 
+   * @param nodeForcePres 
+   * @return std::vector<int>  [out]  the Local Node Numbers Ordered
+   */
+  std::vector<int> CheckNodeBoundary(std::vector<int> &nodeChk,
+                                     const std::unordered_map<int, std::vector<double>> &nodeForcePres);
+
 private:
-  void Initialize(const nlohmann::json & modelProps);
+  void Initialize(const nlohmann::json &modelProps);
 
 protected:
   bool m_reductedIntegration = false;
@@ -197,7 +228,9 @@ protected:
   VectorXd weight;
   int order = 0;                                                      // the Order of Gauss Integration
   std::string method = "Gauss";                                       // the Method of Integration
+  std::shared_ptr<ElementShapeFunctions> m_elemShapePtr;              // the Element Shape Pointer
   MatrixXd outputData;
+  std::unordered_map<int, std::vector<int>> m_nodeOrdered;            // the Element Node Ordered
 
 private:
   MatrixXd N;

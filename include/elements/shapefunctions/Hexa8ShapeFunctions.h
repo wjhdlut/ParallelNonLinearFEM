@@ -69,6 +69,13 @@ private:
    * 
    */
   virtual void Initialize();
+  
+  /**
+   * @Brief: Set the Element Node Ordered object
+   * 
+   * @return std::unordered_map<int, std::vector<int>> 
+   */
+  virtual std::unordered_map<int, std::vector<int>> SetElemNodeOrdered() override;
 
 private:
   MatrixXd beat;

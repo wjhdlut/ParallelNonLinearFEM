@@ -10,10 +10,13 @@ public:
   /**
    * @Brief: Construct a new Truss object
    * 
+   * @param elemShape
    * @param elemNode 
    * @param modelProps 
    */
-  Truss(const std::vector<int> &elemNode, const nlohmann::json &modelProps);
+  Truss(const std::string &elemShape,
+        const std::vector<int> &elemNode,
+        const nlohmann::json &modelProps);
   
   /**
    * @Brief: Destroy the Truss object
@@ -36,6 +39,8 @@ private:
 
   void GetBMatrix(const VectorXd &a);
 
+  void Initialize();
+
   MatrixXd GetNonLinearStiffMatrix(const double &sigma, const double &area);
 
 private:
@@ -56,6 +61,7 @@ private:
   MatrixXd KNL;
 };
 
-ReflectRegister(Truss, const std::vector<int> &, const nlohmann::json &)
+ReflectRegister(Truss, const std::string &,
+                const std::vector<int> &, const nlohmann::json &)
 
 #endif //TRUSS_H

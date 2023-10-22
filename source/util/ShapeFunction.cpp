@@ -3,6 +3,7 @@
 #include <util/ObjectFactory.h>
 #include <elements/shapefunctions/ElementShapeFunctions.h>
 #include <util/Math.h>
+#include <iostream>
 
 namespace ShapeFunctions
 {
@@ -119,8 +120,10 @@ void TriaScheme(MatrixXd&xi, VectorXd&weight, const int order)
   
 }
 
-void GetIntegrationPoints(MatrixXd&xi, VectorXd&weight, const std::string&elemType,
-                          const int order, const::std::string &method)
+void GetIntegrationPoints(MatrixXd&xi,
+                          VectorXd&weight, 
+                          const std::string&elemType,
+                          const int order)
 {
   if(0 != xi.size()) return;
   int stdOrder = 0;
@@ -130,8 +133,8 @@ void GetIntegrationPoints(MatrixXd&xi, VectorXd&weight, const std::string&elemTy
     if("Line2" == elemType) stdOrder = 2;
     if("Line3" == elemType) stdOrder = 3;
     GaussScheme(xi1d, weight1d, stdOrder + order);
-    xi.resize(1, xi1d.size());
-    xi << xi1d;
+    xi = MatrixXd::Zero(xi1d.size(), 1);
+    xi.col(0) = xi1d;
     weight = weight1d;
   }
   else if(elemType.npos != elemType.find("Tria")){

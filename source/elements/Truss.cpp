@@ -2,8 +2,18 @@
 #include <util/Transformations.h>
 #include <util/Tools.h>
 
-Truss::Truss(const std::vector<int> &elemNode, const nlohmann::json &modelProps)
+Truss::Truss(const std::string &elemShape,
+             const std::vector<int> &elemNode,
+             const nlohmann::json &modelProps)
       : Element(elemNode, modelProps)
+{
+  Initialize();
+}
+
+Truss::~Truss()
+{}
+
+void Truss::Initialize()
 {
   SetHistoryParameter("sigma", VectorXd::Zero(1));
   
@@ -11,9 +21,6 @@ Truss::Truss(const std::vector<int> &elemNode, const nlohmann::json &modelProps)
   Tools::GetParameter(m_E, "E", m_props);
   Tools::GetParameter(m_area, "Area", m_props);
 }
-
-Truss::~Truss()
-{}
 
 void Truss::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
 {

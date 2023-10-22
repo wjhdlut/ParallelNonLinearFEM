@@ -2,8 +2,19 @@
 #include <util/Tools.h>
 #include <util/Transformations.h>
 
-TimoshenkoBeam::TimoshenkoBeam(const std::vector<int> &elemNodes, const nlohmann::json &modelProps)
+TimoshenkoBeam::TimoshenkoBeam(const std::string &elemShape,
+                               const std::vector<int> &elemNodes,
+                               const nlohmann::json &modelProps)
                : Element(elemNodes, modelProps)
+{
+  Initialize(modelProps);
+}
+
+TimoshenkoBeam::~TimoshenkoBeam()
+{
+}
+
+void TimoshenkoBeam::Initialize(const nlohmann::json &modelProps)
 {
   m_dofType = {"u", "v", "rz"};
   Tools::GetParameter(m_E, "E", modelProps);
@@ -17,10 +28,6 @@ TimoshenkoBeam::TimoshenkoBeam(const std::vector<int> &elemNodes, const nlohmann
 
   m_intPoints = {std::make_pair<double, double>(-0.577, 1.0),
                  std::make_pair<double, double>( 0.577, 1.0)};
-}
-
-TimoshenkoBeam::~TimoshenkoBeam()
-{
 }
 
 void TimoshenkoBeam::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)

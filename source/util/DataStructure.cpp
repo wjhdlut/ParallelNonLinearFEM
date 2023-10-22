@@ -1,4 +1,5 @@
 #include <fstream>
+#include <regex>
 #include <iostream>
 #include <iomanip>
 #include <util/DataStructure.h>
@@ -235,6 +236,7 @@ void GlobalData::ReadEdgeLoadsData(const std::string &fileName)
 {
   std::ifstream fin(fileName, std::ios::in);
   std::string line = "";
+  std::regex pattern("[\\s]{2,}");
 
   while(true){
     getline(fin, line);
@@ -252,11 +254,13 @@ void GlobalData::ReadEdgeLoadsData(const std::string &fileName)
         if(0 == line.size()) continue;
 
         if(line.npos != line.find("</EdgeLoads>")){
+          VecAssemblyBegin(m_fhat);
+          VecAssemblyEnd(m_fhat);
           return;
         }
 
-        std::string temp = Tools::StringStrip(line);
-        std::vector<std::string> a = Tools::StringSplit(temp, ";");
+        line =  std::regex_replace(line, pattern, " ");
+        std::vector<std::string> a = Tools::StringSplit(line, ";");
         std::vector<std::string> b = Tools::StringSplit(a[0], " ");
         
         int elemID = std::stoi(b[0]);
@@ -264,45 +268,26 @@ void GlobalData::ReadEdgeLoadsData(const std::string &fileName)
         
         // read edge load information
         std::shared_ptr<Element> elemPtr = m_elements->GetElementPtr()[elemID];
-        int numOfNodeDof = elemPtr->GetDofType().size();
         std::unordered_map<int, std::vector<double>> nodeForcePres;
+        std::unordered_map<int, VectorXd> nodeCoords;
+        
         for(int iNode = 0; iNode < numOfNode; iNode++){
           int nodeId = std::stoi(b[2+iNode]);
           nodeForcePres.insert(std::pair<int, std::vector<double>>(nodeId, {}));
-          for(int iDof = 0; iDof < numOfNodeDof; iDof++)
+          nodeCoords.insert(std::pair<int, VectorXd>(nodeId, m_nodes->GetNodeCoords(nodeId)));
+          for(int iDof = 0; iDof < m_nodes->GetNodeCoords(nodeId).size(); iDof++)
             nodeForcePres[nodeId].emplace_back(std::stod(b[2 + numOfNode + iDof*numOfNode + iNode]));
         }
         
-        std::vector<int> nodeChk = CheckNodeBoundary( elemPtr->GetNodes());
-        
+        // Compute Equivalent Node Force
+        VectorXd elemForce = elemPtr->CompEquivalentNodeForce(nodeCoords, nodeForcePres);
+        // Assemble into total force vector
+        std::vector<int> elemDofs = m_dofs->Get(elemPtr->GetNodes());
+        VecSetValues(m_fhat, elemDofs.size(), &elemDofs[0],&elemForce(0), ADD_VALUES);
+
       }
     }
     if(fin.eof()) break;
   }
 }
-
-std::vector<int> GlobalData::CheckNodeBoundary(const std::unordered_map<int, std::vector<double>> &nodeForcePres,
-                                               const std::unordered_map<int, std::vector<int>> &elemNodeOrdered,
-                                               const std::vector<int> &elemNodeIndex)
-{
-  std::vector<int> nodeChk;
-  nodeChk.resize(elemNodeIndex.size(), 0);
-        
-  for(auto iter : nodeForcePres){
-    int index = std::distance(elemNodeIndex.begin(), iter.first);
-    nodeChk[index] = 1;
-  }
-
-  bool found = false;
-  for(auto iter : nodeForcePres)
-  {
-    for(int iNode = 0; iNode < elemNodeIndex.size(); iNode++)
-    {
-      if((0 != nodeChk[iNode] && )
-      || (0 == nodeChk[iNode] && ))
-      {
-
-      }
-    }
-  }
-}
+                                

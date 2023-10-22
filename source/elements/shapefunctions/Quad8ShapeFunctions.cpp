@@ -1,4 +1,6 @@
 #include <elements/shapefunctions/Quad8ShapeFunctions.h>
+#include <elements/shapefunctions/Line3ShapeFunctions.h>
+#include <util/ShapeFunctions.h>
 
 Quad8ShapeFunctions::Quad8ShapeFunctions()
 {
@@ -10,10 +12,10 @@ Quad8ShapeFunctions::~Quad8ShapeFunctions()
 
 void Quad8ShapeFunctions::Initialize()
 {
-  H.resize(8);
-  pHpxi.resize(8, 2);
+  H = VectorXd::Zero(8);
+  pHpxi = MatrixXd::Zero(8, 2);
   numOfStress = 3;
-  // dofType = {"u", "v"};
+  m_dofType = {"u", "v"};
 }
 
 void Quad8ShapeFunctions::GetShapeFunction(const VectorXd &xi)
@@ -48,4 +50,31 @@ void Quad8ShapeFunctions::GetShapeFunction(const VectorXd &xi)
   pHpxi(5, 1) = -0.5 *( 1.0+xi(0))*(-1.0+xi(0));
   pHpxi(6, 1) = -0.25*(-1.0+xi(0))*(-xi(0)+2.0*xi(1));
   pHpxi(7, 1) =  xi(1)*(-1.0+xi(0));
+}
+
+void Quad8ShapeFunctions::GetBoundaryShapeFunction(VectorXd &boundaryH, 
+                                                   MatrixXd &pboundaryHpxi,
+                                                   const VectorXd &boundaryXi)
+{
+  Line3ShapeFunctions *res = new Line3ShapeFunctions();
+  res->GetShapeFunction(boundaryXi);
+  boundaryH = res->H;
+  pboundaryHpxi = res->pHpxi;
+  delete res;
+}
+
+std::unordered_map<int, std::vector<int>> Quad8ShapeFunctions::SetElemNodeOrdered()
+{
+  std::unordered_map<int, std::vector<int>> elemNodeOrdered;
+  elemNodeOrdered.insert(std::pair<int, std::vector<int>>(1, {1, 2, 3, 0, 0, 0, 0, 0}));
+  elemNodeOrdered.insert(std::pair<int, std::vector<int>>(2, {0, 0, 1, 2, 3, 0, 0, 0}));
+  elemNodeOrdered.insert(std::pair<int, std::vector<int>>(3, {0, 0, 0, 0, 1, 2, 3, 0}));
+  elemNodeOrdered.insert(std::pair<int, std::vector<int>>(4, {3, 0, 0, 0, 0, 0, 1, 2}));
+
+  return elemNodeOrdered;
+}
+
+void Quad8ShapeFunctions::GetBoundaryIntegrationPoint(MatrixXd &boundaryXi, VectorXd &boundaryWeight)
+{
+  ShapeFunctions::GetIntegrationPoints(boundaryXi, boundaryWeight, "Line3", -1);
 }

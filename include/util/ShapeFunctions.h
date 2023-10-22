@@ -16,7 +16,7 @@ void TriaScheme(const int order);
 std::string GetElemType(const MatrixXd&elemCoords);
 
 void GetIntegrationPoints(MatrixXd&xi, VectorXd&weight, const std::string&elemType,
-                          const int order, const::std::string &method);
+                          const int order = 0);
 
 void GetElemShapeData(MatrixXd&elemCoords, const int order = 0,
                       const std::string &method = "Gauss",

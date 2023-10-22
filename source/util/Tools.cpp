@@ -14,7 +14,7 @@ std::vector<std::string> StringSplit(std::string &strData, const std::string &ta
     if(strData.npos == strData.find_first_of(tag)) break;
     std::string l1 = strData.substr(0, strData.find_first_of(tag));
     strData.erase(0, strData.find_first_of(tag) + 1);
-    if(strData.size() > 0) strData = StringStrip(strData);
+    // if(strData.size() > 0) strData = StringStrip(strData);
     strVec.emplace_back(l1);
     count += 1;
   }while(count < maxSplit);

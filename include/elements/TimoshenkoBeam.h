@@ -1,3 +1,14 @@
+/**
+ * @File Name:     TimoshenkoBeam.h
+ * @Author:        JianHuaWang (992411152@qq.com)
+ * @Brief:         
+ * @Version:       0.1
+ * @Create Date:   2023-10-17
+ * 
+ * @Copyright Copyright (c) 2023 JianHuaWang
+ * 
+ */
+
 #ifndef TIMOSHENKOBEAM_H
 #define TIMOSHENKOBEAM_H
 
@@ -7,12 +18,24 @@
 class TimoshenkoBeam : public Element
 {
 public:
-  TimoshenkoBeam(const std::vector<int> &elemNodes, const nlohmann::json &modelProps);
+  /**
+   * @Brief: Construct a new Timoshenko Beam object
+   * 
+   * @param elemShape 
+   * @param elemNodes 
+   * @param modelProps 
+   */
+  TimoshenkoBeam(const std::string &elemShape,
+                 const std::vector<int> &elemNodes,
+                 const nlohmann::json &modelProps);
+
   ~TimoshenkoBeam();
 
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
 
 private:
+  void Initialize(const nlohmann::json &modelProps);
+
   void GetHu(const double &xi);
 
   void GetHw(const double &xi);
@@ -58,6 +81,7 @@ private:
   VectorXd hw;
   VectorXd aBar;
 };
-ReflectRegister(TimoshenkoBeam, const std::vector<int> &, const nlohmann::json &)
+ReflectRegister(TimoshenkoBeam, const std::string &,
+                const std::vector<int> &, const nlohmann::json &)
 
 #endif // TIMOSHENKOBEAM_H

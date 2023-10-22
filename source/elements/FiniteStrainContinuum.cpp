@@ -5,43 +5,41 @@
 #include <util/Kinematics.h>
 #include <iostream>
 
-FiniteStrainContinuum::FiniteStrainContinuum(const std::vector<int> &elemNodes,
+FiniteStrainContinuum::FiniteStrainContinuum(const std::string &elemShape,
+                                             const std::vector<int> &elemNodes,
                                              const nlohmann::json &modelProps)
                       : Element(elemNodes, modelProps)
 {
-  // m_dofType = {"u", "v"};
-  // m_rho = m_mat->GetMaterialRho();
+  Initialize(elemShape);
 }
 
 FiniteStrainContinuum::~FiniteStrainContinuum()
 {}
 
+void FiniteStrainContinuum::Initialize(const std::string &elemShape)
+{
+  // m_rho = m_mat->GetMaterialRho();
+  SetDofType(elemShape);
+}
+
 void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elemDat)
 {
-  std::string elemType = ShapeFunctions::GetElemType(elemDat->m_coords);
   elemDat->m_outLabel.emplace_back("stresses");
   
-  ShapeFunctions::GetIntegrationPoints(xi, weight, elemType, order, method);
-  
-  std::string elemName = elemType + "ShapeFunctions";
-  std::shared_ptr<ElementShapeFunctions>res
-              = ObjectFactory::CreateObject<ElementShapeFunctions>(elemName);
-  if(nullptr == res) throw "Unkonwn type " + elemType;
-  outputData.setZero(elemDat->m_coords.rows(), res->numOfStress);
+  outputData.setZero(elemDat->m_coords.rows(), m_elemShapePtr->numOfStress);
 
   for(int iGaussPoint = 0; iGaussPoint < xi.rows(); iGaussPoint++){
     // compute shape functions
-    res->GetShapeFunction(xi.row(iGaussPoint));
+    m_elemShapePtr->GetShapeFunction(xi.row(iGaussPoint));
 
     // compute jacobian matrix
-    jac = elemDat->m_coords.transpose() * res->pHpxi;
+    jac = elemDat->m_coords.transpose() * m_elemShapePtr->pHpxi;
 
     // Compute time step based on the deformation
-    ComputeElemTimeStep(res, elemDat->m_coords,
-                        elemDat->m_state, jac.determinant());
+    ComputeElemTimeStep(elemDat->m_coords, elemDat->m_state, jac.determinant());
     
     // compute the derivative of shape function about physical coordinate
-    pHpX = res->pHpxi * jac.inverse();
+    pHpX = m_elemShapePtr->pHpxi * jac.inverse();
 
     // compute deforamtion gradient
     GetKinematics(pHpX, elemDat->m_state);
@@ -72,7 +70,7 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     elemDat->m_fint += jac.determinant() * weight[iGaussPoint] * (B.transpose() * sigma);
     
     // Hour-Glass method
-    HourGlassTech(elemDat, elemDat->m_state, res, pHpX);
+    HourGlassTech(elemDat, elemDat->m_state, pHpX);
 
     // compute output stress matrix
     outputData += Math::VecCross(VectorXd::Ones(elemDat->m_coords.rows()), sigma);

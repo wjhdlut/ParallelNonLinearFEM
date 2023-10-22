@@ -3,7 +3,9 @@
 #include <util/Tools.h>
 #include <iostream>
 
-Spring::Spring(const std::vector<int> &elemNode, const nlohmann::json &modelProps)
+Spring::Spring(const std::string &elemShape,
+               const std::vector<int> &elemNode,
+               const nlohmann::json &modelProps)
        : Element(elemNode, modelProps)
 {
   Tools::GetParameter(m_k, "k", m_props);

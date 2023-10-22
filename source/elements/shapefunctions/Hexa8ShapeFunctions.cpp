@@ -12,7 +12,7 @@ Hexa8ShapeFunctions::~Hexa8ShapeFunctions()
 
 void Hexa8ShapeFunctions::Initialize()
 {
-  H = VectorXd::Zero(8);
+  H     = VectorXd::Zero(8);
   pHpxi = MatrixXd::Zero(8, 3);
 
   numOfStress = 6;
@@ -277,4 +277,15 @@ double Hexa8ShapeFunctions::ComputeElemTimeStep(double &dtK1, double &elemDistor
   elemDistortion = std::min(elemDistortion, at);
 
   return 8. * detJac;
+}
+
+std::unordered_map<int, std::vector<int>> Hexa8ShapeFunctions::SetElemNodeOrdered()
+{
+  std::unordered_map<int, std::vector<int>> elemNodeOrdered;
+  elemNodeOrdered.insert(std::pair<int, std::vector<int>>(1, {1, 2, 3, 0, 0, 0, 0, 0}));
+  elemNodeOrdered.insert(std::pair<int, std::vector<int>>(2, {0, 0, 1, 2, 3, 0, 0, 0}));
+  elemNodeOrdered.insert(std::pair<int, std::vector<int>>(3, {0, 0, 0, 0, 1, 2, 3, 0}));
+  elemNodeOrdered.insert(std::pair<int, std::vector<int>>(4, {3, 0, 0, 0, 0, 0, 1, 2}));
+
+  return elemNodeOrdered;
 }

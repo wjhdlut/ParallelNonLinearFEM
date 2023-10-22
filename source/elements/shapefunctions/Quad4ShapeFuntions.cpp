@@ -13,9 +13,10 @@ Quad4ShapeFunctions::~Quad4ShapeFunctions()
 
 void Quad4ShapeFunctions::Initialize()
 {
-  H.resize(4);
-  pHpxi.resize(4, 2);
+  H           = VectorXd::Zero(4);
+  pHpxi       = MatrixXd::Zero(4, 2);
   numOfStress = 3;
+  m_dofType   = {"u", "v"};
 }
 
 void Quad4ShapeFunctions::GetShapeFunction(const VectorXd &xi)

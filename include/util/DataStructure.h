@@ -89,21 +89,6 @@ private:
    */
   void ReadEdgeLoadsData(const std::string &fileName);
 
-  /**
-   * @Brief: Check Whether a Given Set of Local Element Node Correspond to
-   *         One of the Element Boundaries (Edges in 2-D and Faces in 3-D).
-   *         if it does, Returns the Local Node Numbers Ordered for Numerical
-   *         Integration on Boundary.
-   * 
-   * @param nodeForcePres
-   * @param elemNodeOrdered
-   * @param elemNodeIndex
-   * @return std::vector<int>  the Local Node Numbers Ordered
-   */
-  std::vector<int> CheckNodeBoundary(const std::unordered_map<int, std::vector<double>> &nodeForcePres,
-                                     const std::unordered_map<int, std::vector<int>> &elemNodeOrdered,
-                                     const std::vector<int> &elemNodeIndex);
-
 private:
   static GlobalData *m_globalData;
 };

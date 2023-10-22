@@ -11,10 +11,11 @@ Tria6ShapeFunctions::~Tria6ShapeFunctions()
 
 void Tria6ShapeFunctions::Initialize()
 {
-  H.resize(6);
-  pHpxi.resize(6, 2);
+  H     = VectorXd::Zero(6);
+  pHpxi = MatrixXd::Zero(6, 2);
 
   numOfStress = 3;
+  m_dofType   = {"u", "v"};
 }
 
 void Tria6ShapeFunctions::GetShapeFunction(const VectorXd &xi)

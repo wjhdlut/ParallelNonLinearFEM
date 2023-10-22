@@ -12,7 +12,9 @@
 class FiniteStrainContinuum : public Element
 {
 public:
-  FiniteStrainContinuum(const std::vector<int> &elemNodes, const nlohmann::json &modelProps);
+  FiniteStrainContinuum(const std::string &elemShape,
+                        const std::vector<int> &elemNodes,
+                        const nlohmann::json &modelProps);
   
   ~FiniteStrainContinuum();
 
@@ -28,6 +30,10 @@ private:
   void Stress2Matrix(const VectorXd&stress);
 
   void GetBNLMatrix(const MatrixXd&dphi);
+
+  void Initialize(const std::string &elemShape);
+
+  // virtual void SetElemNodeOrdered();
 
 private:
   std::shared_ptr<Kinematics> kin = nullptr;
@@ -53,6 +59,7 @@ private:
   MatrixXd T; 
 };
 
-ReflectRegister(FiniteStrainContinuum, const std::vector<int> &, const nlohmann::json &)
+ReflectRegister(FiniteStrainContinuum, const std::string &,
+                const std::vector<int> &, const nlohmann::json &)
 
 #endif // FINITESTRAINCONTINUUM_H

@@ -56,6 +56,12 @@ public:
    */
   MatrixXd GetNodeCoords(const std::vector<int> &nodeIds);
 
+  /**
+   * @Brief: Update Node Coordinates
+   * 
+   * @param dDisp 
+   * @param numOfDof 
+   */
   void UpdateNodeCoords(Vec &dDisp, const int numOfDof);
 
 public:

@@ -7,7 +7,10 @@
 class Interface : public Element
 {
 public:
-  Interface(const std::vector<int> &elemNodes, const nlohmann::json &modelProps);
+  Interface(const std::string &elemShape,
+            const std::vector<int> &elemNodes,
+            const nlohmann::json &modelProps);
+  
   ~Interface();
 
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
@@ -19,6 +22,8 @@ private:
 
   void GetKinematics(const VectorXd &elState);
 
+  void Initialize(const std::string &elemShape);
+
 private:
   std::shared_ptr<Kinematics> kin = nullptr;
   MatrixXd B;                                 // the Strain Matrix
@@ -26,6 +31,7 @@ private:
   MatrixXd D;                                 // the Tangent Matrix
 };
 
-ReflectRegister(Interface, const std::vector<int> &, const nlohmann::json &)
+ReflectRegister(Interface, const std::string &,
+                const std::vector<int> &, const nlohmann::json &)
 
 #endif // INTERFACE_H

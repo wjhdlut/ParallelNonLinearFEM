@@ -13,7 +13,9 @@ public:
    * @param elemNode 
    * @param modelProps 
    */
-  Spring(const std::vector<int> &elemNode, const nlohmann::json &modelProps);
+  Spring(const std::string &elemShape,
+         const std::vector<int> &elemNode,
+         const nlohmann::json &modelProps);
 
   /**
    * @Brief: Destroy the Spring object
@@ -41,6 +43,7 @@ private:
   VectorXd Da;
 };
 
-ReflectRegister(Spring, const std::vector<int> &, const nlohmann::json &)
+ReflectRegister(Spring, const std::string &,
+                const std::vector<int> &, const nlohmann::json &)
 
 #endif // SPRING_H

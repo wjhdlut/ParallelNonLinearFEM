@@ -64,7 +64,8 @@ public:
   }
 
 private:
-  void Add(const int elemId, const std::string &modelName, const std::vector<int> &elementNodes);
+  void Add(const int elemId, const std::string &modelName,
+           const std::string &elemShape, const std::vector<int> &elementNodes);
   
   PetscErrorCode AssembleMatrix(Mat &A, Vec&B, const int rank, const std::string&action);
 

@@ -39,12 +39,37 @@ public:
    */
   virtual void GetShapeFunction(const VectorXd &xi) override;
 
+  /**
+   * @Brief: Compute the Boundary Shape Function
+   * 
+   * @param boundaryH 
+   * @param pboundaryHpxi
+   */
+  virtual void GetBoundaryShapeFunction(VectorXd &boundaryH,
+                                        MatrixXd &pboundaryHpxi,
+                                        const VectorXd &boundaryXi) override;
+
+  /**
+   * @Brief: Get the Boundary Shape Function object
+   * 
+   * @param boundaryXi 
+   * @param boundaryWeight 
+   */
+  virtual void GetBoundaryIntegrationPoint(MatrixXd &boundaryXi, VectorXd &boundaryWeight) override;
+
 private:
   /**
    * @Brief: Inilize Element Variables
    * 
    */
   virtual void Initialize();
+
+  /**
+   * @Brief: Set the Element Node Ordered object
+   * 
+   * @return std::unordered_map<int, std::vector<int>> 
+   */
+  virtual std::unordered_map<int, std::vector<int>> SetElemNodeOrdered() override;
 };
 
 ReflectRegister(Quad8ShapeFunctions)

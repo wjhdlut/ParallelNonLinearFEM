@@ -10,8 +10,9 @@ Line2ShapeFunctions::~Line2ShapeFunctions()
 
 void Line2ShapeFunctions::Initialize()
 {
-  H.resize(2);
-  pHpxi.resize(2, 1);
+  H         = VectorXd::Zero(2);
+  pHpxi     = MatrixXd::Zero(2, 1);
+  m_dofType = {"u", "v"};
 }
 
 void Line2ShapeFunctions::GetShapeFunction(const VectorXd &xi)
@@ -22,3 +23,4 @@ void Line2ShapeFunctions::GetShapeFunction(const VectorXd &xi)
   pHpxi(0, 0) = -0.5;
   pHpxi(1, 0) = 0.5;
 }
+

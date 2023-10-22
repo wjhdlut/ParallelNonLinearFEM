@@ -15,7 +15,6 @@
             // "args": ["/home/wangjianhua/ExampleCpp/ParallelNonLinearFEM/input/PatchTest4/PatchTest4-analyseType.pro"],
             // "args": ["/home/wangjianhua/ExampleCpp/ParallelNonLinearFEM/input/PatchTest8/PatchTest8-analyseType.pro"],
             // "args": ["/home/wangjianhua/ExampleCpp/ParallelNonLinearFEM/input/StressWave_20x20/StressWave_20x20-analyseType.pro"],
-            // "args": ["/home/wangjianhua/ExampleCpp/ParallelNonLinearFEM/input/InternallyPressurisedCylinder/InternallyPressurisedCylinder.pro"],
             // "args": ["/home/wangjianhua/ExampleCpp/ParallelNonLinearFEM/input/TaylorBar/TaylorBar/TaylorBar.pro"],
             // "args": ["/home/wangjianhua/ExampleCpp/ParallelNonLinearFEM/input/TaylorBar/TaylorBar_FiniteStrain_TL/TaylorBar_FiniteStrain.pro"],
             // "args": ["/home/wangjianhua/ExampleCpp/ParallelNonLinearFEM/input/TaylorBar/TaylorBar_FiniteStrain_UL/TaylorBar_FiniteStrain.pro"],

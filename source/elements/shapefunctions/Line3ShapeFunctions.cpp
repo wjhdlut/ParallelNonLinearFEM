@@ -10,8 +10,9 @@ Line3ShapeFunctions::~Line3ShapeFunctions()
 
 void Line3ShapeFunctions::Initialize()
 {
-  H.resize(3, 0.);
-  pHpxi.resize(3, 1);
+  H         = VectorXd::Zero(3);
+  pHpxi     = MatrixXd::Zero(3, 1);
+  m_dofType = {"u", "v"};
 }
 
 void Line3ShapeFunctions::GetShapeFunction(const VectorXd &xi)

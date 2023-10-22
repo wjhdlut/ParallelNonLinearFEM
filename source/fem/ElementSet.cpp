@@ -55,12 +55,15 @@ void ElementSet::ReadFromFile(const std::string &fileName)
 
           int elemID = std::stoi(b[0]);
           std::vector<int> elementNodes;
-          for(auto iterb = b.begin() + 2; iterb != b.end(); iterb++)
+          for(auto iterb = b.begin() + 3; iterb != b.end(); iterb++)
             elementNodes.emplace_back(std::stoi(*iterb));
           
           std::string&modelName = b[1];
           modelName.erase(0, 1); modelName.erase(modelName.size() - 1, 1);
-          Add(elemID, modelName, elementNodes);
+
+          std::string &elemShape = b[2];
+          elemShape.erase(0, 1); elemShape.erase(elemShape.size() - 1, 1);
+          Add(elemID, modelName, elemShape, elementNodes);
         }
       }
     }
@@ -69,7 +72,8 @@ void ElementSet::ReadFromFile(const std::string &fileName)
   fin.close();
 }
 
-void ElementSet::Add(const int elemId, const std::string &modelName, const std::vector<int> &elementNodes)
+void ElementSet::Add(const int elemId, const std::string &modelName,
+                     const std::string &elemShape, const std::vector<int> &elementNodes)
 {
   if(!m_props.contains(modelName)) throw "Missing properties for model " + modelName;
 
@@ -79,7 +83,7 @@ void ElementSet::Add(const int elemId, const std::string &modelName, const std::
 
   std::string modelType = modelProps.at("type");
 
-  std::shared_ptr<Element> elem = ObjectFactory::CreateObject<Element>(modelType, elementNodes, modelProps);
+  std::shared_ptr<Element> elem = ObjectFactory::CreateObject<Element>(modelType, elemShape, elementNodes, modelProps);
 
   m_nodes->GetNodeCoords(elem->GetNodes());
 

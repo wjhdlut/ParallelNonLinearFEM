@@ -10,10 +10,11 @@ Tetra4ShapeFunctions::~Tetra4ShapeFunctions()
 
 void Tetra4ShapeFunctions::Initialize()
 {
-  H.resize(4);
-  pHpxi.resize(4, 3);
+  H     = VectorXd::Zero(4);
+  pHpxi = MatrixXd::Zero(4, 3);
 
   numOfStress = 6;
+  m_dofType   = {"u", "v"};
 }
 
 void Tetra4ShapeFunctions::GetShapeFunction(const VectorXd &xi)
