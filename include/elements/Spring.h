@@ -1,3 +1,14 @@
+/**
+ * @File Name:     Spring.h
+ * @Author:        JianHuaWang (992411152@qq.com)
+ * @Brief:         
+ * @Version:       0.1
+ * @Create Date:   2023-10-25
+ * 
+ * @Copyright Copyright (c) 2023 JianHuaWang
+ * 
+ */
+
 #ifndef SPRING_H
 #define SPRING_H
 
@@ -24,12 +35,17 @@ public:
   ~Spring();
 
   /**
-   * @Brief: Get the Tangent Stiffness object
+   * @Brief: Compute the Tangent Stiffness
    * 
    * @param elemDat 
    */
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
 
+  /**
+   * @Brief: Compute the Mass Matrix
+   * 
+   * @param elemDat 
+   */
   virtual void GetMassMatrix(std::shared_ptr<ElementData> &elemDat) override{}
 
 private:

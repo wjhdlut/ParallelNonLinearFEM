@@ -1,3 +1,14 @@
+/**
+ * @File Name:     FiniteStrainContinuum.h
+ * @Author:        JianHuaWang (992411152@qq.com)
+ * @Brief:         
+ * @Version:       0.1
+ * @Create Date:   2023-10-25
+ * 
+ * @Copyright Copyright (c) 2023 JianHuaWang
+ * 
+ */
+
 #ifndef FINITESTRAINCONTINUUM_H
 #define FINITESTRAINCONTINUUM_H
 
@@ -12,25 +23,69 @@
 class FiniteStrainContinuum : public Element
 {
 public:
+  /**
+   * @Brief: Construct a new Finite Strain Continuum object
+   * 
+   * @param elemShape 
+   * @param elemNodes 
+   * @param modelProps 
+   */
   FiniteStrainContinuum(const std::string &elemShape,
                         const std::vector<int> &elemNodes,
                         const nlohmann::json &modelProps);
   
+  /**
+   * @Brief:         Destroy the Finite Strain Continuum object
+   * 
+   */
   ~FiniteStrainContinuum();
 
+  /**
+   * @Brief: Compute the Element Tangent Stiffness
+   * 
+   * @param elemDat 
+   */
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
 
 private:
+  /**
+   * @Brief: Compute the Kinematics Variable Such as Deformation Gradient,
+   *          Cauchy-Green Strain Tensor and Strain Vector
+   * 
+   * @param dphi 
+   * @param elState 
+   */
   void GetKinematics(const MatrixXd&dphi,
                      const VectorXd&elState);
-
+  
+  /**
+   * @Brief: Compute Strain Matrix B
+   * 
+   * @param dphi 
+   * @param F 
+   */
   void GetBMatrix(const MatrixXd&dphi,
                   const MatrixXd&F);
   
+  /**
+   * @Brief: Form Stress Matrix to Compute Nonlinear Stiffness Matrix
+   * 
+   * @param stress 
+   */
   void Stress2Matrix(const VectorXd&stress);
 
+  /**
+   * @Brief: Compute Nonlinear Strain Matrix BNL
+   * 
+   * @param dphi 
+   */
   void GetBNLMatrix(const MatrixXd&dphi);
-
+  
+  /**
+   * @Brief: Initialize Some Basic Variables
+   * 
+   * @param elemShape 
+   */
   void Initialize(const std::string &elemShape);
 
   // virtual void SetElemNodeOrdered();

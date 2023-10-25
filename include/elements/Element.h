@@ -1,3 +1,14 @@
+/**
+ * @File Name:     Element.h
+ * @Author:        JianHuaWang (992411152@qq.com)
+ * @Brief:         
+ * @Version:       0.1
+ * @Create Date:   2023-10-25
+ * 
+ * @Copyright Copyright (c) 2023 JianHuaWang
+ * 
+ */
+
 #ifndef ELEMENT_H
 #define ELEMENT_H
 
@@ -132,6 +143,12 @@ public:
     m_elemDistortion = elemDistortion;
   }
 
+  /**
+   * @Brief: Return Element Time Increment Parameter
+   * 
+   * @param dtK1 
+   * @param elemDistortion 
+   */
   inline void ReturnTimeIncrementPara(double &dtK1, double &elemDistortion){
     dtK1 = m_dtK1;
     elemDistortion = m_elemDistortion;

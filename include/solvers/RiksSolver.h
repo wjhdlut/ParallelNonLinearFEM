@@ -1,3 +1,14 @@
+/**
+ * @File Name:     RiksSolver.h
+ * @Author:        JianHuaWang (992411152@qq.com)
+ * @Brief:         
+ * @Version:       0.1
+ * @Create Date:   2023-10-22
+ * 
+ * @Copyright Copyright (c) 2023 JianHuaWang
+ * 
+ */
+
 #ifndef RIKSSOLVER_H
 #define RIKSSOLVER_H
 
@@ -8,11 +19,27 @@
 class RiksSolver : public BaseModule
 {
 public:
+  /**
+   * @Brief: Construct a new Riks Solver object
+   * 
+   * @param props 
+   */
   RiksSolver(const nlohmann::json &props);
 
+  /**
+   * @Brief: Destroy the Riks Solver object
+   * 
+   */
   ~RiksSolver();
 
+  /**
+   * @Brief:  Run the Riks Alc-Length Solver
+   * 
+   */
   virtual void Run() override;
+
+private:
+  void Initialize(const nlohmann::json &props) override;
 
 private:
   int m_optiter = 5;

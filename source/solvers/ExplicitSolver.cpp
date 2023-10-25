@@ -1,9 +1,31 @@
+/**
+ * @File Name:     ExplicitSolver.cpp
+ * @Author:        JianHuaWang (992411152@qq.com)
+ * @Brief:         
+ * @Version:       0.1
+ * @Create Date:   2023-10-25
+ * 
+ * @Copyright Copyright (c) 2023 JianHuaWang
+ * 
+ */
+
 #include <solvers/ExplicitSolver.h>
 #include <util/DataStructure.h>
 #include <iostream>
 #include <iomanip>
 
 ExplicitSolver::ExplicitSolver(const nlohmann::json &props) : BaseModule(props)
+{
+  Initialize(props);
+}
+
+ExplicitSolver::~ExplicitSolver()
+{
+  VecDestroy(&m_lumped);
+  MatDestroy(&m_mass);
+}
+
+void ExplicitSolver::Initialize(const nlohmann::json &props)
 {
   Tools::GetParameter(m_maxCycle, "maxCycle", m_myProps);
   Tools::GetParameter(m_endTime, "endTime", m_myProps);
@@ -15,12 +37,6 @@ ExplicitSolver::ExplicitSolver(const nlohmann::json &props) : BaseModule(props)
   Tools::PrintVecIntoFile(m_lumped, "mass.txt");
 
   InitialStepComp();
-}
-
-ExplicitSolver::~ExplicitSolver()
-{
-  VecDestroy(&m_lumped);
-  MatDestroy(&m_mass);
 }
 
 void ExplicitSolver::Run()

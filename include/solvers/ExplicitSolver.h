@@ -16,23 +16,42 @@
 #include <util/ObjectFactory.h>
 #include <petscmat.h>
 
-/* central difference scheme referenced the Box 5.2 in Chapter 5.2
-*  of the book with name
+/********************************************************************
+*   central difference scheme referenced the Box 5.2 in Chapter 5.2  *
+*   of the book with name                                            *
 *   "Non-Linear Finite Element Analysis of Solids and Structures"    *
 *    R. de Borst, M.A. Crisfield, J.J.C. Remmers and C.V. Verhoosel  *
 *    John Wiley and Sons, 2012, ISBN 978-0470666449                  *
-*/
+**********************************************************************/
 
 class ExplicitSolver : public BaseModule
 {
 public:
+  /**
+   * @Brief: Construct a new Explicit Solver object
+   * 
+   * @param props 
+   */
   ExplicitSolver(const nlohmann::json &props);
-
+  
+  /**
+   * @Brief: Destroy the Explicit Solver object
+   * 
+   */
   ~ExplicitSolver();
 
+  /**
+   * @Brief:  Run the Explicit Solver
+   * 
+   */
   virtual void Run() override;
-
+  
 private:
+  /**
+   * @Brief: Print the Solver Step Information
+   * 
+   * @param velo 
+   */
   void PrintStepInfo(const Vec&velo);
 
   inline double LamExpression(const double t){
@@ -42,6 +61,12 @@ private:
   void DetermineTimeStepSize();
 
   void InitialStepComp();
+
+  /**
+   * @Brief:         
+   * 
+   */
+  virtual void Initialize(const nlohmann::json &props) override;
   
 private:
   int m_maxCycle;

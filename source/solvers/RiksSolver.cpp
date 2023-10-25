@@ -1,17 +1,33 @@
+/**
+ * @File Name:     RiksSolver.cpp
+ * @Author:        JianHuaWang (992411152@qq.com)
+ * @Brief:         
+ * @Version:       0.1
+ * @Create Date:   2023-10-25
+ * 
+ * @Copyright Copyright (c) 2023 JianHuaWang
+ * 
+ */
+
 #include <solvers/RiksSolver.h>
 #include <util/DataStructure.h>
 #include <iostream>
 
 RiksSolver::RiksSolver(const nlohmann::json &props) : BaseModule(props)
 {
-  GlobalData::GetInstance()->m_lam = 1.0;
-  
-  Tools::GetParameter(m_fixedStep, "fixedStep", m_myProps);
-  Tools::GetParameter(m_maxLam, "maxLam", m_myProps);
+  Initialize(props);
 }
 
 RiksSolver::~RiksSolver()
 {
+}
+
+void RiksSolver::Initialize(const nlohmann::json &props)
+{
+  GlobalData::GetInstance()->m_lam = 1.0;
+  
+  Tools::GetParameter(m_fixedStep, "fixedStep", m_myProps);
+  Tools::GetParameter(m_maxLam, "maxLam", m_myProps);
 }
 
 void RiksSolver::Run()

@@ -1,3 +1,14 @@
+/**
+ * @File Name:     Transformations.h
+ * @Author:        JianHuaWang (992411152@qq.com)
+ * @Brief:         
+ * @Version:       0.1
+ * @Create Date:   2023-10-25
+ * 
+ * @Copyright Copyright (c) 2023 JianHuaWang
+ * 
+ */
+
 #ifndef TRANSFORMATIONS_H
 #define TRANSFORMATIONS_H
 
@@ -45,7 +56,7 @@ VectorXd ToGlobalCoordinates(const VectorXd &a, const MatrixXd &elemNodeCoords);
 MatrixXd ToGlobalCoordinates(const MatrixXd &A, const MatrixXd &elemNodeCoords);
 
 /**
- * @Brief:         
+ * @Brief:  Vector Variables Transform to Element Coordinate System
  * 
  * @param a 
  * @param elemNodeCoords 
@@ -53,12 +64,39 @@ MatrixXd ToGlobalCoordinates(const MatrixXd &A, const MatrixXd &elemNodeCoords);
  */
 VectorXd VecToElementCoordinates(const VectorXd &a, const MatrixXd &elemNodeCoords);
 
+/**
+ * @Brief:  Matrix Variables Transform to Element Coordinate System
+ * 
+ * @param A 
+ * @param elemNodeCoords 
+ * @return MatrixXd 
+ */
 MatrixXd MatToElementCoordinates(const MatrixXd &A, const MatrixXd &elemNodeCoords);
 
+/**
+ * @Brief: Vector Variables Transform to Global Coordinate System
+ * 
+ * @param a 
+ * @param elemNodeCoords 
+ * @return VectorXd 
+ */
 VectorXd VecToGLobalCoordinates(const VectorXd &a, const MatrixXd &elemNodeCoords);
 
+/**
+ * @Brief: Matrix Variables Transform to Global Coordinate System
+ * 
+ * @param A 
+ * @param elemNodeCoords 
+ * @return MatrixXd 
+ */
 MatrixXd MatToGlobalCoordinates(const MatrixXd &A, const MatrixXd &elemNodeCoords);
 
+/**
+ * @Brief:  Compute the Rotation Matrix
+ * 
+ * @param elemNodeCoords 
+ * @return MatrixXd 
+ */
 MatrixXd GetRotationMatrix(const MatrixXd &elemNodeCoords);
 
 }

@@ -1,3 +1,13 @@
+/**
+ * @File Name:     SmallStrainContinuum.h
+ * @Author:        JianHuaWang (992411152@qq.com)
+ * @Brief:         
+ * @Version:       0.1
+ * @Create Date:   2023-10-25
+ * 
+ * @Copyright Copyright (c) 2023 JianHuaWang
+ * 
+ */
 
 #ifndef SMALLSTRAINCONTINUUM_H
 #define SMALLSTRAINCONTINUUM_H
@@ -10,19 +20,51 @@
 class SmallStrainContinuum : public Element
 {
 public:
+  /**
+   * @Brief: Construct a new Small Strain Continuum object
+   * 
+   * @param elemShape 
+   * @param elemNodes 
+   * @param modelProps 
+   */
   SmallStrainContinuum(const std::string &elemShape,
                        const std::vector<int> &elemNodes,
                        const nlohmann::json &modelProps);
   
+  /**
+   * @Brief: Destroy the Small Strain Continuum object
+   * 
+   */
   ~SmallStrainContinuum();
 
+  /**
+   * @Brief: Compute the Tangent Stiffness Matrix
+   * 
+   * @param elemDat 
+   */
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
 
 private:  
+  /**
+   * @Brief: Compute the Kinematics Variables, Such as Deformation Gradient,
+   *         Cauchy-Green Strain Tensor and Strain Vector
+   * 
+   * @param elState 
+   */
   void GetKinematics(const VectorXd &elState);
 
+  /**
+   * @Brief: Compute Strain Matrix B
+   * 
+   * @param dphi 
+   */
   void GetBMatrix(const MatrixXd &dphi);
 
+  /**
+   * @Brief: Initialize Some Variables
+   * 
+   * @param elemShape 
+   */
   void Initialize(const std::string &elemShape);
 
 private:

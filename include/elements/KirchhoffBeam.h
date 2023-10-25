@@ -18,28 +18,91 @@
 class KirchhoffBeam : public Element
 {
 public:
+  /**
+   * @Brief: Construct a new Kirchhoff Beam object
+   * 
+   * @param elemShape 
+   * @param elemNode 
+   * @param modelProps 
+   */
   KirchhoffBeam(const std::string &elemShape,
                 const std::vector<int> &elemNode,
                 const nlohmann::json &modelProps);
+  
+  /**
+   * @Brief: Destroy the Kirchhoff Beam object
+   * 
+   */
   ~KirchhoffBeam();
 
+  /**
+   * @Brief: Compute the Tangent Stiffness
+   * 
+   * @param elemDat 
+   */
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
 
 private:
+  /**
+   * @Brief: Transform Coordinate into Element Coordinate System
+   * 
+   * @param a 
+   * @param coord 
+   * @return VectorXd 
+   */
   VectorXd TolemCoordinate(const VectorXd &a, const MatrixXd &coord);
 
+  /**
+   * @Brief: Compute the Bu Vector
+   * 
+   * @param xi 
+   */
   void GetBu(const double &xi);
 
+  /**
+   * @Brief: Compute the Bw Vector
+   * 
+   * @param xi 
+   */
   void GetBw(const double &xi);
 
+  /**
+   * @Brief: Compute the C Vector
+   * 
+   * @param xi 
+   */
   void GetC(const double &xi);
 
+  /**
+   * @Brief: Transform Vector Variables into Global Coordinate System
+   * 
+   * @param aBar 
+   * @param coord 
+   * @return VectorXd 
+   */
   VectorXd ToGlobalCoordinates(const VectorXd &aBar, const MatrixXd &coord);
 
+  /**
+   * @Brief:  Transform Matrix Variables into Global Coordinate System
+   * 
+   * @param ABar 
+   * @param coord 
+   * @return MatrixXd 
+   */
   MatrixXd ToGlobalCoordinates(const MatrixXd &ABar, const MatrixXd &coord);
 
+  /**
+   * @Brief: Compute the Rotation Matrix
+   * 
+   * @param coord 
+   * @return MatrixXd 
+   */
   MatrixXd GetRotationMatrix(const MatrixXd &coord);
 
+  /**
+   * @Brief: Initialize Some Varibales
+   * 
+   */
   void Initialize();
 
 private:

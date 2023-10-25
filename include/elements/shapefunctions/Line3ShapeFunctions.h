@@ -1,3 +1,14 @@
+/**
+ * @File Name:     Line3ShapeFunctions.h
+ * @Author:        JianHuaWang (992411152@qq.com)
+ * @Brief:         
+ * @Version:       0.1
+ * @Create Date:   2023-10-25
+ * 
+ * @Copyright Copyright (c) 2023 JianHuaWang
+ * 
+ */
+
 #ifndef LINE3SHAPEFUNCTIONS_H
 #define LINE3SHAPEFUNCTIONS_H
 

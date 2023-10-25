@@ -1,3 +1,13 @@
+/**
+ * @File Name:     OutputManage.cpp
+ * @Author:        JianHuaWang (992411152@qq.com)
+ * @Brief:         
+ * @Version:       0.1
+ * @Create Date:   2023-10-25
+ * 
+ * @Copyright Copyright (c) 2023 JianHuaWang
+ * 
+ */
 
 #include <string>
 #include <util/DataStructure.h>

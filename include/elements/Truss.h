@@ -31,16 +31,45 @@ public:
    */
   virtual void GetTangentStiffness(std::shared_ptr<ElementData>&elemDat) override;
 
+  /**
+   * @Brief: Compute the Mass Matrix
+   * 
+   * @param elemDat 
+   */
   virtual void GetMassMatrix(std::shared_ptr<ElementData> &elemDat) override{}
 
 private:
+  /**
+   * @Brief: Compute the Strain Vector
+   * 
+   * @param epsilon 
+   * @param dEpsilon 
+   * @param a 
+   * @param a0 
+   */
   void GetStrain(double &epsilon, double &dEpsilon,
                  const VectorXd &a, const VectorXd &a0);
 
+  /**
+   * @Brief: Compute the Strain Matrix B
+   * 
+   * @param a 
+   */
   void GetBMatrix(const VectorXd &a);
 
+  /**
+   * @Brief: Initialize Some Variables
+   * 
+   */
   void Initialize();
 
+  /**
+   * @Brief: Compute the NonLinear Stiffnes Matrix
+   * 
+   * @param sigma 
+   * @param area 
+   * @return MatrixXd 
+   */
   MatrixXd GetNonLinearStiffMatrix(const double &sigma, const double &area);
 
 private:

@@ -1,4 +1,17 @@
+/**
+ * @File Name:     NonlinearSolver.cpp
+ * @Author:        JianHuaWang (992411152@qq.com)
+ * @Brief:         
+ * @Version:       0.1
+ * @Create Date:   2023-10-25
+ * 
+ * @Copyright Copyright (c) 2023 JianHuaWang
+ * 
+ */
+
 #include <iostream>
+#include <regex>
+#include <fstream>
 #include <solvers/NonlinearSolver.h>
 #include <util/DataStructure.h>
 #include <petscksp.h>
@@ -6,11 +19,31 @@
 NonlinearSolver::NonlinearSolver(const nlohmann::json &props)
                  : BaseModule(props)
 {
-  GlobalData::GetInstance()->m_lam = 0.;
+  Initialize(props);
 }
 
 NonlinearSolver::~NonlinearSolver()
 {}
+
+void NonlinearSolver::Initialize(const nlohmann::json &props)
+{
+  GlobalData::GetInstance()->m_lam = 0.;
+
+
+  // Two Type Of Method to Read Solver Information
+  if(m_myProps.contains("maxCycle"))
+  {
+    Tools::GetParameter(m_maxCycle, "maxCycle", m_myProps);
+    m_iterMaxVec.assign(m_maxCycle, 10);
+    m_tolVec.assign(m_maxCycle, 1.0e-3);
+    m_lamVec.assign(m_maxCycle, 1.0e20);
+  }
+  else{
+    std::cout << std::setw(4) << props << std::endl;
+    std::string fileName = props.at("input");
+    ReadData(fileName);
+  }
+}
 
 void NonlinearSolver::Run()
 {
@@ -96,4 +129,59 @@ void NonlinearSolver::Run()
   VecDestroy(&fext);
   MatDestroy(&K);
   KSPDestroy(&ksp);
+}
+
+void NonlinearSolver::ReadData(const std::string &fileName)
+{
+  std::ifstream fin(fileName, std::ios::in);
+  if(!fin.is_open()){
+    std::cout << fileName << " open failed!!" << std::endl;
+    exit(-1);
+  }
+
+  std::string line = "";
+  std::regex pattern("[\\s]{2,}");
+
+  while(!fin.eof())
+  {
+    getline(fin, line);
+    if(line.npos != line.find("\r")) line.erase(line.find("\r"));
+
+    if(line.npos != line.find("<NonlinearSolver>"))
+    {
+      while(!fin.eof())
+      {
+        getline(fin, line);
+        if(line.npos != line.find("\r"))
+          line.erase(line.find("\r"));
+        
+        if(line.npos != line.find("</NonlinearSolver>")) return;
+
+        if(0 == line.size()) continue;
+
+        line = std::regex_replace(line, pattern, " ");
+        std::vector<std::string> strData = Tools::StringSplit(line, ";");
+        for(auto iter = strData.begin(); iter != strData.end() - 1; iter++)
+        {
+          std::string tempStr = Tools::StringStrip(*iter);
+          std::vector<std::string> b = Tools::StringSplit(tempStr, " ");
+          
+          // Skip the Comment Line
+          if("//" == b[0].substr(0, 2) || "#" == b[0].substr(0, 1)) break;
+          
+          // Read Incremental Load Factor
+          m_lamVec.emplace_back(std::stod(b[0]));
+          
+          // Read Convergence Tolerence
+          m_tolVec.emplace_back(std::stod(b[1]));
+          
+          // Read Max. No. of Iterations
+          m_iterMaxVec.emplace_back(std::stoi(b[2]));
+
+          // Output Control Flags for Results TO DO WORK
+        }
+      }
+    }
+  }
+  fin.close();
 }

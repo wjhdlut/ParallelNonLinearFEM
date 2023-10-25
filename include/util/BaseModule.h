@@ -8,6 +8,11 @@
 class BaseModule
 {
 public:
+  /**
+   * @Brief: Construct a new Base Module object
+   * 
+   * @param props 
+   */
   inline BaseModule(const nlohmann::json &props){
     std::string currentModule = "solver";
     if(props.contains("currentModule")){
@@ -18,9 +23,25 @@ public:
 
     if(props.contains(currentModule)) m_myProps = props.at(currentModule);
   }
+
+  /**
+   * @Brief: Destroy the Base Module object
+   * 
+   */
   virtual ~BaseModule() = default;
 
+  /**
+   * @Brief: Run the Instance
+   * 
+   */
   virtual void Run() = 0;
+
+  /**
+   * @Brief: Read Data From File
+   * 
+   * @param fileName 
+   */
+  inline virtual void ReadData(const std::string &fileName) {}
 
 protected:
   inline void GetParameter(int &value, const std::string &name){
@@ -37,6 +58,10 @@ protected:
 
   inline void GetParameter(bool &value, const std::string &name){
     Tools::GetParameter(value, name, m_myProps);
+  }
+
+  inline virtual void Initialize(const nlohmann::json &props) {
+
   }
 
 protected:
