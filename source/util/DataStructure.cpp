@@ -201,6 +201,7 @@ void GlobalData::ReadData(Vec &data, const std::string&fileName, const std::stri
         if(line.npos != line.find(("</" + key + '>'))){
           VecAssemblyBegin(data);
           VecAssemblyEnd(data);
+          fin.close();
           return;
         }
 
@@ -220,6 +221,7 @@ void GlobalData::ReadData(Vec &data, const std::string&fileName, const std::stri
     }
     if(fin.eof()) break;
   }
+  fin.close();
 }
 
 void GlobalData::ReadExternalForce(const std::string&fileName)
@@ -256,6 +258,7 @@ void GlobalData::ReadEdgeLoadsData(const std::string &fileName)
         if(line.npos != line.find("</EdgeLoads>")){
           VecAssemblyBegin(m_fhat);
           VecAssemblyEnd(m_fhat);
+          fin.close();
           return;
         }
 
@@ -289,5 +292,6 @@ void GlobalData::ReadEdgeLoadsData(const std::string &fileName)
     }
     if(fin.eof()) break;
   }
+  fin.close();
 }
                                 

@@ -9,7 +9,7 @@
  * 
  */
 
-#include <materials/LinearElasticity.h>
+#include <materials/LinearElasticity/LinearElasticity.h>
 
 LinearElasticity::LinearElasticity(const nlohmann::json &props) : BaseMaterial(props)
 {

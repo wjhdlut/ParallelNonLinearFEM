@@ -52,7 +52,10 @@ void ElementSet::ReadFromFile(const std::string &fileName)
         if(line.npos != line.find("\r"))
           line.erase(line.find("\r"));
 
-        if(line.npos != line.find("</Elements>")) return;
+        if(line.npos != line.find("</Elements>")) {
+          fin.close();
+          return;
+        }
 
         if(line.size() == 0) continue;
         
@@ -78,8 +81,8 @@ void ElementSet::ReadFromFile(const std::string &fileName)
         }
       }
     }
+    if(fin.eof()) break;
   }
-
   fin.close();
 }
 

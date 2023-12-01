@@ -29,26 +29,27 @@ void NonlinearSolver::Initialize(const nlohmann::json &props)
 {
   GlobalData::GetInstance()->m_lam = 0.;
 
-
   // Two Type Of Method to Read Solver Information
-  if(m_myProps.contains("maxCycle"))
-  {
+  std::string fileName = props.at("input");
+  ReadData(fileName);
+
+  if(0 == m_maxCycle && m_myProps.contains("maxCycle")){
     Tools::GetParameter(m_maxCycle, "maxCycle", m_myProps);
     m_iterMaxVec.assign(m_maxCycle, 10);
     m_tolVec.assign(m_maxCycle, 1.0e-3);
-    m_lamVec.assign(m_maxCycle, 1.0e20);
   }
-  else{
-    std::cout << std::setw(4) << props << std::endl;
-    std::string fileName = props.at("input");
-    ReadData(fileName);
-  }
+
+  if(0 == m_maxCycle)
+    throw "Please Check Solver Information and Assign the Number Of Load Step";
 }
 
 void NonlinearSolver::Run()
 {
+  int &numOfCycle = GlobalData::GetInstance()->m_cycle;
   GlobalData::GetInstance()->m_cycle += 1;
-  GlobalData::GetInstance()->m_lam = 1.0 * GlobalData::GetInstance()->m_cycle;
+  
+  // Update the Load Factor
+  UpdateLoadFactor(numOfCycle);
 
   Vec &a = GlobalData::GetInstance()->m_state;
   Vec &Da = GlobalData::GetInstance()->m_Dstate;
@@ -81,7 +82,7 @@ void NonlinearSolver::Run()
   KSPCreate(PETSC_COMM_WORLD, &ksp);
 
   double norm = 0., error = 1.;
-  while(error > m_tol)
+  while(error > m_tolVec[numOfCycle - 1])
   {
     GlobalData::GetInstance()->m_iiter += 1;
 
@@ -112,7 +113,7 @@ void NonlinearSolver::Run()
     std::cout << "  Iter " << GlobalData::GetInstance()->m_iiter
               << " : error = " << error << std::endl;
     
-    if(GlobalData::GetInstance()->m_iiter == m_iterMax)
+    if(GlobalData::GetInstance()->m_iiter == m_iterMaxVec[numOfCycle - 1])
       throw "Newton-Raphson iterations did not converge!";
   }
 
@@ -142,20 +143,24 @@ void NonlinearSolver::ReadData(const std::string &fileName)
   std::string line = "";
   std::regex pattern("[\\s]{2,}");
 
-  while(!fin.eof())
+  while(true)
   {
     getline(fin, line);
     if(line.npos != line.find("\r")) line.erase(line.find("\r"));
 
     if(line.npos != line.find("<NonlinearSolver>"))
     {
-      while(!fin.eof())
+      while(true)
       {
         getline(fin, line);
         if(line.npos != line.find("\r"))
           line.erase(line.find("\r"));
         
-        if(line.npos != line.find("</NonlinearSolver>")) return;
+        if(line.npos != line.find("</NonlinearSolver>")){
+           m_maxCycle = m_tolVec.size();
+           fin.close();
+          return;
+        }
 
         if(0 == line.size()) continue;
 
@@ -182,6 +187,17 @@ void NonlinearSolver::ReadData(const std::string &fileName)
         }
       }
     }
+    if(fin.eof()) break;
   }
-  fin.close();
+  fin.close(); 
+}
+
+void NonlinearSolver::UpdateLoadFactor(const int &numOfCycle)
+{
+  if(0 == m_lamVec.size()){
+    GlobalData::GetInstance()->m_lam = 1.0 * GlobalData::GetInstance()->m_cycle;
+  }
+  else{
+    GlobalData::GetInstance()->m_lam += m_lamVec[numOfCycle - 1];
+  }
 }

@@ -34,13 +34,25 @@ public:
   virtual void ReadData(const std::string &fileName) override;
 
 private:
+  /**
+   * @Brief: Initialize Some Basic Variables
+   * 
+   * @param props 
+   */
   virtual void Initialize(const nlohmann::json &props) override;
 
+  /**
+   * @Brief: Update the Load Factor Lambda
+   * 
+   * @param numOfCycle 
+   */
+  void UpdateLoadFactor(const int &numOfCycle);
+
 private:
-  int m_iterMax = 10;
-  int m_maxCycle = 20;
+  // int m_iterMax = 10;
+  int m_maxCycle = 0;
   double m_maxLam = 1.0e20;
-  double m_tol = 1.0e-3;
+  // double m_tol = 1.0e-3;
 
   std::vector<int> m_iterMaxVec;
   std::vector<double> m_lamVec;

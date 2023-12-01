@@ -219,7 +219,10 @@ void DofSpace::ReadNodeConstraint(const std::string &fileName)
         
         if(line.size() == 0) continue;
 
-        if(line.npos != line.find("</NodeConstraints>")) return;
+        if(line.npos != line.find("</NodeConstraints>")){
+          fin.close();
+          return;
+        }
 
         std::string tempStr = Tools::StringStrip(line);
         std::vector<std::string> a = Tools::StringSplit(tempStr, ";");
@@ -236,6 +239,7 @@ void DofSpace::ReadNodeConstraint(const std::string &fileName)
     }
     if(fin.eof()) break;
   }
+  fin.close();
 }
 
 void DofSpace::ReadRigidWall(const std::string &fileName)
@@ -259,7 +263,10 @@ void DofSpace::ReadRigidWall(const std::string &fileName)
         
         if(line.size() == 0) continue;
 
-        if(line.npos != line.find("</RigidWall>")) return;
+        if(line.npos != line.find("</RigidWall>")) {
+          fin.close();
+          return;
+        }
 
         std::string tempStr = Tools::StringStrip(line);
         std::vector<std::string> a = Tools::StringSplit(tempStr, ";");
@@ -276,6 +283,7 @@ void DofSpace::ReadRigidWall(const std::string &fileName)
     }
     if(fin.eof()) break;
   }
+  fin.close();
 }
 
 void DofSpace::RigidWallConstraint(Vec&da)

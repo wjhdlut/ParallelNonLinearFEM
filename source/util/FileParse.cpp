@@ -8,7 +8,7 @@
 
 void StoreValue(nlohmann::json&db, const std::string&key, const std::vector<std::string> &value)
 {
-  db[key] = nlohmann::json::array();
+  if(!db.contains(key)) db[key] = nlohmann::json::array();
   for(auto iValue : value)
   {
     db[key].emplace_back(iValue);
@@ -40,9 +40,21 @@ std::string ReadItem(std::vector<std::string>&strVec, nlohmann::json&db)
     l2 = Tools::StringSplit(strVec[1], ";", 1);
     
     if("[" == l2[0].substr(0, 1)){
-      std::string tempStr = l2[0].substr(1, l2[0].size() - 2);
+      int tempInt = std::string::npos != l2[0].find("]") ? 2 : 1;
+      std::string tempStr = l2[0].substr(1, l2[0].size() - tempInt);
       std::vector<std::string> l3 = Tools::StringSplit(tempStr, ",");
       StoreValue(db, strVec[0], l3);
+
+      std::vector<std::string> l4 = Tools::StringSplit(l2[1], "]", 1);
+      if (l4.size() == 2){
+        if(";" == l4[1].substr(0,1)) l4[1].erase(0, 1);
+        l2 = l4;
+        while(2 == l3.size() && 0 != l3[1].size()){
+          l3 = Tools::StringSplit(l2[0], ";", 1);
+          l4 = Tools::StringSplit(l3[0], ",", 1);
+          StoreValue(db, strVec[0], l4);
+        }
+      }
     }
     else
       StoreValue(db, strVec[0], l2[0]);
