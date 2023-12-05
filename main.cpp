@@ -14,9 +14,10 @@
 #include <mpi.h>
 #include <petsc.h>
 #include <iostream>
-#include <io/InputReader.h>
-#include <solvers/Solver.h>
-#include <io/OutputManager.h>
+
+#include "software/io/include/InputReader.h"
+#include "software/io/include/OutputManager.h"
+#include "software/solvers/include/Solver.h"
 
 int main(int argc, char **args)
 {
