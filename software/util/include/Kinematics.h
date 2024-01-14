@@ -39,6 +39,7 @@ public:
 
     int numOfStrain = dim * (dim + 1)/2;
     strain = VectorXd::Zero(numOfStrain);
+    incremStrain = VectorXd::Zero(numOfStrain);
 
     numOfDim = dim;
   }
@@ -49,27 +50,28 @@ public:
    * @Brief:   Set the Strain Vector object based on the Green Strain Tensor
    * 
    */
-  inline void SetStrainVector(){
+  inline void SetStrainVector(const MatrixXd &tensor){
     if(2 == numOfDim){
-      strain(0) = E(0, 0);
-      strain(1) = E(1, 1);
-      strain(2) = 2. * E(0, 1);
+      strain(0) = tensor(0, 0);
+      strain(1) = tensor(1, 1);
+      strain(2) = 2. * tensor(0, 1);
     }
     else if(3 == numOfDim){
-      strain(0) = E(0, 0);
-      strain(1) = E(1, 1);
-      strain(2) = E(2, 2);
+      strain(0) = tensor(0, 0);
+      strain(1) = tensor(1, 1);
+      strain(2) = tensor(2, 2);
 
-      strain(3) = 2. * E(0, 1);
-      strain(4) = 2. * E(1, 2);
-      strain(5) = 2. * E(0, 2);
+      strain(3) = 2. * tensor(0, 1);
+      strain(4) = 2. * tensor(1, 2);
+      strain(5) = 2. * tensor(0, 2);
     }
   }
 
 public:
   MatrixXd F;                   // Deformation Gradient Tensor
   MatrixXd E;                   // Green Strain Tensor
-  VectorXd strain;              // strain vector
+  VectorXd strain;              // Strain Vector
+  VectorXd incremStrain;        // Incremental Strain Vector
 
 private:
   int numOfDim = 0;

@@ -59,6 +59,7 @@
         "valarray": "cpp",
         "variant": "cpp",
         "dense": "cpp",
-        "complex": "cpp"
+        "complex": "cpp",
+        "cinttypes": "cpp"
     }
 }

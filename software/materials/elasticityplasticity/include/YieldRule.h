@@ -14,7 +14,7 @@
 
 #include <eigen3/Eigen/Dense>
 
-#include "../../../../nlohmann/json.hpp"
+#include "../../../nlohmann/json.hpp"
 
 using namespace Eigen;
 

@@ -1,3 +1,14 @@
+/**
+ * @File Name:     ElementSet.h
+ * @Author:        JianHuaWang (992411152@qq.com)
+ * @Brief:         
+ * @Version:       0.1
+ * @Create Date:   2024-01-11
+ * 
+ * @Copyright Copyright (c) 2024 JianHuaWang
+ * 
+ */
+
 #ifndef ELEMENTSET_H
 #define ELEMENTSET_H
 
@@ -12,18 +23,57 @@ class Element;
 class ElementSet
 {
 public:
+  /**
+   * @Brief: Construct a new Element Set object
+   * 
+   * @param nodes 
+   * @param props 
+   */
   ElementSet(std::shared_ptr<NodeSet> &nodes, const nlohmann::json &props);
+  
+  /**
+   * @Brief: Destroy the Element Set object
+   * 
+   */
   ~ElementSet();
 
 public:
+  /**
+   * @Brief: Read Element Data From File
+   * 
+   * @param fileName 
+   */
   void ReadFromFile(const std::string&fileName);
 
+  /**
+   * @Brief: Get the Dof Type of Element
+   * 
+   * @return std::vector<std::string> 
+   */
   std::vector<std::string> GetDofType();
 
+  /**
+   * @Brief: Compute and Assemble Stiffness Matrix
+   * 
+   * @param A 
+   * @param B 
+   */
   void AssembleTangentStiffness(Mat &A, Vec &B);
   
+  /**
+   * @Brief: Compute and Assemble Internal Force
+   * 
+   * @param B 
+   */
   void AssembleInternalForce(Vec &B);
   
+  /**
+   * @Brief: Compute and Assemble Internal Force
+   * 
+   * @param A 
+   * @param B 
+   * @return PetscErrorCode 
+   */
   PetscErrorCode AssembleMassMatrix(Mat &A, Vec &B);
 
   void CommitHistory();

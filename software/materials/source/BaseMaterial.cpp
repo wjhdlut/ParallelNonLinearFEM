@@ -9,6 +9,8 @@
  * 
  */
 
+#include <iostream>
+
 #include "../include/BaseMaterial.h"
 
 BaseMaterial::BaseMaterial(const nlohmann::json &props) : m_props(props)
@@ -52,7 +54,7 @@ void BaseMaterial::CommitHistory()
 }
 
 VectorXd BaseMaterial::GetStress(const std::shared_ptr<Kinematics> &kin,
-                                 const VectorXd &increDisp, const MatrixXd &dhpi){
+                                 const VectorXd &stress){
   return m_D * kin->strain;
 }
 

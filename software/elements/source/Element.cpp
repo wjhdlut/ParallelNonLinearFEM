@@ -151,9 +151,33 @@ void Element::SetDofType(const std::string &elemShape)
   m_elemShapePtr = ObjectFactory::CreateObject<ElementShapeFunctions>(elemType);
   if(nullptr == m_elemShapePtr) throw "Unkonwn type " + elemType;
   m_dofType = m_elemShapePtr->ReturnDofType();
-  
+}
+
+void Element::CompGaussPointCoord(const std::string &elemShape)
+{
   if(m_reductedIntegration) order = -1;
   ShapeFunctions::GetIntegrationPoints(xi, weight, elemShape, order);
+}
+
+void Element::InitializeHistoryVariables()
+{
+  InitializeStress();
+  
+  InitializeStateVariable();
+
+  CommitHistory();
+}
+
+void Element::InitializeStress()
+{
+  VectorXd tempVec = VectorXd::Zero(m_elemShapePtr->numOfStress * weight.size());
+  SetHistoryParameter("sigma", tempVec);
+}
+
+void Element::InitializeStateVariable()
+{
+  VectorXd tempVec = VectorXd::Zero(m_elemShapePtr->numOfStress);
+  SetHistoryParameter("stateVariable", tempVec);
 }
 
 std::vector<int> Element::CheckNodeBoundary(std::vector<int> &nodeChk,

@@ -34,6 +34,8 @@ void Interface::Initialize(const std::string &elemShape)
   CommitHistory();
 
   SetDofType(elemShape);
+
+  CompGaussPointCoord(elemShape);
 }
 
 void Interface::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
@@ -51,7 +53,7 @@ void Interface::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
 
     GetBMatrix(m_elemShapePtr->H, rot);
 
-    GetKinematics(elemDat->m_state);
+    GetKinematics(elemDat);
 
     sigma = m_mat->GetStress(kin, elemDat->m_Dstate);
 
@@ -122,9 +124,9 @@ void Interface::GetBMatrix(const VectorXd &H, const MatrixXd &R)
   B(1, 6) = R(1, 0) * H(1), B(1, 7) = R(1, 1) * H(1);
 }
 
-void Interface::GetKinematics(const VectorXd &elState)
+void Interface::GetKinematics(const std::shared_ptr<ElementData> &elemDat)
 {
   int numOfDim = 2;
   kin = std::make_shared<Kinematics>(numOfDim);
-  kin->strain = B.transpose() * elState;
+  kin->strain = B.transpose() * elemDat->m_state;
 }

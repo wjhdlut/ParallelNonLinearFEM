@@ -12,7 +12,7 @@
 #ifndef ELASTICITYPLASTICITY_H
 #define ELASTICITYPLASTICITY_H
 
-#include "../yieldfunctions/include/YieldRule.h"
+#include "YieldRule.h"
 #include "../../include/BaseMaterial.h"
 #include "../../linearelasticity/include/LinearElasticity.h"
 #include "../../../util/include/Math.h"
@@ -43,8 +43,7 @@ public:
    * @return VectorXd 
    */
   virtual VectorXd GetStress(const std::shared_ptr<Kinematics> &kin,
-                             const VectorXd &increDisp,
-                             const MatrixXd &dphi = MatrixXd::Zero(0, 0)) override;
+                             const VectorXd &stress = VectorXd::Zero(0)) override;
 
 protected:
   virtual void ComputeDMatrix() override;
@@ -74,22 +73,22 @@ private:
   void ReadYieldStressStrainData();
   
   /**
-   * @Brief: Get the Yield Stress for the Given Plastic Strain
+   * @Brief: Get the Yield Stress for the Given Accumulated Plastic Strain
    *         Based on the Stress Strain Data Pair
    * 
    * @param plasticStrain 
    * @return double 
    */
-  double GetYieldStress(const double plasticStrain);
+  double GetYieldStress(const double accumPlasticStrain);
 
    /**
-   * @Brief: Get the Yield Stress for the Given Plastic Strain
+   * @Brief: Get the Yield Stress for the Given Accumulated Plastic Strain
    *         Based on the Stress Strain Data Pair
    * 
    * @param plasticStrain 
    * @return double 
    */
-  double GetHardModuli(const double plasticStrain);
+  double GetHardModuli(const double accumPlasticStrain);
 
 protected:
   bool m_yieldFlag = false;                                       // Plastic Yielding Flag
@@ -97,9 +96,11 @@ protected:
   double m_G;                                                     // Shear Moduli
   double m_plaMod;                                                // Hard moduli
   double m_waveSpeed;                                             // Wave Speed for Explicit Dynamic Problem 
-  double m_plasticStrain;                                         // Effective Plastic Strain
+  double m_accumPlasticStrain;                                    // Accumulated Plastic Strain
+  double m_plasticMulter;
   std::string m_rateType;                                         // Type of Objective Rate
   VectorXd m_oneVec;                                              // Common Vector
+  VectorXd m_plasticStrain;                                       // Plastic Strain
   MatrixXd m_devMat;                                              // Common Matrix
   MatrixXd m_oneMat;                                              // Common Matrix
   std::vector<std::pair<double, double>> m_yieldStress;           // Harding Curve

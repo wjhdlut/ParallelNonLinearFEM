@@ -38,13 +38,11 @@ public:
    * @Brief: Get the Stress Vector
    * 
    * @param kin 
-   * @param increDisp 
-   * @param dhpi 
+   * @param stress
    * @return VectorXd 
    */
   virtual VectorXd GetStress(const std::shared_ptr<Kinematics>&kin,
-                             const VectorXd &increDisp = VectorXd::Zero(0),
-                             const MatrixXd &dhpi = MatrixXd::Zero(0, 0));
+                             const VectorXd &stress = VectorXd::Zero(0));
 
   /**
    * @Brief: Set the Iter object
@@ -146,10 +144,10 @@ private:
   void GetTransMatrix(MatrixXd &T, const MatrixXd &F);
 
 protected:
-  int m_iIter  = -1;
-  double m_rho = 0.;
-  double m_E   = 0.;
-  double m_nu  = 0.;
+  int    m_iIter  = -1;
+  double m_rho    = 0.;
+  double m_E      = 0.;
+  double m_nu     = 0.;
   std::vector<std::unordered_map<std::string, double>> m_current;
   std::vector<std::unordered_map<std::string, double>> m_history;
   std::unordered_map<std::string, double> m_initHistory;

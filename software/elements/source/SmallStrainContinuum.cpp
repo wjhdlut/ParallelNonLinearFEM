@@ -31,6 +31,10 @@ SmallStrainContinuum::~SmallStrainContinuum()
 void SmallStrainContinuum::Initialize(const std::string &elemShape)
 {
   SetDofType(elemShape);
+
+  CompGaussPointCoord(elemShape);
+
+  InitializeHistoryVariables();
 }
 
 void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elemDat)
@@ -57,7 +61,7 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
     // compute strain matrix B
     GetBMatrix(pHpX);
 
-    GetKinematics(elemDat->m_state);
+    GetKinematics(elemDat);
 
     // compute stress vector
     sigma = m_mat->GetStress(kin);
@@ -80,7 +84,7 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
   elemDat->m_outputData = 1./xi.rows() * outputData;
 }
 
-void SmallStrainContinuum::GetKinematics(const VectorXd &elState)
+void SmallStrainContinuum::GetKinematics(const std::shared_ptr<ElementData> &elemDat)
 {
   int numOfDim = 0;
   if(3 == B.rows())
@@ -91,7 +95,7 @@ void SmallStrainContinuum::GetKinematics(const VectorXd &elState)
     throw "Size of Strain Matrix B in SmallStrainContinuum::GetKinematics is Wrong";
   
   kin = std::make_shared<Kinematics>(numOfDim);
-  kin->strain = B * elState;
+  kin->strain = B * elemDat->m_state;
 }
 
 void SmallStrainContinuum::GetBMatrix(const MatrixXd &dphi)

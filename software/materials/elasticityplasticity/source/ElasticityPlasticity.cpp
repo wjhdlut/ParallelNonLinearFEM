@@ -40,52 +40,60 @@ void ElasticityPlasticity::ReadYieldStressStrainData()
 
 void ElasticityPlasticity::ComputeDMatrix()
 {
+  m_D = m_lineMat->GetTangMatrix();
+  
   if(m_yieldFlag)
   {
-
+    VectorXd stress;
+    double hydPre = m_oneVec.dot(stress) / 3.;
+    VectorXd devStress = stress - m_oneVec * hydPre;
+    double qTrial = m_yieldRule->CompYieldFunction(stress);
+    double H = GetHardModuli(m_accumPlasticStrain);
+    double normDevStress = sqrt(pow(devStress(0), 2) + pow(devStress(1), 2) + pow(devStress(2), 2)
+                        + 2. * (pow(devStress(3), 2) + pow(devStress(4), 2) + pow(devStress(5), 2)));
+    m_D = m_D - 2. * m_G * (3. * m_G * m_plasticMulter) / qTrial * m_devMat 
+        + 6. * m_G * m_G * (m_plasticMulter / qTrial - 1. / (3. * m_G + H))/ (normDevStress * normDevStress)
+        * devStress.transpose() * devStress;
   }
-  else
-    m_D = m_lineMat->GetTangMatrix();
+    
 }
 
 VectorXd ElasticityPlasticity::GetStress(const std::shared_ptr<Kinematics> &kin,
-                                         const VectorXd &increDisp,
-                                         const MatrixXd &dphi)
+                                         const VectorXd &stress)
 {
-  VectorXd stress = m_lineMat->GetStress(kin);
-  if("Jaumann" == m_rateType)
-    StressRotation(stress, increDisp, dphi);
+  VectorXd stressOld = m_lineMat->GetStress(kin);
+  // if("Jaumann" == m_rateType)
+    // StressRotation(stress, increDisp, dphi);
   
-  if(m_yieldRule == nullptr){
-    throw " Please Assign the Yile Type";
-  }
   double J2 = m_yieldRule->CompYieldFunction(stress);
-  double yieldStress = GetYieldStress(m_plasticStrain);
+  double yieldStress = GetYieldStress(m_accumPlasticStrain);
 
   // Plastic Yield
   if((J2 - yieldStress)/yieldStress > m_tol)
   {
+    m_yieldFlag = true;
     // Plastic Step: Apply return mapping - use Newton-Raphson algorithm
     //               to solve the return mapping equation
     double denom = 0., dPlasticStrain = 0.;
     while(true)
     {
-      denom = -3. * m_G - GetHardModuli(m_plasticStrain);
+      denom = -3. * m_G - GetHardModuli(m_accumPlasticStrain);
       dPlasticStrain += (J2 - yieldStress)/denom;
 
-      m_plasticStrain += (J2 - yieldStress)/denom;
-      yieldStress = GetYieldStress(m_plasticStrain);
+      m_accumPlasticStrain += (J2 - yieldStress)/denom;
+      yieldStress = GetYieldStress(m_accumPlasticStrain);
 
       if((J2 - 3. * m_G * dPlasticStrain - yieldStress)/yieldStress < m_tol)
         break;
     }
     // Update Stress
-    //  hydrostatic pressure
+    // Hydrostatic Stress
     double hydPre = m_oneVec.dot(stress) / 3.;
-    // stress deviator
+    
+    // Deviatoric Stress Component
     VectorXd devStress = stress - m_oneVec * hydPre;
     double tempFactor = 1. - 3. * m_G * dPlasticStrain / J2;
-    stress = tempFactor * devStress + m_oneVec * hydPre;
+    return tempFactor * devStress + hydPre * m_oneVec;
   }
 
   return stress;
@@ -142,8 +150,11 @@ void ElasticityPlasticity::Initialize()
     std::string yieldFunction = m_props.at("yieldFunctions");
     m_yieldRule = ObjectFactory::CreateObject<YieldRule>(yieldFunction);
   }
+  
+  if(m_yieldRule == nullptr)
+    throw " Please Assign the Yile Type";
 
-  m_plasticStrain = 0.;
+  m_accumPlasticStrain = 0.;
 
   // Analyse Type
   if(m_props.contains("analyseType"))
@@ -180,12 +191,12 @@ void ElasticityPlasticity::Initialize()
   ReadYieldStressStrainData();
 }
 
-double ElasticityPlasticity::GetYieldStress(const double plasticStrain)
+double ElasticityPlasticity::GetYieldStress(const double accumPlasticStrain)
 {
   int index = 0;
   for(index = 0; index < m_yieldStress.size(); index++)
   {
-    if(plasticStrain > m_yieldStress.at(index).first){
+    if(accumPlasticStrain > m_yieldStress.at(index).first){
       continue;
     }
     else{
@@ -201,7 +212,7 @@ double ElasticityPlasticity::GetYieldStress(const double plasticStrain)
          */
         double k1 = (m_yieldStress.at(index).second-m_yieldStress.at(index-1).second);
         double k2 = (m_yieldStress.at(index).first-m_yieldStress.at(index-1).first);
-        double k3 = (plasticStrain - m_yieldStress.at(index - 1).first);
+        double k3 = (accumPlasticStrain - m_yieldStress.at(index - 1).first);
         return m_yieldStress.at(index-1).second + k1 / k2 * k3;
       }
     }
@@ -209,12 +220,12 @@ double ElasticityPlasticity::GetYieldStress(const double plasticStrain)
   return m_yieldStress.at(index).second;
 }
 
-double ElasticityPlasticity::GetHardModuli(const double plasticStrain)
+double ElasticityPlasticity::GetHardModuli(const double accumPlasticStrain)
 {
   int index = 0;
   for(index = 0; index < m_yieldStress.size(); index++)
   {
-    if(plasticStrain > m_yieldStress.at(index).first)
+    if(accumPlasticStrain > m_yieldStress.at(index).first)
       continue;
     else{
       if(0 == index)

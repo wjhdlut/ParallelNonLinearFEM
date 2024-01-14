@@ -10,7 +10,7 @@
  */
 
 #include "YieldRule.h"
-#include "../../../../util/include/ObjectFactory.h"
+#include "../../../util/include/ObjectFactory.h"
 
 class VonMises : public YieldRule
 {

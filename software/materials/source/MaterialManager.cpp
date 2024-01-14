@@ -9,6 +9,8 @@
  * 
  */
 
+#include <iostream>
+
 #include "../include/MaterialManager.h"
 #include "../../util/include/ObjectFactory.h"
 
@@ -16,6 +18,10 @@ MaterialManager::MaterialManager(const nlohmann::json &matProps)
 {
   std::string matType = matProps.at("type");
   m_mat = ObjectFactory::CreateObject<BaseMaterial>(matType, matProps);
+  if(nullptr == m_mat){
+    std::cout <<  matType << " Material Model Created Failed!!" << std::endl;
+    exit(-1);
+  }
   iIter = -1;
 }
 
@@ -28,8 +34,8 @@ void MaterialManager::Reset()
 }
 
 VectorXd MaterialManager::GetStress(const std::shared_ptr<Kinematics>&kin,
-                                    const VectorXd &increDisp,
-                                    const MatrixXd &dphi, int iSam)
+                                    const VectorXd &stress,
+                                    int iSam)
 {
   if(-1 == iSam){
     iIter += 1;
@@ -38,5 +44,5 @@ VectorXd MaterialManager::GetStress(const std::shared_ptr<Kinematics>&kin,
 
   m_mat->SetIter(iSam);
 
-  return m_mat->GetStress(kin, increDisp, dphi);
+  return m_mat->GetStress(kin, stress);
 }

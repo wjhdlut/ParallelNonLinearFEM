@@ -20,6 +20,7 @@ GraphWriter::GraphWriter(const nlohmann::json &props) : BaseModule(props)
   std::cout << GlobalData::GetInstance()->m_prefix << std::endl;
   
   m_outFileStream.open(fileName, std::ios::out);
+  std::cout << "GraphWriter m_myProps = " << m_myProps << std::endl;
   m_columns = m_myProps.at("columns");
 
   for(auto iColumns : m_columns)

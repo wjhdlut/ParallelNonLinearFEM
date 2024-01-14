@@ -29,7 +29,9 @@ void Truss::Initialize()
   SetHistoryParameter("sigma", VectorXd::Zero(1));
   
   CommitHistory();
+
   Tools::GetParameter(m_E, "E", m_props);
+  
   Tools::GetParameter(m_area, "Area", m_props);
 }
 

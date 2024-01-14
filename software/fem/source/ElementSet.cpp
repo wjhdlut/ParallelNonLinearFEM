@@ -101,6 +101,11 @@ void ElementSet::Add(const int elemId, const std::string &modelName,
 
   std::shared_ptr<Element> elem = ObjectFactory::CreateObject<Element>(modelType, elemShape, elementNodes, modelProps);
 
+  if(nullptr == elem){
+    std::cout << modelType << " Element Type Created Failed!!" << std::endl;
+    exit(-1);
+  }
+
   m_nodes->GetNodeCoords(elem->GetNodes());
 
   m_elem[elemId] = elem;

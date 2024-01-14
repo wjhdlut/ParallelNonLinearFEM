@@ -53,10 +53,10 @@ private:
    *          Cauchy-Green Strain Tensor and Strain Vector
    * 
    * @param dphi 
-   * @param elState 
+   * @param elemDat 
    */
   void GetKinematics(const MatrixXd&dphi,
-                     const VectorXd&elState);
+                     const std::shared_ptr<ElementData> &elemDat);
   
   /**
    * @Brief: Compute Strain Matrix B

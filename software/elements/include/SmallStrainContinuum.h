@@ -51,7 +51,7 @@ private:
    * 
    * @param elState 
    */
-  void GetKinematics(const VectorXd &elState);
+  void GetKinematics(const std::shared_ptr<ElementData> &elemDat);
 
   /**
    * @Brief: Compute Strain Matrix B

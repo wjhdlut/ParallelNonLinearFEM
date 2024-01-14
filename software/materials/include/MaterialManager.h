@@ -16,6 +16,7 @@
 #include "../../nlohmann/json.hpp"
 #include "../../util/include/Kinematics.h"
 
+
 /**
  * @Brief: class of material manager to manage materials of model
  * 
@@ -45,13 +46,14 @@ public:
   /**
    * @Brief:  Get the Stress Data
    * 
-   * @param kin 
+   * @param kin
+   * @param stress     [in] Stress at the Last Load Step
    * @param iSam 
    * @return std::vector<double> 
    */
   VectorXd GetStress(const std::shared_ptr<Kinematics>&kin,
-                     const VectorXd &increDisp = VectorXd::Zero(0),
-                     const MatrixXd &dphi = MatrixXd::Zero(0, 0), int iSam = -1);
+                     const VectorXd &stress = VectorXd::Zero(0),
+                     int iSam = -1);
                      
   /**
    * @Brief:  Get the Tangent Modulue Matrix

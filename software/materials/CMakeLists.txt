@@ -8,7 +8,10 @@ file(GLOB_RECURSE ${MODULE_NAME}_SRC_FILES source/*.cpp)
 file(GLOB_RECURSE ${MODULE_NAME}_INC_FILES include/*.h)
 
 # building a dynamic library
-add_library(${MODULE_NAME} ${BUILD_LIB_TYPE} ${${MODULE_NAME}_SRC_FILES})
+add_library(${MODULE_NAME} SHARED
+            ${${MODULE_NAME}_SRC_FILES}
+            $<TARGET_OBJECTS:linearelasticity>
+            $<TARGET_OBJECTS:elasticityplasticity>)
 
 # reduce compile independece of dynamic libraries
 if(NOT BUILD_ALL_SHARED)

@@ -210,6 +210,19 @@ protected:
    */
   void SetDofType(const std::string &elemShape);
  
+ /**
+  * @Brief: Compute Gauss Point Coordinate
+  * 
+  * @param elemShape 
+  */
+  void CompGaussPointCoord(const std::string &elemShape);
+  
+  /**
+   * @Brief: Initialize History Variables
+   * 
+   */
+  void InitializeHistoryVariables();
+ 
   /**
    * @Brief: Check Whether a Given Set of Local Element Node Correspond to
    *         One of the Element Boundaries (Edges in 2-D and Faces in 3-D).
@@ -224,10 +237,27 @@ protected:
                                      const std::unordered_map<int, std::vector<double>> &nodeForcePres);
 
 private:
+  /**
+   * @Brief: Initialize Some Basic Variables
+   * 
+   * @param modelProps 
+   */
   void Initialize(const nlohmann::json &modelProps);
 
+  /**
+   * @Brief: Initialize Stress Vector at Gauss Point in Element
+   * 
+   */
+  void InitializeStress();
+
+  /**
+   * @Brief: Initialize State Variables Such as Plastic Multiplier
+   * 
+   */
+  void InitializeStateVariable();
+
 protected:
-  bool m_reductedIntegration = false;
+  bool   m_reductedIntegration = false;
   double m_rho = 0.;
   double m_waveSpeed = 0.;
   double m_dtK1 = 1.e6;

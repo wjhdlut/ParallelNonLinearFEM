@@ -9,6 +9,8 @@
  * 
  */
 
+#include <iostream>
+
 #include "../include/InputReader.h"
 #include "../../util/include/FileParse.h"
 #include "../../fem/include/NodeSet.h"

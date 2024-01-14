@@ -31,6 +31,10 @@ void FiniteStrainContinuum::Initialize(const std::string &elemShape)
 {
   // m_rho = m_mat->GetMaterialRho();
   SetDofType(elemShape);
+  
+  CompGaussPointCoord(elemShape);
+
+  InitializeHistoryVariables();
 }
 
 void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elemDat)
@@ -53,7 +57,7 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     pHpX = m_elemShapePtr->pHpxi * jac.inverse();
 
     // compute deforamtion gradient
-    GetKinematics(pHpX, elemDat->m_state);
+    GetKinematics(pHpX, elemDat);
 
     // compute tangent modulue matrix
     // D = m_mat->GetTangMatrix(kin->F);
@@ -90,21 +94,23 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
 }
 
 void FiniteStrainContinuum::GetKinematics(const MatrixXd &dphi,
-                                          const VectorXd &elState)
+                                          const std::shared_ptr<ElementData> &elemDat)
 {
-  // compute deformation gradient tensor
+  // Compute Deformation Gradient Tensor
   int numOfDim = dphi.cols();
   int numOfNode = dphi.rows();
   MatrixXd eleStateMat(numOfDim, numOfNode);
-  eleStateMat = Math::ConvertVecToMat(numOfNode, numOfDim, elState);
+  eleStateMat = Math::ConvertVecToMat(numOfNode, numOfDim, elemDat->m_state);
   
   kin = std::make_shared<Kinematics>(numOfDim);
   kin->F += eleStateMat.transpose() * dphi;
   
-  // compute Green-Lagrange strain tensor
+  // compute Green-Lagrange Strain Tensor
   MatrixXd rightCauchyGreen = kin->F.transpose() * kin->F;
   kin->E = 0.5 * (rightCauchyGreen - MatrixXd::Identity(numOfDim, numOfDim));
-  kin->SetStrainVector();
+  kin->SetStrainVector(kin->E);
+
+  // Compute Incremental Green-Lagrange Strain Tensor
 }
 
 

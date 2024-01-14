@@ -64,9 +64,9 @@ private:
    * @Brief: Compute the Kinematics Variable Such as Deformation Gradient,
    *         Cauchy-Green Strain Tensor and Strain Vector
    * 
-   * @param elState 
+   * @param elemDat 
    */
-  void GetKinematics(const VectorXd &elState);
+  void GetKinematics(const std::shared_ptr<ElementData> &elemDat);
 
   /**
    * @Brief: Initialize Some Variables of Interface Element
