@@ -17,10 +17,9 @@
 GraphWriter::GraphWriter(const nlohmann::json &props) : BaseModule(props)
 { 
   std::string fileName = GlobalData::GetInstance()->m_prefix + ".out";
-  std::cout << GlobalData::GetInstance()->m_prefix << std::endl;
   
   m_outFileStream.open(fileName, std::ios::out);
-  std::cout << "GraphWriter m_myProps = " << m_myProps << std::endl;
+  
   m_columns = m_myProps.at("columns");
 
   for(auto iColumns : m_columns)
@@ -72,6 +71,9 @@ Vec& GraphWriter::GetGlobalData(const std::string &name)
     return (GlobalData::GetInstance()->m_fint);
   }
   else{
-    throw "no output data with name: " + name;
+    std::cout << "Catch Exception: "
+              << "no output data with name: " + name
+              << std::endl;
+    exit(-1);
   }
 }

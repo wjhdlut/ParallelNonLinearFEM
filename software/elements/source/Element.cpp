@@ -48,7 +48,12 @@ void Element::AppendNodalOutput(const std::string&outputName, const MatrixXd&out
   MatrixXd &outWeight = GlobalData::GetInstance()->m_outputData[outWeightName];
 
   if((outMatrix.cols() != outMatrix1.cols()) || outMatrix.rows() != m_nodes.size())
-    throw "Appended output vector has incorrect size.";
+  {
+    std::cout << "Catch Exception: "
+              << "Appended output vector has incorrect size."
+              << std::endl;
+    exit(-1);
+  }
   std::vector<int> index = GlobalData::GetInstance()->m_dofs->GetIndex(m_nodes);
   for(int row = 0; row < index.size(); row++)
   {
@@ -149,7 +154,12 @@ void Element::SetDofType(const std::string &elemShape)
 {
   std::string elemType = elemShape + "ShapeFunctions";
   m_elemShapePtr = ObjectFactory::CreateObject<ElementShapeFunctions>(elemType);
-  if(nullptr == m_elemShapePtr) throw "Unkonwn type " + elemType;
+  if(nullptr == m_elemShapePtr){
+    std::cout << "Catch Exception: "
+              << "Unkonwn type " + elemType
+              << std::endl;
+    exit(-1);
+  }
   m_dofType = m_elemShapePtr->ReturnDofType();
 }
 
@@ -264,4 +274,14 @@ VectorXd Element::CompEquivalentNodeForce(const std::unordered_map<int, VectorXd
     }
   }
   return equivalentForce;
+}
+
+void Element::InsertElemOutputData(std::unordered_map<std::string, MatrixXd> &elemOutData,
+                                   const std::string &name,
+                                   const MatrixXd &outputData)
+{
+  if(0 == elemOutData.count(name))
+    elemOutData.insert(std::pair<std::string, MatrixXd>(name, outputData));
+  else
+    elemOutData[name] = outputData;
 }

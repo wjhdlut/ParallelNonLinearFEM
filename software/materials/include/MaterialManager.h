@@ -101,6 +101,19 @@ public:
     return m_mat->SetMaterialParamter(name);
   }
 
+  // /**
+  //  * @Brief: Get the Element State Variable
+  //  * 
+  //  * @param stateVariable 
+  //  */
+  // inline void GetElemStateVariable(const double &stateVariable){
+  //   m_mat->GetElemStateVariable(stateVariable);
+  // }
+
+  // inline void SetElemStateVariable(double &stateVariable){
+  //   m_mat->SetElemStateVariable(stateVariable);
+  // }
+
 private:
   int iIter = -1;                        // 
   std::shared_ptr<BaseMaterial> m_mat;   // Material Pointer

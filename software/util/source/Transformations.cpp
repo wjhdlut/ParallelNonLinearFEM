@@ -9,6 +9,8 @@
  * 
  */
 
+#include<iostream>
+
 #include "../include/Transformations.h"
 #include "../include/Math.h"
 
@@ -40,7 +42,12 @@ VectorXd VecToElementCoordinates(const VectorXd &a, const MatrixXd &elemNodeCoor
 
   VectorXd aBar = VectorXd::Zero(a.size());
 
-  if(0 != a.size()%R.rows()) throw "Vector does not have the right shape to be rotated";
+  if(0 != a.size()%R.rows()){
+    std::cout << "Catch Exception: "
+              <<"Vector does not have the right shape to be rotated"
+              << std::endl;
+    exit(-1);
+  }
 
   VectorXd tempVec = VectorXd::Zero(R.rows());
   for(int i = 0; i < a.size()/R.rows(); i++)
@@ -66,8 +73,12 @@ MatrixXd MatToElementCoordinates(const MatrixXd &A, const MatrixXd &elemNodeCoor
 
   MatrixXd tempMat = MatrixXd::Zero(R.rows(), R.rows());
   
-  if(0 != A.cols() % R.rows() || 0 != A.rows() % R.rows())
-    throw "Matrix does not have the right shape to be rotated";
+  if(0 != A.cols() % R.rows() || 0 != A.rows() % R.rows()){
+    std::cout << "Catch Exception: "
+              << "Matrix does not have the right shape to be rotated"
+              << std::endl;
+    exit(-1);
+  }
   
   for(int i = 0; i < A.rows()/R.rows(); i++)
   {
@@ -92,7 +103,12 @@ MatrixXd GetRotationMatrix(const MatrixXd &elemNodeCoords)
 {
   if(0 == elemNodeCoords.rows()) return MatrixXd::Zero(0, 0);
 
-  if(2 != elemNodeCoords.cols()) throw "Rotation matrix only implemented for 2D situation";
+  if(2 != elemNodeCoords.cols()){
+    std::cout << "Catch Exception: "
+              << "Rotation matrix only implemented for 2D situation"
+              << std::endl;
+    exit(-1);
+  }
 
 
   // Compute the undeformed element length
@@ -113,7 +129,12 @@ VectorXd VecToGLobalCoordinates(const VectorXd &a, const MatrixXd &elemNodeCoord
 
   VectorXd aBar = VectorXd::Zero(a.size());
 
-  if(0 != a.size()%R.rows()) throw "Vector does not have the right shape to be rotated";
+  if(0 != a.size()%R.rows()) {
+    std::cout << "Catch Exception: "
+              << "Vector does not have the right shape to be rotated"
+              << std::endl;
+    exit(-1);
+  }
 
   VectorXd tempVec = VectorXd::Zero(R.rows());
 
@@ -138,8 +159,12 @@ MatrixXd MatToGlobalCoordinates(const MatrixXd &A, const MatrixXd &elemNodeCoord
   MatrixXd aBar = MatrixXd::Zero(A.rows(), A.cols());
   MatrixXd tempMat = MatrixXd::Zero(R.rows(), R.cols());
   
-  if(0 != A.cols() % R.rows() || 0 != A.rows() % R.cols())
-    throw "Matrix does not have the right shape to be rotated";
+  if(0 != A.cols() % R.rows() || 0 != A.rows() % R.cols()){
+    std::cout << "Catch Exception: "
+              << "Matrix does not have the right shape to be rotated"
+              << std::endl;
+    exit(-1);
+  }
   
   for(int i = 0; i < A.cols()/R.rows(); i++)
   {

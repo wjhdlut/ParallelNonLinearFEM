@@ -49,11 +49,17 @@ void DofSpace::ReadFromFile(const std::string&fileName)
 void DofSpace::Constrain(const int&nodeId, const std::string&dofType, const double&value)
 {
   if(0 == m_nodeCoords->count(nodeId)) {
-    throw "Node ID " + std::to_string(nodeId) + " does not exist";
+    std::cout << "Catch Exception: "
+              << "Node ID " + std::to_string(nodeId) + " does not exist"
+              << std::endl;
+    exit(-1);
   }
 
   if(m_dofTypes.end() == std::find(m_dofTypes.begin(), m_dofTypes.end(), dofType)) {
-    throw "DOF type " + dofType + " does not exit";
+    std::cout << "Catch Exception: "
+              << "DOF type " + dofType + " does not exit"
+              << std::endl;
+    exit(-1);
   }
   int indexRow = std::distance(m_IDmap.begin(), std::find(m_IDmap.begin(), m_IDmap.end(), nodeId));
   int indexLine = std::distance(m_dofTypes.begin(), std::find(m_dofTypes.begin(), m_dofTypes.end(), dofType));
@@ -274,7 +280,12 @@ void DofSpace::ReadRigidWall(const std::string &fileName)
 
         std::vector<std::string> b = Tools::StringSplit(a[0], "=");
         
-        if(2 > b.size()) throw "The input of RigidWall is wrong!";
+        if(2 > b.size()){
+          std::cout << "Catch Exception: "
+                    << "The input of RigidWall is wrong!"
+                    << std::endl;
+          exit(-1);
+        }
         m_rigidWall = std::make_shared<RigidWall>();
         if(std::string::npos != b[0].find('x')) m_rigidWall->direction = 1;
         if(std::string::npos != b[0].find('y')) m_rigidWall->direction = 2;

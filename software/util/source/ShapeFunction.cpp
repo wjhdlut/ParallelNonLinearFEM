@@ -32,7 +32,10 @@ std::string GetElemType(const MatrixXd&elemCoords)
       return "Line3";
     }
     else{
-      throw "No 1D element with " + std::to_string(numOfNode) + " nodes available";
+      std::cout << "Catch Exception: "
+                << "No 1D element with " + std::to_string(numOfNode) + " nodes available"
+                << std::endl;
+      exit(-1);
     }
   }
   else if(2 == numOfDim){
@@ -53,7 +56,10 @@ std::string GetElemType(const MatrixXd&elemCoords)
       return "Quad9";
     }
     else{
-      throw "No 2D element with " + std::to_string(numOfNode) + " nodes available";
+      std::cout << "Catch Exception: "
+                << "No 2D element with " + std::to_string(numOfNode) + " nodes available"
+                << std::endl;
+      exit(-1);
     }
   }
   else if(3 == numOfDim){
@@ -68,11 +74,17 @@ std::string GetElemType(const MatrixXd&elemCoords)
       return "Hexa8";
     }
     else{
-      throw "No 3D element with " + std::to_string(numOfNode) + " nodes available";
+      std::cout << "Catch Exception: "
+                << "No 3D element with " + std::to_string(numOfNode) + " nodes available"
+                << std::endl;
+      exit(-1);
     }
   }
   else{
-    throw "the dimension must be 1,2 or 3";
+    std::cout << "Catch Exception: "
+              << "the dimension must be 1,2 or 3"
+              << std::endl;
+    exit(-1);
   }
 }
 

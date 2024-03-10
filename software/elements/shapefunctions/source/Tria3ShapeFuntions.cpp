@@ -30,7 +30,12 @@ void Tria3ShapeFunctions::Initialize()
 
 void Tria3ShapeFunctions::GetShapeFunction(const VectorXd &xi)
 {
-  if(2 != xi.size()) throw "The isoparamatric coordinate should be 2D for Tria3 element.";
+  if(2 != xi.size()){
+    std::cout << "Catch Exception: "
+              << "The isoparamatric coordinate should be 2D for Tria3 element."
+              << std::endl;
+    exit(-1);
+  }
   
   // Calculate shape functions
   H(0) = 1.0-xi(0)-xi(1);

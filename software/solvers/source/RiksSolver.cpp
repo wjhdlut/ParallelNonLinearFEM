@@ -163,8 +163,12 @@ void RiksSolver::Run()
     std::cout << "  Iter " << GlobalData::GetInstance()->m_iiter
               << " : error = " << std::setiosflags(std::ios::scientific) << error << std::endl;
 
-    if(m_iterMax == GlobalData::GetInstance()->m_iiter)
-      throw "Newton-Raphson iterations did not converge!";
+    if(m_iterMax == GlobalData::GetInstance()->m_iiter){
+      std::cout << "Catch Exception: "
+                << "Newton-Raphson iterations did not converge!"
+                << std::endl;
+      exit(-1);
+    }
   }
   // Print Converged Information
   std::cout << "--------------------------------------" << std::endl;

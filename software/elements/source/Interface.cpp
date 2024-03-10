@@ -42,7 +42,7 @@ void Interface::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
 {
   MatrixXd rot = GetRotation(elemDat->m_coords, elemDat->m_state);
 
-  elemDat->m_outLabel.emplace_back("tractions");
+  // elemDat->m_outLabel.emplace_back("tractions");
   outputData = MatrixXd::Zero(elemDat->m_coords.rows(), 2);
 
   int count = 0;
@@ -63,8 +63,9 @@ void Interface::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
 
     elemDat->m_fint += weight[i] * (B.transpose() * sigma);
     
-    elemDat->m_outputData += Math::VecCross(VectorXd::Ones(elemDat->m_coords.rows()), sigma);
+    outputData += Math::VecCross(VectorXd::Ones(elemDat->m_coords.rows()), sigma);
   }
+  InsertElemOutputData(elemDat->m_outputData, "tractions", outputData);
 }
 
 MatrixXd Interface::GetRotation(const MatrixXd &coords, const VectorXd &state)

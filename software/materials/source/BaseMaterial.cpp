@@ -12,9 +12,11 @@
 #include <iostream>
 
 #include "../include/BaseMaterial.h"
+#include "../../util/include/Tools.h"
 
 BaseMaterial::BaseMaterial(const nlohmann::json &props) : m_props(props)
 {
+  Initialize();
 }
 
 BaseMaterial::~BaseMaterial()
@@ -60,14 +62,9 @@ VectorXd BaseMaterial::GetStress(const std::shared_ptr<Kinematics> &kin,
 
 double BaseMaterial::SetMaterialParamter(const std::string &name)
 {
-  if(!m_props.contains(name)) return 0.;
-  if(m_props.at(name).is_string()){
-    std::string E = m_props.at(name);
-    return std::stod(E);
-  }
-  else{
-    return m_props.at(name);
-  }
+  double value = 0.;
+  Tools::GetParameter(value, name, m_props);
+  return value;
 }
 
 void BaseMaterial::TangentDMatrixToCurrent(const MatrixXd &F)
@@ -136,5 +133,16 @@ void BaseMaterial::GetTransMatrix(MatrixXd &T, const MatrixXd &F)
     T(5, 3) = F(0, 0) * F(2, 1) + F(0, 1) * F(2, 0);
     T(5, 4) = F(0, 1) * F(2, 2) + F(0, 2) * F(2, 1);
     T(5, 5) = F(0, 0) * F(2, 2) + F(0, 2) * F(2, 0);
+  }
+}
+
+void BaseMaterial::Initialize()
+{
+  if(m_props.contains("analyseType"))
+  {
+    if("PlaneStrain"== m_props.at("analyseType"))
+      m_planeStrainFlag = true;
+    if("PlaneStress" == m_props.at("analyseType"))
+      m_planeStressFlag = true;
   }
 }

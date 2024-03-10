@@ -1,19 +1,11 @@
-SET(MODULE_NAME materials)
-
-add_subdirectory(linearelasticity)
-add_subdirectory(elasticityplasticity)
-add_subdirectory(damage)
+SET(MODULE_NAME elasticdamage)
 
 # find all head and source files in module elements
 file(GLOB_RECURSE ${MODULE_NAME}_SRC_FILES source/*.cpp)
 file(GLOB_RECURSE ${MODULE_NAME}_INC_FILES include/*.h)
 
 # building a dynamic library
-add_library(${MODULE_NAME} SHARED
-            ${${MODULE_NAME}_SRC_FILES}
-            $<TARGET_OBJECTS:linearelasticity>
-            $<TARGET_OBJECTS:elasticityplasticity>
-            $<TARGET_OBJECTS:elasticdamage>)
+add_library(${MODULE_NAME} ${BUILD_LIB_TYPE} ${${MODULE_NAME}_SRC_FILES})
 
 # reduce compile independece of dynamic libraries
 if(NOT BUILD_ALL_SHARED)

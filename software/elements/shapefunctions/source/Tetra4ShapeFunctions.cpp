@@ -30,7 +30,12 @@ void Tetra4ShapeFunctions::Initialize()
 
 void Tetra4ShapeFunctions::GetShapeFunction(const VectorXd &xi)
 {
-  if(3 != xi.size()) throw "The isoparamatric coordinate should be 3D for Hexa8 element.";
+  if(3 != xi.size()){
+    std::cout << "Catch Exception: "
+              << "The isoparamatric coordinate should be 3D for Hexa8 element."
+              << std::endl;
+    exit(-1);
+  }
 
   // Calculate shape functions
   H(0) = 0.25*(1.0-xi(0))*(1.0-xi(1));

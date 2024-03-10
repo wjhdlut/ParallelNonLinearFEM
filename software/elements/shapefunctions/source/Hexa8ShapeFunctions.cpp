@@ -50,7 +50,11 @@ void Hexa8ShapeFunctions::Initialize()
 
 void Hexa8ShapeFunctions::GetShapeFunction(const VectorXd &xi)
 {
-  if(3 != xi.size()) throw "The isoparamatric coordinate should be 3D for Hexa8 element.";
+  if(3 != xi.size())
+  {
+    std::cout << "The isoparamatric coordinate should be 3D for Hexa8 element." << std::endl;
+    exit(-1);
+  }
   
   // compute shape funtion values at gauss point
   H(0) = 0.125*(1.0-xi(0))*(1.0-xi(1))*(1.0-xi(2));

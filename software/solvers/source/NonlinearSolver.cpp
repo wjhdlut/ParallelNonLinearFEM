@@ -33,15 +33,22 @@ void NonlinearSolver::Initialize(const nlohmann::json &props)
   // Two Type Of Method to Read Solver Information
   std::string fileName = props.at("input");
   ReadData(fileName);
-
-  if(0 == m_maxCycle && m_myProps.contains("maxCycle")){
-    Tools::GetParameter(m_maxCycle, "maxCycle", m_myProps);
+  
+  Tools::GetParameter(m_maxCycle, "maxCycle", m_myProps);
+  if(0 == m_maxCycle){
+    std::cout << "!!! Attention: The Load Step for NonlinearSolver is not Assign" << std::endl;
+    m_maxCycle = 20;
+    std::cout << "The Default Value " << m_maxCycle << " of Load Step is Used" << std::endl;
     m_iterMaxVec.assign(m_maxCycle, 10);
     m_tolVec.assign(m_maxCycle, 1.0e-3);
   }
-
-  if(0 == m_maxCycle)
-    throw "Please Check Solver Information and Assign the Number Of Load Step";
+  
+  if(0 == m_maxCycle){
+    std::cout << "Catch Expection: "
+              << "Please Check Solver Information and Assign the Number Of Load Step"
+              << std::endl;
+    exit(-1);
+  }
 }
 
 void NonlinearSolver::Run()
@@ -114,8 +121,12 @@ void NonlinearSolver::Run()
     std::cout << "  Iter " << GlobalData::GetInstance()->m_iiter
               << " : error = " << error << std::endl;
     
-    if(GlobalData::GetInstance()->m_iiter == m_iterMaxVec[numOfCycle - 1])
-      throw "Newton-Raphson iterations did not converge!";
+    if(GlobalData::GetInstance()->m_iiter == m_iterMaxVec[numOfCycle - 1]){
+      std::cout << "Catch Exception: "
+                << "Newton-Raphson iterations did not converge!"
+                << std::endl;
+      exit(-1);
+    }
   }
 
   GlobalData::GetInstance()->m_elements->CommitHistory();

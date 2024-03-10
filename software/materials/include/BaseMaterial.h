@@ -143,7 +143,15 @@ private:
    */
   void GetTransMatrix(MatrixXd &T, const MatrixXd &F);
 
+  /**
+   * @Brief: Initialize Some Basic Variables
+   * 
+   */
+  void Initialize();
+
 protected:
+  bool   m_planeStrainFlag = false;
+  bool   m_planeStressFlag = false;
   int    m_iIter  = -1;
   double m_rho    = 0.;
   double m_E      = 0.;

@@ -33,7 +33,7 @@ FiniteStrainContinuumUL::~FiniteStrainContinuumUL()
 
 void FiniteStrainContinuumUL::GetTangentStiffness(std::shared_ptr<ElementData>&elemDat)
 {
-  elemDat->m_outLabel.emplace_back("stresses");
+  InsertElemOutputData(elemDat->m_outputData, "stresses");
   
   outputData.setZero(elemDat->m_coords.rows(), m_elemShapePtr->numOfStress);
 
@@ -70,7 +70,6 @@ void FiniteStrainContinuumUL::GetTangentStiffness(std::shared_ptr<ElementData>&e
                       * (B.transpose() * m_mat->GetTangMatrix() * B);
 
     // compute stress matrix
-    sigma = GetHistoryParameter("sigma");
     sigma = m_mat->GetStress(kin, elemDat->m_Dstate);
     Stress2Matrix(sigma);
     
@@ -89,7 +88,7 @@ void FiniteStrainContinuumUL::GetTangentStiffness(std::shared_ptr<ElementData>&e
     // compute output stress matrix
     outputData += Math::VecCross(VectorXd::Ones(elemDat->m_coords.rows()), sigma);
   }
-  elemDat->m_outputData = 1./xi.rows() * outputData;
+  InsertElemOutputData(elemDat->m_outputData, "stresses", 1./xi.rows() * outputData);
 }
 
 void FiniteStrainContinuumUL::GetKinematics(const MatrixXd &dphi,
@@ -187,7 +186,12 @@ void FiniteStrainContinuumUL::Stress2Matrix(const VectorXd&stress)
 
 void FiniteStrainContinuumUL::GetBNLMatrix(const MatrixXd &dphi)
 {
-  if(dphi.rows() == 0) throw "the deratative of shape function to form BNL is empty";
+  if(dphi.rows() == 0){
+    std::cout << "Catch Exception: "
+              << "the deratative of shape function to form BNL is empty"
+              << std::endl;
+    exit(-1);
+  }
 
   int numOfNode = dphi.rows();
   int numOfDim = dphi.cols();

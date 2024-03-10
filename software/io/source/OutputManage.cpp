@@ -25,7 +25,6 @@ OutputManager::OutputManager()
     if (GlobalData::GetInstance()->m_props.contains(name))
     {
       nlohmann::json &moduleProps = GlobalData::GetInstance()->m_props.at(name);
-      std::cout << "OutputManager moduleProps = " << moduleProps << std::endl;
       if (moduleProps.contains("type"))
         ioType = moduleProps.at("type");
     }

@@ -91,11 +91,21 @@ void ElementSet::ReadFromFile(const std::string &fileName)
 void ElementSet::Add(const int elemId, const std::string &modelName,
                      const std::string &elemShape, const std::vector<int> &elementNodes)
 {
-  if(!m_props.contains(modelName)) throw "Missing properties for model " + modelName;
+  if(!m_props.contains(modelName)){
+    std::cout << "Catch Exception: "
+              << "Missing properties for model " + modelName
+              << std::endl;
+    exit(-1);
+  }
 
   nlohmann::json&modelProps = m_props.at(modelName);
 
-  if(!modelProps.contains("type")) throw "Missing type for model " + modelName;
+  if(!modelProps.contains("type")) {
+    std::cout << "Catch Exception: "
+              << "Missing type for model " + modelName
+              << std::endl;
+    exit(-1);
+  }
 
   std::string modelType = modelProps.at("type");
 
@@ -199,8 +209,8 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
         // findof << elemDofs[index_fint]<< std::endl;
       }
 
-      for(auto label : elemData->m_outLabel)
-        elemPtr->AppendNodalOutput(label, elemData->m_outputData);
+      for(auto outputData : elemData->m_outputData)
+        elemPtr->AppendNodalOutput(outputData.first, outputData.second);
 
       if(1 == rank)
       {
@@ -217,7 +227,10 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
       }
       else
       {
-        throw "assemleArray is only implemented for vectors and matrices.";
+        std::cout << "Catch Exception: "
+                  << "assemleArray is only implemented for vectors and matrices."
+                  << std::endl;
+        exit(-1);
       }
     }
     fint.close();

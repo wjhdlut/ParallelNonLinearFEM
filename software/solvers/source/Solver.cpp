@@ -22,6 +22,11 @@ Solver::Solver()
   GlobalData::GetInstance()->m_props["currentModule"] = "solver";
 
   m_solver = ObjectFactory::CreateObject<BaseModule>(solveType, GlobalData::GetInstance()->m_props);
+  if(nullptr == m_solver)
+  {
+    std::cout << solveType << " Solver Created Failed!!!" << std::endl;
+    exit(-1);
+  }
 }
 
 Solver::~Solver()

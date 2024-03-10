@@ -25,16 +25,12 @@ LinearElasticity::~LinearElasticity()
 
 void LinearElasticity::ComputeDMatrix()
 {
-  if (m_props.contains("analyseType"))
-  {
-    if ("PlaneStrain" == m_props.at("analyseType"))
-      ForPlaneStrain();
-    if ("PlaneStress" == m_props.at("analyseType"))
-      ForPlaneStress();
-  }
-  else{
+  if(m_planeStrainFlag)
+    ForPlaneStrain();
+  else if(m_planeStressFlag)
+    ForPlaneStress();
+  else
     For3D();
-  }
 }
 
 void LinearElasticity::For3D()

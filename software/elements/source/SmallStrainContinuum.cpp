@@ -39,7 +39,7 @@ void SmallStrainContinuum::Initialize(const std::string &elemShape)
 
 void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elemDat)
 {
-  elemDat->m_outLabel.emplace_back("stresses");
+  InsertElemOutputData(elemDat->m_outputData, "stresses");
   
   outputData = MatrixXd::Zero(elemDat->m_coords.rows(), m_elemShapePtr->numOfStress);
   
@@ -65,6 +65,7 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
 
     // compute stress vector
     sigma = m_mat->GetStress(kin);
+    std::cout << "sigma = \n" << sigma << std::endl;
  
     // compute tangent modulue matrix
     D = m_mat->GetTangMatrix();
@@ -81,7 +82,7 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
     // compute output stress matrix
     outputData += Math::VecCross(VectorXd::Ones(elemDat->m_coords.rows()), sigma);
   }
-  elemDat->m_outputData = 1./xi.rows() * outputData;
+  InsertElemOutputData(elemDat->m_outputData, "stresses", 1./xi.rows() * outputData);
 }
 
 void SmallStrainContinuum::GetKinematics(const std::shared_ptr<ElementData> &elemDat)
@@ -91,8 +92,12 @@ void SmallStrainContinuum::GetKinematics(const std::shared_ptr<ElementData> &ele
     numOfDim = 2;
   else if (6 == B.rows())
     numOfDim = 3;
-  else
-    throw "Size of Strain Matrix B in SmallStrainContinuum::GetKinematics is Wrong";
+  else{
+    std::cout << "Catch Exception: "
+              << "Size of Strain Matrix B in SmallStrainContinuum::GetKinematics is Wrong"
+              << std::endl;
+    exit(-1);
+  }
   
   kin = std::make_shared<Kinematics>(numOfDim);
   kin->strain = B * elemDat->m_state;

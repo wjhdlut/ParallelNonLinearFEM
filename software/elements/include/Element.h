@@ -48,17 +48,16 @@ struct ElementData
     m_mass.setZero(elemState.size(), elemState.size());
   }
 
-  std::vector<std::string> m_outLabel;           // output variable name
-  VectorXd m_state;                       // element state variable vector such as displacement
-  VectorXd m_Dstate;                      // increment of element state variable vector
-  VectorXd m_velo;                        // 
-  VectorXd m_acce;
-  VectorXd m_fint;                        // element internal force vector
-  VectorXd m_lumped;                      // 
-  MatrixXd m_mass;                        // element mass matrix
-  MatrixXd m_stiff;                       // element stiffness matrix
-  MatrixXd m_coords;                      // element node coordinates
-  MatrixXd m_outputData;                  // output variable data
+  VectorXd m_state;                                                       // element state variable vector such as displacement
+  VectorXd m_Dstate;                                                      // increment of element state variable vector
+  VectorXd m_velo;                                                        // Velocity
+  VectorXd m_acce;                                                        // Acceleration
+  VectorXd m_fint;                                                        // Element internal force vector
+  VectorXd m_lumped;                                                      // Mass Matrix
+  MatrixXd m_mass;                                                        // Element mass matrix
+  MatrixXd m_stiff;                                                       // Element stiffness matrix
+  MatrixXd m_coords;                                                      // Element node coordinates
+  std::unordered_map<std::string, MatrixXd> m_outputData;                 // Output variable data
 };
 
 /**
@@ -236,6 +235,17 @@ protected:
   std::vector<int> CheckNodeBoundary(std::vector<int> &nodeChk,
                                      const std::unordered_map<int, std::vector<double>> &nodeForcePres);
 
+  /**
+   * @Brief: Insert Element Output Data to Specify Variables
+   * 
+   * @param elemOutData 
+   * @param name 
+   * @param outputData 
+   */
+  void InsertElemOutputData(std::unordered_map<std::string, MatrixXd> &elemOutData,
+                            const std::string &name,
+                            const MatrixXd &outputData = MatrixXd::Zero(0, 0));
+
 private:
   /**
    * @Brief: Initialize Some Basic Variables
@@ -276,7 +286,7 @@ protected:
   int order = 0;                                                      // the Order of Gauss Integration
   std::string method = "Gauss";                                       // the Method of Integration
   std::shared_ptr<ElementShapeFunctions> m_elemShapePtr;              // the Element Shape Pointer
-  MatrixXd outputData;
+  MatrixXd outputData;                                                // the Element Output Data 
   std::unordered_map<int, std::vector<int>> m_nodeOrdered;            // the Element Node Ordered
 
 private:

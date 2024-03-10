@@ -26,7 +26,12 @@ MatrixXd VecCross(const VectorXd &vecA, const VectorXd &vecB)
 
 MatrixXd ConvertVecToMat(const int rowNum, const int colNum, const VectorXd &vec)
 {
-  if(rowNum*colNum != vec.size()) throw "cann't convert vector to matrix";
+  if(rowNum*colNum != vec.size()){
+    std::cout << "Catch Exception: "
+              << "cann't convert vector to matrix"
+              << std::endl;
+    exit(-1);
+  }
 
   MatrixXd result = MatrixXd::Zero(rowNum, colNum);
 

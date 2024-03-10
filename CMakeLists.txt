@@ -6,7 +6,8 @@ set(CMAKE_CXX_FLAGS "-std=c++17 -g")
 
 set(BUILD_LIB_TYPE OBJECT)
 
-set(CMAKE_BUILD_TYPE Release)
+# set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Degub)
 message(STATUS "======== CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE} ========")
 
 # --------------------------- MPI Pacakage ------------------------------

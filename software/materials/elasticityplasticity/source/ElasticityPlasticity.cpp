@@ -51,8 +51,8 @@ void ElasticityPlasticity::ComputeDMatrix()
     double H = GetHardModuli(m_accumPlasticStrain);
     double normDevStress = sqrt(pow(devStress(0), 2) + pow(devStress(1), 2) + pow(devStress(2), 2)
                         + 2. * (pow(devStress(3), 2) + pow(devStress(4), 2) + pow(devStress(5), 2)));
-    m_D = m_D - 2. * m_G * (3. * m_G * m_plasticMulter) / qTrial * m_devMat 
-        + 6. * m_G * m_G * (m_plasticMulter / qTrial - 1. / (3. * m_G + H))/ (normDevStress * normDevStress)
+    m_D = m_D - 2. * m_G * (3. * m_G * m_dPlasticMultiplier) / qTrial * m_devMat 
+        + 6. * m_G * m_G * (m_dPlasticMultiplier / qTrial - 1. / (3. * m_G + H))/ (normDevStress * normDevStress)
         * devStress.transpose() * devStress;
   }
     
@@ -61,11 +61,12 @@ void ElasticityPlasticity::ComputeDMatrix()
 VectorXd ElasticityPlasticity::GetStress(const std::shared_ptr<Kinematics> &kin,
                                          const VectorXd &stress)
 {
-  VectorXd stressOld = m_lineMat->GetStress(kin);
+  // Compute Trial Stress Based Displacement
+  VectorXd stressTrial = m_lineMat->GetStress(kin);
   // if("Jaumann" == m_rateType)
     // StressRotation(stress, increDisp, dphi);
   
-  double J2 = m_yieldRule->CompYieldFunction(stress);
+  double J2 = m_yieldRule->CompYieldFunction(stressTrial);
   double yieldStress = GetYieldStress(m_accumPlasticStrain);
 
   // Plastic Yield
@@ -74,26 +75,26 @@ VectorXd ElasticityPlasticity::GetStress(const std::shared_ptr<Kinematics> &kin,
     m_yieldFlag = true;
     // Plastic Step: Apply return mapping - use Newton-Raphson algorithm
     //               to solve the return mapping equation
-    double denom = 0., dPlasticStrain = 0.;
+    double denom = 0., m_dPlasticmultiplier = 0.;
     while(true)
     {
       denom = -3. * m_G - GetHardModuli(m_accumPlasticStrain);
-      dPlasticStrain += (J2 - yieldStress)/denom;
+      m_dPlasticmultiplier += (J2 - yieldStress)/denom;
 
       m_accumPlasticStrain += (J2 - yieldStress)/denom;
       yieldStress = GetYieldStress(m_accumPlasticStrain);
 
-      if((J2 - 3. * m_G * dPlasticStrain - yieldStress)/yieldStress < m_tol)
+      if((J2 - 3. * m_G * m_dPlasticmultiplier - yieldStress)/yieldStress < m_tol)
         break;
     }
     // Update Stress
     // Hydrostatic Stress
-    double hydPre = m_oneVec.dot(stress) / 3.;
+    double hydPre = m_oneVec.dot(stressTrial) / 3.;
     
     // Deviatoric Stress Component
-    VectorXd devStress = stress - m_oneVec * hydPre;
-    double tempFactor = 1. - 3. * m_G * dPlasticStrain / J2;
-    return tempFactor * devStress + hydPre * m_oneVec;
+    VectorXd devStressTrial = stressTrial - m_oneVec * hydPre;
+    double tempFactor = 1. - 3. * m_G * m_dPlasticmultiplier / J2;
+    return tempFactor * devStressTrial + hydPre * m_oneVec;
   }
 
   return stress;
@@ -147,36 +148,38 @@ void ElasticityPlasticity::Initialize()
     m_rateType = m_props.at("rateType");
 
   if(m_props.contains("yieldFunction")){
-    std::string yieldFunction = m_props.at("yieldFunctions");
-    m_yieldRule = ObjectFactory::CreateObject<YieldRule>(yieldFunction);
+    std::string yieldFunction = m_props.at("yieldFunction");
+    m_yieldRule = ObjectFactory::CreateObject<YieldRule>(yieldFunction, m_props);
   }
   
-  if(m_yieldRule == nullptr)
-    throw " Please Assign the Yile Type";
+  if(m_yieldRule == nullptr){
+    std::cout << "Catch Exception: "
+              << " Please Assign the Yile Type"
+              << std::endl;
+    exit(-1);
+  }
 
   m_accumPlasticStrain = 0.;
 
   // Analyse Type
-  if(m_props.contains("analyseType"))
+  if(m_planeStrainFlag)
   {
-    if("PlaneStrain" == m_props.at("analyseType"))
-    {
-      m_oneVec = VectorXd::Zero(3);
-      m_oneVec(0) = 1., m_oneVec(1) = 1.;
+    m_oneVec = VectorXd::Zero(3);
+    m_oneVec(0) = 1., m_oneVec(1) = 1.;
 
-      m_oneMat = MatrixXd::Zero(3, 3);
-      m_oneMat(0, 0) = 1., m_oneMat(1, 1) = 1., m_oneMat(2, 2) = 0.5;
+    m_oneMat = MatrixXd::Zero(3, 3);
+    m_oneMat(0, 0) = 1., m_oneMat(1, 1) = 1., m_oneMat(2, 2) = 0.5;
 
-      m_devMat = MatrixXd::Zero(3, 3);
-      m_devMat = m_oneMat - m_oneVec * m_oneVec.transpose() / 3.;
-    }
-    if("PlaneStress" == m_props.at("analyseType"))
-    {
-      // To Do
-    }
+    m_devMat = MatrixXd::Zero(3, 3);
+    m_devMat = m_oneMat - m_oneVec * m_oneVec.transpose() / 3.;
+  }
+  else if(m_planeStressFlag)
+  {
+    // To Do
   }
   else
   {
+    // For 3D Case
     m_oneVec = VectorXd::Zero(6);
     m_oneVec(0) = 1., m_oneVec(1) = 1., m_oneVec(2) = 1.;
 

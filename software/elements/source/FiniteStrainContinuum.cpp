@@ -39,7 +39,7 @@ void FiniteStrainContinuum::Initialize(const std::string &elemShape)
 
 void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elemDat)
 {
-  elemDat->m_outLabel.emplace_back("stresses");
+  InsertElemOutputData(elemDat->m_outputData, "stresses");
   
   outputData.setZero(elemDat->m_coords.rows(), m_elemShapePtr->numOfStress);
 
@@ -59,6 +59,11 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     // compute deforamtion gradient
     GetKinematics(pHpX, elemDat);
 
+    // compute stress matrix
+    // m_mat->GetElemStateVariable(m_history["stateVariable"](iGaussPoint));
+    sigma = m_mat->GetStress(kin);
+    // m_mat->SetElemStateVariable(m_current["stateVariable"](iGaussPoint));
+
     // compute tangent modulue matrix
     // D = m_mat->GetTangMatrix(kin->F);
     D = m_mat->GetTangMatrix();
@@ -71,8 +76,6 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     elemDat->m_stiff += jac.determinant() * weight[iGaussPoint]
                      * (B.transpose() * m_mat->GetTangMatrix() * B);
 
-    // compute stress matrix
-    sigma = m_mat->GetStress(kin, elemDat->m_Dstate);
     Stress2Matrix(sigma);
     
     // compute nonlinear strain matrix
@@ -90,7 +93,8 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     // compute output stress matrix
     outputData += Math::VecCross(VectorXd::Ones(elemDat->m_coords.rows()), sigma);
   }
-  elemDat->m_outputData = 1./xi.rows() * outputData;
+  InsertElemOutputData(elemDat->m_outputData, "stresses", 1./xi.rows() * outputData);
+  CommitHistory();
 }
 
 void FiniteStrainContinuum::GetKinematics(const MatrixXd &dphi,
@@ -205,7 +209,12 @@ void FiniteStrainContinuum::Stress2Matrix(const VectorXd&stress)
 
 void FiniteStrainContinuum::GetBNLMatrix(const MatrixXd &dphi)
 {
-  if(dphi.rows() == 0) throw "the deratative of shape function to form BNL is empty";
+  if(dphi.rows() == 0){
+    std::cout << "Catch Exception: "
+              << "the deratative of shape function to form BNL is empty"
+              << std::endl;
+    exit(-1);
+  }
 
   int numOfNode = dphi.rows();
   int numOfDim = dphi.cols();

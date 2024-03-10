@@ -99,7 +99,10 @@ void NodeSet::ReadFromFile(const std::string&fileName)
 VectorXd NodeSet::GetNodeCoords(const int&nodeId)
 {
   if(0 == m_nodeCoords.count(nodeId)){
-    throw "Node ID " + std::to_string(nodeId) + " does not exist";
+    std::cout << "Catch Exception: "
+              << "Node ID " + std::to_string(nodeId) + " does not exist"
+              << std::endl;
+    exit(-1);
   }
   return m_nodeCoords.at(nodeId);
 }

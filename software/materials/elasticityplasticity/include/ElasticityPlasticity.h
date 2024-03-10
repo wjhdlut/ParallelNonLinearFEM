@@ -44,6 +44,24 @@ public:
    */
   virtual VectorXd GetStress(const std::shared_ptr<Kinematics> &kin,
                              const VectorXd &stress = VectorXd::Zero(0)) override;
+  
+  // /**
+  //  * @Brief: Get the Element State Variable Plastic Strain
+  //  * 
+  //  * @param stateVariable 
+  //  */
+  // inline virtual void GetElemStateVariable(const double &stateVariable){
+  //   m_accumPlasticStrain = stateVariable;
+  // }
+
+  // /**
+  //  * @Brief:         Set the Elem State Variable object
+  //  * 
+  //  * @param stateVariable 
+  //  */
+  // inline virtual void SetElemStateVariable(double &stateVariable){
+  //   stateVariable = m_accumPlasticStrain;
+  // }
 
 protected:
   virtual void ComputeDMatrix() override;
@@ -97,7 +115,7 @@ protected:
   double m_plaMod;                                                // Hard moduli
   double m_waveSpeed;                                             // Wave Speed for Explicit Dynamic Problem 
   double m_accumPlasticStrain;                                    // Accumulated Plastic Strain
-  double m_plasticMulter;
+  double m_dPlasticMultiplier;
   std::string m_rateType;                                         // Type of Objective Rate
   VectorXd m_oneVec;                                              // Common Vector
   VectorXd m_plasticStrain;                                       // Plastic Strain
