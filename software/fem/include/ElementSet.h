@@ -116,6 +116,16 @@ private:
   void Add(const int elemId, const std::string &modelName,
            const std::string &elemShape, const std::vector<int> &elementNodes);
   
+  /**
+   * @Brief:  Assemble the element Matrix (such as Element Stiffness Matrix
+   *  and Mass Matrix) into the Global Matrix
+   * 
+   * @param A 
+   * @param B 
+   * @param rank 
+   * @param action 
+   * @return PetscErrorCode 
+   */
   PetscErrorCode AssembleMatrix(Mat &A, Vec&B, const int rank, const std::string&action);
 
   inline void ResetDtime(){

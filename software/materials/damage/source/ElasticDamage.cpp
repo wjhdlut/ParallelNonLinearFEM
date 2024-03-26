@@ -90,17 +90,20 @@ void ElasticDamage::GetDamage(const double &kappa)
 {
   if(kappa <= m_kappa)
   {
+    // No Damage
     m_omega = 0.;
     m_dOmegadKappa = 0.;
   }
   else if(kappa < m_kappac)
   {
+    // Damage Growth
     double fac = m_kappac / kappa;
     m_omega = fac * (kappa - m_kappa) / (m_kappac - m_kappa);
     m_dOmegadKappa = fac/(m_kappac - m_kappa) - m_omega/kappa;
   }
   else
   {
+    // Complete Damage
     m_omega = 1.;
     m_dOmegadKappa = 0.;
   }

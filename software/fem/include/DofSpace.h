@@ -1,3 +1,13 @@
+/**
+ * @File Name:     DofSpace.h
+ * @Author:        JianHuaWang (992411152@qq.com)
+ * @Brief:         
+ * @Version:       0.1
+ * @Create Date:   2024-03-14
+ * 
+ * @Copyright Copyright (c) 2024 JianHuaWang
+ * 
+ */
 
 #ifndef DOFSPACE_H
 #define DOFSPACE_H
@@ -14,16 +24,37 @@ struct RigidWall{
 class DofSpace
 {
 public:
+  /**
+   * @Brief: Construct a new DofSpace object
+   * 
+   * @param elements 
+   * @param nodes 
+   */
   DofSpace(std::shared_ptr<ElementSet> elements, std::shared_ptr<NodeSet> nodes);
 
+  /**
+   * @Brief: Destroy the DofSpace object
+   * 
+   */
   ~DofSpace();
 
+  /**
+   * @Brief: Read Basic Information From a File
+   * 
+   * @param fileName 
+   */
   void ReadFromFile(const std::string&fileName);
 
+  
   inline void SetConstrainFactor(double fac){
     m_constrainedFac = fac;
   }
-
+  
+  /**
+   * @Brief: Get the Dof Type of Element
+   * 
+   * @return std::vector<std::string> 
+   */
   inline std::vector<std::string> GetDofType(){
     return m_dofTypes;
   }
@@ -87,21 +118,87 @@ public:
    * @param error               [out] the Norm Value
    * @return PetscErrorCode 
    */
-  PetscErrorCode Norm(Vec &r, double &error);
+  PetscErrorCode Norm(const Vec &r, double &error);
 
-public:
-  std::vector<std::vector<int>> m_dofs;
+  /**
+   * @Brief: Compute Some Basic Variables
+   * 
+   */
+  void CompBasicVariable();
 
 private:
   void Constrain(const int&nodeId, const std::string&dofType, const double&value);
 
+  /**
+   * @Brief: Compute the Constraints Matrix
+   * 
+   * @param C 
+   * @return PetscErrorCode 
+   */
   PetscErrorCode GetConstraintsMatrix(Mat&C);
 
+  PetscErrorCode GetConstraintsMatrix();
+
+  /**
+   * @Brief: Read Node COnstraint From File
+   * 
+   * @param fileName 
+   */
   void ReadNodeConstraint(const std::string &fileName);
 
+  /**
+   * @Brief: Read Rigid Wall Information From FIle
+   * 
+   * @param fileName 
+   */
   void ReadRigidWall(const std::string &fileName);
 
+  /**
+   * @Brief: Apply the Rigid Wall COnstraint
+   * 
+   * @param da 
+   */
   void RigidWallConstraint(Vec&da);
+
+  /**
+   * @Brief: Transform Matrx (such as the Stiffness or Mass Matrix)
+   *         to Cylinderical Coordinate System
+   * 
+   * @param A 
+   */
+  PetscErrorCode TransMatToCylinder(Mat&A);
+
+  /**
+   * @Brief: Transform the Vector (Internal Force Vector)
+   *         to Cylinderical Coordinate System
+   * 
+   * @param B 
+   */
+  PetscErrorCode TransVecToCylinder(Vec &B);
+  
+  /**
+   * @Brief: Transform the Vector (Displacement Vector)
+   *         to Global Cartesian Coordinate System
+   * 
+   * @param B 
+   * @return PetscErrorCode 
+   */
+  PetscErrorCode TransVecToGlobalCSY(Vec &B);
+
+  /**
+   * @Brief: Initialize Some Basic Information
+   * 
+   */
+  void Initialize();
+
+  /**
+   * @Brief: Compute the Transform Matrix
+   * 
+   */
+  PetscErrorCode ComputeTransMatrix();
+
+public:
+  std::vector<std::vector<int>> m_dofs;
 
 private:
   std::vector<std::string> m_dofTypes;
@@ -109,7 +206,9 @@ private:
   std::unordered_map<int, double> m_constrained;
   double m_constrainedFac = 1.;
   std::vector<int> m_IDmap;
-  std::shared_ptr<RigidWall> m_rigidWall;
+  std::shared_ptr<RigidWall> m_rigidWall = nullptr;
+  Mat m_transMatrix = NULL;
+  Mat m_C = NULL;
 };
 
 #endif // DOFSPACE_H

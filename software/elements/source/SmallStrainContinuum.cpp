@@ -45,6 +45,7 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
   
   for(int i = 0; i < xi.rows(); i++)
   {
+    // std::cout << i << "-th Gauss Point, " << xi.row(i) << std::endl;
     // compute shape functions
     m_elemShapePtr->GetShapeFunction(xi.row(i));
 
@@ -65,10 +66,11 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
 
     // compute stress vector
     sigma = m_mat->GetStress(kin);
-    std::cout << "sigma = \n" << sigma << std::endl;
+    // std::cout << "sigma = \n" << sigma << std::endl;
  
     // compute tangent modulue matrix
     D = m_mat->GetTangMatrix();
+    // std::cout << "D = " << D << std::endl;
 
     // compute stiffness matrix
     elemDat->m_stiff += jac.determinant() * weight(i) * B.transpose() * D * B;

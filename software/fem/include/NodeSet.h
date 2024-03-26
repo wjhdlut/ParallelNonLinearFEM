@@ -1,3 +1,14 @@
+/**
+ * @File Name:     NodeSet.h
+ * @Author:        JianHuaWang (992411152@qq.com)
+ * @Brief:         
+ * @Version:       0.1
+ * @Create Date:   2024-03-14
+ * 
+ * @Copyright Copyright (c) 2024 JianHuaWang
+ * 
+ */
+
 #ifndef NODESET_H
 #define NODESET_H
 
@@ -34,6 +45,24 @@ public:
   }
   
   /**
+   * @Brief: Get the Coordinate System Type
+   * 
+   * @return std::string 
+   */
+  inline std::string GetCoorSysType(){
+    return m_coordSysType;
+  }
+
+  /**
+   * @Brief: Get the Node Angle for the Cylinderical Coordinate System
+   * 
+   * @return std::map<int, double> 
+   */
+  inline double GetNodeAngle(const int &nodeID){
+    return m_nodeAngle[nodeID];
+  }
+  
+  /**
    * @Brief:  Read Node Data form File
    * 
    * @param fileName 
@@ -64,14 +93,28 @@ public:
    */
   void UpdateNodeCoords(Vec &dDisp, const int numOfDof);
 
+private:
+  /**
+   * @Brief: Transform the Node Coordinates from Cylindrical Coordinate System
+   *   into the Rectangular Coordinate System
+   * 
+   * @param coord 
+   * @return VectorXd 
+   */
+  VectorXd TransCoordCylToRec(const std::vector<double> &coord);
+
+  /**
+   * @Brief: Initialize Some Basic Variables
+   * 
+   */
+  void Initialize();
+
 public:
   std::map<int, VectorXd> m_nodeCoords;   // All Node Coordinates
 
 private:
   std::string m_coordSysType = "Rectangular";  // Type of Coordinate system
-
-private:
-  VectorXd TransCoordCylToRec(const std::vector<double> &coord);
+  std::map<int, double> m_nodeAngle;
   const double Pi = 3.1415926;
 };
 

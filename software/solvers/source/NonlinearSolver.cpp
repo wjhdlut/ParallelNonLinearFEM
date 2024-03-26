@@ -39,9 +39,9 @@ void NonlinearSolver::Initialize(const nlohmann::json &props)
     std::cout << "!!! Attention: The Load Step for NonlinearSolver is not Assign" << std::endl;
     m_maxCycle = 20;
     std::cout << "The Default Value " << m_maxCycle << " of Load Step is Used" << std::endl;
-    m_iterMaxVec.assign(m_maxCycle, 10);
-    m_tolVec.assign(m_maxCycle, 1.0e-3);
   }
+  if(0 == m_iterMaxVec.size())  m_iterMaxVec.assign(m_maxCycle, 10);
+  if(0 == m_tolVec.size())  m_tolVec.assign(m_maxCycle, 1.0e-3);
   
   if(0 == m_maxCycle){
     std::cout << "Catch Expection: "
@@ -80,6 +80,8 @@ void NonlinearSolver::Run()
   Mat K;
   GlobalData::GetInstance()->m_elements->AssembleTangentStiffness(K, fint);
   // MatView(K, PETSC_VIEWER_STDOUT_WORLD);
+  // std::cout << "fint = " << std::endl;
+  // VecView(fint, PETSC_VIEWER_STDOUT_WORLD);
 
   Vec dF, da;
   VecDuplicate(fext, &dF);
@@ -88,6 +90,9 @@ void NonlinearSolver::Run()
 
   KSP ksp;
   KSPCreate(PETSC_COMM_WORLD, &ksp);
+
+  // std::cout << "dF = " << std::endl;
+  // VecView(dF, PETSC_VIEWER_STDOUT_WORLD);
 
   double norm = 0., error = 1.;
   while(error > m_tolVec[numOfCycle - 1])
@@ -106,6 +111,8 @@ void NonlinearSolver::Run()
     VecWAXPY(dF, -1., fint, fext);
     // std::cout << "fint = " << std::endl;
     // VecView(fint, PETSC_VIEWER_STDOUT_WORLD);
+    // std::cout << "dF = " << std::endl;
+    // VecView(dF, PETSC_VIEWER_STDOUT_WORLD);
 
     VecNorm(fext, NORM_2, &norm);
 

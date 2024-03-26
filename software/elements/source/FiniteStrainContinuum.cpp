@@ -205,6 +205,11 @@ void FiniteStrainContinuum::Stress2Matrix(const VectorXd&stress)
     T(7, 6) = stress(3), T(7, 7) = stress(1), T(7, 8) = stress(4);
     T(8, 6) = stress(5), T(8, 7) = stress(4), T(8, 8) = stress(2);
   }
+  else{
+    std::cout << "Catch Exception: "
+              << "Please Check Model of Stress Calculation!!!"
+              << std::endl; 
+  }
 }
 
 void FiniteStrainContinuum::GetBNLMatrix(const MatrixXd &dphi)

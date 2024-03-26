@@ -72,6 +72,7 @@ public:
    */
   inline MatrixXd GetTangMatrix(){
     if(0 == m_D.rows()) ComputeDMatrix();
+    if(m_updateDMatrix) ComputeDMatrix();
     return m_D;
   }
   
@@ -152,6 +153,7 @@ private:
 protected:
   bool   m_planeStrainFlag = false;
   bool   m_planeStressFlag = false;
+  bool   m_updateDMatrix   = false;
   int    m_iIter  = -1;
   double m_rho    = 0.;
   double m_E      = 0.;

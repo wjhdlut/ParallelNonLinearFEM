@@ -37,6 +37,9 @@ public:
    */
   void Run();
 
+private:
+  void Initialize();
+
 protected:
   std::shared_ptr<BaseModule> m_solver;
 };

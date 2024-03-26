@@ -15,6 +15,15 @@
 
 Solver::Solver()
 {
+  Initialize();
+}
+
+Solver::~Solver()
+{
+}
+
+void Solver::Initialize()
+{
   nlohmann::json &solverProps = GlobalData::GetInstance()->m_props.at("solver");
 
   const std::string&solveType = solverProps.at("type");
@@ -27,10 +36,8 @@ Solver::Solver()
     std::cout << solveType << " Solver Created Failed!!!" << std::endl;
     exit(-1);
   }
-}
 
-Solver::~Solver()
-{
+  GlobalData::GetInstance()->m_dofs->CompBasicVariable();
 }
 
 void Solver::Run()

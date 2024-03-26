@@ -22,6 +22,17 @@ DofSpace::DofSpace(std::shared_ptr<ElementSet> elements, std::shared_ptr<NodeSet
   m_dofTypes = elements->GetDofType();
   m_nodeCoords = &nodes->m_nodeCoords;
 
+  Initialize();
+}
+
+DofSpace::~DofSpace()
+{
+  if(NULL != m_transMatrix) MatDestroy(&m_transMatrix);
+  if(NULL != m_C) MatDestroy(&m_C);
+}
+
+void DofSpace::Initialize()
+{
   int count = 0, iNode = 0;
   std::vector<int> dofIndex;
   for(auto node : (*m_nodeCoords))
@@ -35,9 +46,6 @@ DofSpace::DofSpace(std::shared_ptr<ElementSet> elements, std::shared_ptr<NodeSet
     m_dofs.emplace_back(dofIndex);
   }
 }
-
-DofSpace::~DofSpace()
-{}
 
 void DofSpace::ReadFromFile(const std::string&fileName)
 {
@@ -68,9 +76,17 @@ void DofSpace::Constrain(const int&nodeId, const std::string&dofType, const doub
 
 PetscErrorCode DofSpace::Solve(Mat&K, Vec&df, Vec&da, KSP&ksp)
 {
+  // Transform the Stiffness Matrix and Force Vector 
+  // from Cartesian Coordinate System to Cylindrical Coordinate System 
+  if(m_transMatrix != NULL)
+  {
+    TransMatToCylinder(K);
+    TransVecToCylinder(df);
+  }
+  
   PetscErrorCode ierr;
-  Mat C;
-  GetConstraintsMatrix(C);
+  // Mat C;
+  // GetConstraintsMatrix(C);
   // ierr = MatView(C, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
 
   Vec a;
@@ -85,13 +101,13 @@ PetscErrorCode DofSpace::Solve(Mat&K, Vec&df, Vec&da, KSP&ksp)
 
   Mat constrainedK;
   int numOfRow = 0, numOfLine = 0;
-  ierr = MatGetSize(C, &numOfRow, &numOfLine); CHKERRQ(ierr);
+  ierr = MatGetSize(m_C, &numOfRow, &numOfLine); CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD, &constrainedK); CHKERRQ(ierr);
   ierr = MatSetSizes(constrainedK, PETSC_DECIDE, PETSC_DECIDE, numOfLine, numOfLine); CHKERRQ(ierr);
 
   Mat tempMat;
-  ierr = MatTransposeMatMult(C, K, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tempMat); CHKERRQ(ierr);
-  ierr = MatMatMult(tempMat, C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &constrainedK); CHKERRQ(ierr);
+  ierr = MatTransposeMatMult(m_C, K, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tempMat); CHKERRQ(ierr);
+  ierr = MatMatMult(tempMat, m_C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &constrainedK); CHKERRQ(ierr);
   // std::cout << "constrainedK = " << std::endl;
   // ierr = MatView(constrainedK, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
 
@@ -117,7 +133,7 @@ PetscErrorCode DofSpace::Solve(Mat&K, Vec&df, Vec&da, KSP&ksp)
   ierr = VecWAXPY(tempVec1, 1., df, tempVec2); CHKERRQ(ierr);
   // ierr = VecView(tempVec1, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   
-  ierr = MatMultTranspose(C, tempVec1, constrainedB); CHKERRQ(ierr);
+  ierr = MatMultTranspose(m_C, tempVec1, constrainedB); CHKERRQ(ierr);
   // std::cout << "constrainedB = " << std::endl;
   // ierr = VecView(constrainedB, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
 
@@ -128,10 +144,13 @@ PetscErrorCode DofSpace::Solve(Mat&K, Vec&df, Vec&da, KSP&ksp)
   ierr = KSPSolve(ksp, constrainedB, constrainedDa); CHKERRQ(ierr);
   // std::cout << "constrainedDa = " << std::endl;
   // ierr = VecView(constrainedDa, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-  ierr = MatMult(C, constrainedDa, da); CHKERRQ(ierr);
+  ierr = MatMult(m_C, constrainedDa, da); CHKERRQ(ierr);
   ierr = VecAXPY(da, 1.0, a); CHKERRQ(ierr);
+  
+  if(m_transMatrix != NULL){
+    ierr = TransVecToGlobalCSY(da); CHKERRQ(ierr);
+  }
 
-  ierr = MatDestroy(&C); CHKERRQ(ierr); 
   ierr = MatDestroy(&constrainedK); CHKERRQ(ierr);
   ierr = MatDestroy(&tempMat); CHKERRQ(ierr);
 
@@ -182,25 +201,57 @@ PetscErrorCode DofSpace::GetConstraintsMatrix(Mat &C)
   return ierr;
 }
 
-PetscErrorCode DofSpace::Norm(Vec &r, double &error)
+PetscErrorCode DofSpace::GetConstraintsMatrix()
+{
+  int n_constrianed = m_constrained.size();
+  int n = m_dofs.size() * m_dofs[0].size();
+
+  PetscErrorCode ierr;
+  ierr = MatCreate(PETSC_COMM_WORLD, &m_C); CHKERRQ(ierr);
+  ierr = MatSetSizes(m_C, PETSC_DECIDE, PETSC_DECIDE, n, n-n_constrianed); CHKERRQ(ierr);
+  ierr = MatSetUp(m_C); CHKERRQ(ierr);
+  
+  int j = 0;
+  for(int i = 0; i < n ; i++)
+  {
+    if(0 != m_constrained.count(i)) continue;
+    ierr = MatSetValue(m_C, i, j, 1., INSERT_VALUES); CHKERRQ(ierr);
+    j += 1;
+  }
+  ierr = MatAssemblyBegin(m_C, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(m_C, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+  return ierr;
+}
+
+PetscErrorCode DofSpace::Norm(const Vec &r, double &error)
 {
   PetscErrorCode ierr;
 
-  Mat C;
-  GetConstraintsMatrix(C);
+  // Mat C;
+  // GetConstraintsMatrix(C);
+  Vec rCopy;
+  ierr = VecDuplicate(r, &rCopy); CHKERRQ(ierr);
+  ierr = VecCopy(r, rCopy); CHKERRQ(ierr);
+  if(m_transMatrix != NULL)
+    TransVecToCylinder(rCopy);
 
   int numOfLine;
-  ierr = MatGetSize(C, nullptr, &numOfLine); CHKERRQ(ierr);
+  ierr = MatGetSize(m_C, nullptr, &numOfLine); CHKERRQ(ierr);
 
   Vec tempVec;
   ierr = VecCreate(PETSC_COMM_WORLD, &tempVec); CHKERRQ(ierr);
   ierr = VecSetSizes(tempVec, PETSC_DECIDE, numOfLine); CHKERRQ(ierr);
   ierr = VecSetFromOptions(tempVec); CHKERRQ(ierr);
 
-  ierr = MatMultTranspose(C, r, tempVec); CHKERRQ(ierr);
+  ierr = MatMultTranspose(m_C, rCopy, tempVec); CHKERRQ(ierr);
   ierr = VecNorm(tempVec, NORM_2, &error); CHKERRQ(ierr);
 
-  ierr = VecDestroy(&tempVec);
+  // std::cout << "tempVec = \n" << std::endl;
+  // ierr = VecView(tempVec, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+
+  ierr = VecDestroy(&tempVec); CHKERRQ(ierr);
+  ierr = VecDestroy(&rCopy); CHKERRQ(ierr);
 
   return ierr;
 }
@@ -333,4 +384,87 @@ void DofSpace::RigidWallConstraint(Vec&da)
       VecAssemblyBegin(da); VecAssemblyEnd(da);
     }
   }
+}
+
+PetscErrorCode DofSpace::TransMatToCylinder(Mat&A)
+{
+  PetscErrorCode ierr;
+
+  ierr = MatTransposeMatMult(m_transMatrix, A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &A); CHKERRQ(ierr);
+  ierr = MatMatMult(A, m_transMatrix, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &A); CHKERRQ(ierr);
+  
+  return ierr;
+}
+
+PetscErrorCode DofSpace::TransVecToCylinder(Vec&B)
+{
+  PetscErrorCode ierr;
+  
+  Vec tempB;
+  ierr = VecDuplicate(B, &tempB); CHKERRQ(ierr);
+  ierr = MatMultTranspose(m_transMatrix, B, tempB); CHKERRQ(ierr);
+  ierr = VecCopy(tempB, B); CHKERRQ(ierr);
+  ierr = VecDestroy(&tempB); CHKERRQ(ierr);
+  
+  return ierr;
+}
+
+PetscErrorCode DofSpace::TransVecToGlobalCSY(Vec&B)
+{
+  PetscErrorCode ierr;
+  
+  Vec tempB;
+  ierr = VecDuplicate(B, &tempB); CHKERRQ(ierr);
+  ierr = MatMult(m_transMatrix, B, tempB); CHKERRQ(ierr);
+  ierr = VecCopy(tempB, B); CHKERRQ(ierr);
+  ierr = VecDestroy(&tempB); CHKERRQ(ierr);
+  
+  return ierr;
+}
+
+PetscErrorCode DofSpace::ComputeTransMatrix()
+{
+  int numOfNode   = m_dofs.size();
+  int numOfDof    = m_dofs.at(0).size();
+  int numOfTolDof = numOfNode * numOfDof;
+
+  PetscErrorCode ierr;
+  ierr = MatCreate(PETSC_COMM_WORLD, &m_transMatrix); CHKERRQ(ierr);
+  ierr = MatSetSizes(m_transMatrix, PETSC_DECIDE, PETSC_DECIDE, numOfTolDof, numOfTolDof); CHKERRQ(ierr);
+  ierr = MatSetFromOptions(m_transMatrix); CHKERRQ(ierr);
+  ierr = MatSetUp(m_transMatrix); CHKERRQ(ierr);
+  
+  for(int i = 0; i < m_dofs.size(); i++)
+  {
+    for(int j = 0; j < m_dofs.at(i).size(); j++){
+      int index = m_dofs.at(i).at(j);
+      
+      if(0 != m_constrained.count(index)){
+        double theta = GlobalData::GetInstance()->m_nodes->GetNodeAngle(m_IDmap[i]);
+        Vector2i rowIndex = {m_dofs.at(i).at(0), m_dofs.at(i).at(1)};
+        Vector2i colIndex = {m_dofs.at(i).at(0), m_dofs.at(i).at(1)};
+        Vector4d value = {cos(theta), -sin(theta), sin(theta), cos(theta)};
+        MatSetValues(m_transMatrix, 2, &rowIndex[0], 2, &colIndex[0], &value[0], INSERT_VALUES);
+        j = 2;
+        continue;
+      }
+      MatSetValue(m_transMatrix, index, index, 1.0, INSERT_VALUES);
+      }
+  }
+
+  ierr = MatAssemblyBegin(m_transMatrix, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(m_transMatrix, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+  // std::cout << "transform matrix = \n" << std::endl;
+  // ierr = MatView(m_transMatrix, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+
+  return ierr;
+}
+
+void DofSpace::CompBasicVariable()
+{
+  if("Cylindrical" == GlobalData::GetInstance()->m_nodes->GetCoorSysType())
+    ComputeTransMatrix();
+  
+  GetConstraintsMatrix();
 }

@@ -38,8 +38,8 @@ VonMises::~VonMises()
 
 double VonMises::CompYieldFunction(const Eigen::VectorXd &stress)
 {
-  std::cout << "stress =\n" << stress << std::endl;
-  std::cout << "m_oneVec =\n " << m_oneVec << std::endl;
+  // std::cout << "stress =\n" << stress << std::endl;
+  // std::cout << "m_oneVec =\n " << m_oneVec << std::endl;
   double P = m_oneVec.dot(stress) / 3.;
   VectorXd devStress = stress - P * m_oneVec;
   

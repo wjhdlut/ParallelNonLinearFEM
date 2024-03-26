@@ -36,7 +36,7 @@ int main(int argc, char **args)
   OutputManager *output = new OutputManager();
 
   while(GlobalData::GetInstance()->m_active)
-  {
+  { 
     if(nullptr != solver) solver->Run();
     if(nullptr != output) output->Run();
   }

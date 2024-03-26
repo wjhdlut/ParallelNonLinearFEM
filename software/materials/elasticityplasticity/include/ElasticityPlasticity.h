@@ -64,6 +64,10 @@ public:
   // }
 
 protected:
+  /**
+   * @Brief: Compute Consistent Tangen Modulus
+   * 
+   */
   virtual void ComputeDMatrix() override;
 
   /**
@@ -109,14 +113,16 @@ private:
   double GetHardModuli(const double accumPlasticStrain);
 
 protected:
-  bool m_yieldFlag = false;                                       // Plastic Yielding Flag
-  double m_K;                                                     // Bulk Moduli
-  double m_G;                                                     // Shear Moduli
-  double m_plaMod;                                                // Hard moduli
-  double m_waveSpeed;                                             // Wave Speed for Explicit Dynamic Problem 
-  double m_accumPlasticStrain;                                    // Accumulated Plastic Strain
-  double m_dPlasticMultiplier;
+  bool m_yieldFlag           = false;                             // Plastic Yielding Flag
+  double m_K                 = 0.;                                // Bulk Moduli
+  double m_G                 = 0.;                                // Shear Moduli
+  double m_plaMod            = 0.;                                // Hard moduli
+  double m_waveSpeed         = 0.;                                // Wave Speed for Explicit Dynamic Problem 
+  // double m_accumPlasticStrain;                                 // Accumulated Plastic Strain
+  double m_dPlasticMultiplier = 0.;
+  double m_hydPre = 0.;
   std::string m_rateType;                                         // Type of Objective Rate
+  VectorXd m_devStress;
   VectorXd m_oneVec;                                              // Common Vector
   VectorXd m_plasticStrain;                                       // Plastic Strain
   MatrixXd m_devMat;                                              // Common Matrix

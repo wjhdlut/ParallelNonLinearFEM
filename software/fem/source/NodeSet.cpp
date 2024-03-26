@@ -19,11 +19,17 @@
 
 NodeSet::NodeSet()
 {
-  m_nodeCoords = {};
+  Initialize();
 }
 
 NodeSet::~NodeSet()
 {}
+
+void NodeSet::Initialize()
+{
+  m_nodeCoords = {};
+  m_nodeAngle = {};
+}
 
 void NodeSet::ReadFromFile(const std::string&fileName)
 {
@@ -79,6 +85,7 @@ void NodeSet::ReadFromFile(const std::string&fileName)
             if("Cylindrical" == m_coordSysType){
               // Cylindrical Coordinate
               m_nodeCoords[nodeID] = TransCoordCylToRec(coords);
+              m_nodeAngle[nodeID] = coords[coords.size()-1]/180.*Pi;
             }
             else{
               // Rectangular Coordinate

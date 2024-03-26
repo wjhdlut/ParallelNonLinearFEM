@@ -44,16 +44,26 @@ void ElasticityPlasticity::ComputeDMatrix()
   
   if(m_yieldFlag)
   {
-    VectorXd stress;
-    double hydPre = m_oneVec.dot(stress) / 3.;
-    VectorXd devStress = stress - m_oneVec * hydPre;
+    VectorXd stress = m_devStress + m_hydPre * m_oneVec;
     double qTrial = m_yieldRule->CompYieldFunction(stress);
-    double H = GetHardModuli(m_accumPlasticStrain);
-    double normDevStress = sqrt(pow(devStress(0), 2) + pow(devStress(1), 2) + pow(devStress(2), 2)
-                        + 2. * (pow(devStress(3), 2) + pow(devStress(4), 2) + pow(devStress(5), 2)));
+    double accumPlasticStrain = GetHistoryParameter("AccumPlasticStrain");
+    double H = GetHardModuli(accumPlasticStrain);
+    
+    double normDevStress = 0.;
+    if(3 == m_oneVec.size())
+      normDevStress = sqrt(pow(m_devStress(0), 2) + pow(m_devStress(1), 2) + 2. * (pow(m_devStress(2), 2)));
+    if(6 == m_oneVec.size()){
+      normDevStress = sqrt(pow(m_devStress(0), 2) + pow(m_devStress(1), 2) + pow(m_devStress(2), 2)
+                    + 2. * (pow(m_devStress(3), 2) + pow(m_devStress(4), 2) + pow(m_devStress(5), 2)));
+    }
+
+    // Compute the Consistent Tangent Modulus
+    // std::cout << "m_devMat = " << m_devMat << std::endl;
+    // std::cout << "m_devStress = " << m_devStress << std::endl;
+    // std::cout << "A = " << m_devStress * m_devStress.transpose() << std::endl;
     m_D = m_D - 2. * m_G * (3. * m_G * m_dPlasticMultiplier) / qTrial * m_devMat 
         + 6. * m_G * m_G * (m_dPlasticMultiplier / qTrial - 1. / (3. * m_G + H))/ (normDevStress * normDevStress)
-        * devStress.transpose() * devStress;
+        * m_devStress * m_devStress.transpose();
   }
     
 }
@@ -62,42 +72,51 @@ VectorXd ElasticityPlasticity::GetStress(const std::shared_ptr<Kinematics> &kin,
                                          const VectorXd &stress)
 {
   // Compute Trial Stress Based Displacement
-  VectorXd stressTrial = m_lineMat->GetStress(kin);
+  VectorXd stressTrial = VectorXd::Zero(m_oneVec.size());
+  stressTrial = m_lineMat->GetStress(kin);
   // if("Jaumann" == m_rateType)
     // StressRotation(stress, increDisp, dphi);
   
   double J2 = m_yieldRule->CompYieldFunction(stressTrial);
-  double yieldStress = GetYieldStress(m_accumPlasticStrain);
+  double accumPlasticStrain = GetHistoryParameter("AccumPlasticStrain");
+  double yieldStress = GetYieldStress(accumPlasticStrain);
 
   // Plastic Yield
   if((J2 - yieldStress)/yieldStress > m_tol)
   {
-    m_yieldFlag = true;
+    m_yieldFlag     = true;
+    m_updateDMatrix = true;
     // Plastic Step: Apply return mapping - use Newton-Raphson algorithm
     //               to solve the return mapping equation
     double denom = 0., m_dPlasticmultiplier = 0.;
     while(true)
     {
-      denom = -3. * m_G - GetHardModuli(m_accumPlasticStrain);
+      denom = 3. * m_G + GetHardModuli(accumPlasticStrain);
       m_dPlasticmultiplier += (J2 - yieldStress)/denom;
 
-      m_accumPlasticStrain += (J2 - yieldStress)/denom;
-      yieldStress = GetYieldStress(m_accumPlasticStrain);
+      accumPlasticStrain += (J2 - yieldStress)/denom;
+      yieldStress = GetYieldStress(accumPlasticStrain);
 
       if((J2 - 3. * m_G * m_dPlasticmultiplier - yieldStress)/yieldStress < m_tol)
         break;
     }
     // Update Stress
     // Hydrostatic Stress
-    double hydPre = m_oneVec.dot(stressTrial) / 3.;
+    m_hydPre = m_oneVec.dot(stressTrial) / 3.;
     
     // Deviatoric Stress Component
-    VectorXd devStressTrial = stressTrial - m_oneVec * hydPre;
+    VectorXd devStressTrial = stressTrial - m_oneVec * m_hydPre;
     double tempFactor = 1. - 3. * m_G * m_dPlasticmultiplier / J2;
-    return tempFactor * devStressTrial + hydPre * m_oneVec;
+    SetHistoryParameter("AccumPlasticStrain", accumPlasticStrain); 
+    
+    m_devStress = tempFactor * devStressTrial;
+    return m_devStress + m_hydPre * m_oneVec;
   }
 
-  return stress;
+  m_yieldFlag     = false;
+  m_updateDMatrix = false;
+
+  return stressTrial;
 }
 
 void ElasticityPlasticity::StressRotation(VectorXd &stress,
@@ -136,11 +155,13 @@ void ElasticityPlasticity::StressRotation(VectorXd &stress,
 
 void ElasticityPlasticity::Initialize()
 {
+  // Read Basic Material Parameters
   m_lineMat = std::make_shared<LinearElasticity>(m_props);
-  m_E   = SetMaterialParamter("E");
-  m_nu  = SetMaterialParamter("nu");
-  m_rho = SetMaterialParamter("rho");
-  m_plaMod = SetMaterialParamter("tanMod");
+  m_E       = SetMaterialParamter("E");
+  m_nu      = SetMaterialParamter("nu");
+  m_rho     = SetMaterialParamter("rho");
+  m_plaMod  = SetMaterialParamter("tanMod");
+  m_G       = m_E /(2. * (1+m_nu));
   
   m_waveSpeed = sqrt(m_E*(1.-m_nu)/(1+m_nu)*(1-2.*m_nu)*m_rho);
 
@@ -154,17 +175,20 @@ void ElasticityPlasticity::Initialize()
   
   if(m_yieldRule == nullptr){
     std::cout << "Catch Exception: "
-              << " Please Assign the Yile Type"
+              << " Please Assign the Yile Type for the Elasto-Plastic Material!!!"
               << std::endl;
     exit(-1);
   }
 
-  m_accumPlasticStrain = 0.;
+  // m_accumPlasticStrain = 0.;
+  // Initialize the Effective Plastic Strain
+  SetHistoryParameter("AccumPlasticStrain", 0.);
 
   // Analyse Type
   if(m_planeStrainFlag)
   {
-    m_oneVec = VectorXd::Zero(3);
+    m_devStress = VectorXd::Zero(3);
+    m_oneVec    = VectorXd::Zero(3);
     m_oneVec(0) = 1., m_oneVec(1) = 1.;
 
     m_oneMat = MatrixXd::Zero(3, 3);
@@ -176,10 +200,12 @@ void ElasticityPlasticity::Initialize()
   else if(m_planeStressFlag)
   {
     // To Do
+    m_devStress = VectorXd::Zero(3);
   }
   else
   {
     // For 3D Case
+    m_devStress = VectorXd::Zero(6);
     m_oneVec = VectorXd::Zero(6);
     m_oneVec(0) = 1., m_oneVec(1) = 1., m_oneVec(2) = 1.;
 
