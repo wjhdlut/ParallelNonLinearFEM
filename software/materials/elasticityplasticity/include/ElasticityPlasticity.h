@@ -42,8 +42,7 @@ public:
    * @param dphi 
    * @return VectorXd 
    */
-  virtual VectorXd GetStress(const std::shared_ptr<Kinematics> &kin,
-                             const VectorXd &stress = VectorXd::Zero(0)) override;
+  virtual VectorXd GetStress(const std::shared_ptr<Kinematics> &kin) override;
   
   // /**
   //  * @Brief: Get the Element State Variable Plastic Strain
@@ -112,15 +111,18 @@ private:
    */
   double GetHardModuli(const double accumPlasticStrain);
 
+  VectorXd CompElasticTrialStress(const std::shared_ptr<Kinematics> &kin);
+
 protected:
   bool m_yieldFlag           = false;                             // Plastic Yielding Flag
   double m_K                 = 0.;                                // Bulk Moduli
   double m_G                 = 0.;                                // Shear Moduli
   double m_plaMod            = 0.;                                // Hard moduli
   double m_waveSpeed         = 0.;                                // Wave Speed for Explicit Dynamic Problem 
-  // double m_accumPlasticStrain;                                 // Accumulated Plastic Strain
+  double m_accumPlasticStrain;                                    // Accumulated Plastic Strain
   double m_dPlasticMultiplier = 0.;
   double m_hydPre = 0.;
+  double m_H = 0.;                                                // Hardening Modulus
   std::string m_rateType;                                         // Type of Objective Rate
   VectorXd m_devStress;
   VectorXd m_oneVec;                                              // Common Vector
@@ -133,6 +135,7 @@ protected:
 
 private:
   double m_tol = 1.0e-6;
+  double m_J2  = 0.;
 };
 ReflectRegister(ElasticityPlasticity, const nlohmann::json &)
 

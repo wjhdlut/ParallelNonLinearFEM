@@ -47,8 +47,7 @@ public:
    * @param stress 
    * @return VectorXd 
    */
-  virtual VectorXd GetStress(const std::shared_ptr<Kinematics>&kin,
-                             const VectorXd &stress = VectorXd::Zero(0));
+  virtual VectorXd GetStress(const std::shared_ptr<Kinematics>&kin);
 
   virtual void ComputeDMatrix();
 

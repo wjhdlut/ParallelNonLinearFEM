@@ -126,6 +126,8 @@ public:
    */
   void CompBasicVariable();
 
+  double Converg(const Vec &fext, const Vec &fint);
+
 private:
   void Constrain(const int&nodeId, const std::string&dofType, const double&value);
 

@@ -27,7 +27,7 @@ void BaseMaterial::SetIter(int iIter)
   m_iIter = iIter;
 }
 
-int BaseMaterial::SetHistoryParameter(const std::string &name, double value)
+int BaseMaterial::SetHistoryParameter(const std::string &name, const double value)
 {
   if(-1 == m_iIter) 
   {
@@ -42,21 +42,49 @@ int BaseMaterial::SetHistoryParameter(const std::string &name, double value)
   return 0;
 }
 
-double BaseMaterial::GetHistoryParameter(const std::string&name)
+int BaseMaterial::SetHistoryParameter(const std::string &name, const VectorXd &value)
 {
-  if(0 == m_history.size()) return m_initHistory[name];
-  else return m_history[m_iIter].at(name);
+  if(-1 == m_iIter) 
+  {
+    m_initHistoryVec[name] = value;
+    return 0;
+  }
+
+  if(m_currentVec.size() == m_iIter) m_currentVec.emplace_back(m_initHistoryVec);
+
+  m_currentVec[m_iIter].at(name) = value;
+
+  return 0;
+}
+
+void BaseMaterial::GetHistoryParameter(double &value, const std::string&name)
+{
+  if(0 == m_history.size())
+    value = m_initHistory[name];
+  else 
+    value = m_history[m_iIter].at(name);
+}
+
+void BaseMaterial::GetHistoryParameter(VectorXd &value, const std::string &name)
+{
+  if(0 == m_historyVec.size())
+    value = m_initHistoryVec[name];
+  else 
+    value = m_historyVec[m_iIter].at(name);
 }
 
 void BaseMaterial::CommitHistory()
 {
-  m_history.clear();
+  if(m_history.size() != 0) m_history.clear();
   for(auto h : m_current)
     m_history.emplace_back(h);
+
+  if(m_historyVec.size() != 0) m_historyVec.clear();
+  for(auto h : m_currentVec)
+    m_historyVec.emplace_back(h);
 }
 
-VectorXd BaseMaterial::GetStress(const std::shared_ptr<Kinematics> &kin,
-                                 const VectorXd &stress){
+VectorXd BaseMaterial::GetStress(const std::shared_ptr<Kinematics> &kin){
   return m_D * kin->strain;
 }
 

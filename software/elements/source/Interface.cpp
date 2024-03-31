@@ -55,7 +55,7 @@ void Interface::GetTangentStiffness(std::shared_ptr<ElementData> &elemDat)
 
     GetKinematics(elemDat);
 
-    sigma = m_mat->GetStress(kin, elemDat->m_Dstate);
+    sigma = m_mat->GetStress(kin);
 
     D = m_mat->GetTangMatrix();
     

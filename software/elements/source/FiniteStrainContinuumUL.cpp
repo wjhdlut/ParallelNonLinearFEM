@@ -70,7 +70,7 @@ void FiniteStrainContinuumUL::GetTangentStiffness(std::shared_ptr<ElementData>&e
                       * (B.transpose() * m_mat->GetTangMatrix() * B);
 
     // compute stress matrix
-    sigma = m_mat->GetStress(kin, elemDat->m_Dstate);
+    sigma = m_mat->GetStress(kin);
     Stress2Matrix(sigma);
     
     // compute nonlinear strain matrix

@@ -34,7 +34,6 @@ void MaterialManager::Reset()
 }
 
 VectorXd MaterialManager::GetStress(const std::shared_ptr<Kinematics>&kin,
-                                    const VectorXd &stress,
                                     int iSam)
 {
   if(-1 == iSam){
@@ -44,5 +43,5 @@ VectorXd MaterialManager::GetStress(const std::shared_ptr<Kinematics>&kin,
 
   m_mat->SetIter(iSam);
 
-  return m_mat->GetStress(kin, stress);
+  return m_mat->GetStress(kin);
 }

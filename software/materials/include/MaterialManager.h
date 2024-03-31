@@ -52,7 +52,6 @@ public:
    * @return std::vector<double> 
    */
   VectorXd GetStress(const std::shared_ptr<Kinematics>&kin,
-                     const VectorXd &stress = VectorXd::Zero(0),
                      int iSam = -1);
                      
   /**

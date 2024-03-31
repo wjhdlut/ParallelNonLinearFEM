@@ -94,6 +94,7 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     outputData += Math::VecCross(VectorXd::Ones(elemDat->m_coords.rows()), sigma);
   }
   InsertElemOutputData(elemDat->m_outputData, "stresses", 1./xi.rows() * outputData);
+  
   CommitHistory();
 }
 

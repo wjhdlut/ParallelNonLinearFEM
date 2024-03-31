@@ -66,11 +66,11 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
 
     // compute stress vector
     sigma = m_mat->GetStress(kin);
-    // std::cout << "sigma = \n" << sigma << std::endl;
+    // std::cout << "sigma = " << sigma.transpose() << std::endl;
  
     // compute tangent modulue matrix
     D = m_mat->GetTangMatrix();
-    // std::cout << "D = " << D << std::endl;
+    // std::cout << "m_D = \n" << D << std::endl;
 
     // compute stiffness matrix
     elemDat->m_stiff += jac.determinant() * weight(i) * B.transpose() * D * B;
@@ -103,6 +103,7 @@ void SmallStrainContinuum::GetKinematics(const std::shared_ptr<ElementData> &ele
   
   kin = std::make_shared<Kinematics>(numOfDim);
   kin->strain = B * elemDat->m_state;
+  kin->incremStrain = B * elemDat->m_Dstate;
 }
 
 void SmallStrainContinuum::GetBMatrix(const MatrixXd &dphi)

@@ -45,6 +45,11 @@ public:
    * 
    */
   virtual double CompYieldFunction(const VectorXd &stress) = 0;
+
+protected:
+  bool m_plainStrain = false;
+  bool m_plainStress = false;
+  double m_nu = 0.;
 };
 
 #endif

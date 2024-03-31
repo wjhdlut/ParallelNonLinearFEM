@@ -47,10 +47,10 @@ void ElasticDamage::Initialize()
   CommitHistory();
 }
 
-VectorXd ElasticDamage::GetStress(const std::shared_ptr<Kinematics>&kin,
-                                  const VectorXd &stress)
+VectorXd ElasticDamage::GetStress(const std::shared_ptr<Kinematics>&kin)
 {
-  double kappa = GetHistoryParameter("kappa");
+  double kappa = 0.;
+  GetHistoryParameter(kappa, "kappa");
   
   // Compute the Effective Strain and its derivative w.r.t. strain array
   double eps = 0;

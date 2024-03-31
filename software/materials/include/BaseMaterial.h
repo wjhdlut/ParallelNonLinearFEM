@@ -37,12 +37,10 @@ public:
   /**
    * @Brief: Get the Stress Vector
    * 
-   * @param kin 
-   * @param stress
+   * @param kin
    * @return VectorXd 
    */
-  virtual VectorXd GetStress(const std::shared_ptr<Kinematics>&kin,
-                             const VectorXd &stress = VectorXd::Zero(0));
+  virtual VectorXd GetStress(const std::shared_ptr<Kinematics>&kin);
 
   /**
    * @Brief: Set the Iter object
@@ -105,7 +103,16 @@ protected:
    * @param value 
    * @return int 
    */
-  int SetHistoryParameter(const std::string &name, double value);
+  int SetHistoryParameter(const std::string &name, const double value);
+  
+  /**
+   * @Brief: Set the History Parameter object
+   * 
+   * @param name 
+   * @param value 
+   * @return int 
+   */
+  int SetHistoryParameter(const std::string &name, const VectorXd &value);
 
   /**
    * @Brief: Get the History Parameter
@@ -113,7 +120,15 @@ protected:
    * @param name 
    * @return double 
    */
-  double GetHistoryParameter(const std::string&name);
+  void GetHistoryParameter(double &value, const std::string&name);
+
+  /**
+   * @Brief:         Get the History Parameter object
+   * 
+   * @param name 
+   * @return VectorXd 
+   */
+  void GetHistoryParameter(VectorXd &value, const std::string &name);
 
   /**
    * @Brief: Compute Tangent Matrix
@@ -161,6 +176,9 @@ protected:
   std::vector<std::unordered_map<std::string, double>> m_current;
   std::vector<std::unordered_map<std::string, double>> m_history;
   std::unordered_map<std::string, double> m_initHistory;
+  std::vector<std::unordered_map<std::string, VectorXd>> m_currentVec;
+  std::vector<std::unordered_map<std::string, VectorXd>> m_historyVec;
+  std::unordered_map<std::string, VectorXd> m_initHistoryVec;
   nlohmann::json m_props;
   MatrixXd m_D;
 };

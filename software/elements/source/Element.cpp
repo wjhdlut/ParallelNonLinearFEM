@@ -67,7 +67,7 @@ void Element::AppendNodalOutput(const std::string&outputName, const MatrixXd&out
 
 void Element::CommitHistory()
 {
-  m_history = m_current;
+  if(0 != m_current.size()) m_history = m_current;
   m_current.clear();
 
   if(m_mat != nullptr) m_mat->CommitHistory();

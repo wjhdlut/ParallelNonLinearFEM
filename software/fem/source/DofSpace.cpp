@@ -468,3 +468,47 @@ void DofSpace::CompBasicVariable()
   
   GetConstraintsMatrix();
 }
+
+double DofSpace::Converg(const Vec&fext, const Vec &fint)
+{
+  Vec fextCopy, fintCopy;
+  VecDuplicate(fext, &fextCopy); VecCopy(fext, fextCopy);
+  VecDuplicate(fint, &fintCopy); VecCopy(fint, fintCopy);
+
+  // std::cout << "fext = " << std::endl;
+  // VecView(fextCopy, PETSC_VIEWER_STDOUT_WORLD);
+  // std::cout << "fint = " << std::endl;
+  // VecView(fintCopy, PETSC_VIEWER_STDOUT_WORLD);
+
+  TransVecToCylinder(fextCopy);
+  TransVecToCylinder(fintCopy);
+  
+  double tempValue = 0.;
+  for(auto iConstrain : m_constrained)
+  {
+    VecGetValues(fintCopy, 1, &iConstrain.first, &tempValue);
+    VecSetValue(fextCopy, iConstrain.first, tempValue, INSERT_VALUES);
+  }
+  VecAssemblyBegin(fextCopy);
+  VecAssemblyEnd(fextCopy);
+
+  TransVecToGlobalCSY(fextCopy);
+  TransVecToGlobalCSY(fintCopy);
+
+  // std::cout << "fext after Transform" << std::endl;
+  // VecView(fextCopy, PETSC_VIEWER_STDOUT_WORLD);
+  // std::cout << "fint after Transform" << std::endl;
+  // VecView(fintCopy, PETSC_VIEWER_STDOUT_WORLD);
+
+  VecAYPX(fintCopy, -1., fextCopy);
+
+  double normFext, normDf;
+  VecNorm(fextCopy, NORM_2, &normFext);
+  VecNorm(fintCopy, NORM_2, &normDf);
+
+
+  VecDestroy(&fextCopy);
+  VecDestroy(&fintCopy);
+
+  return normDf / normFext;
+}
