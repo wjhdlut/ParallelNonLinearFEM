@@ -134,19 +134,56 @@ void Element::Initialize(const nlohmann::json &modelProps)
   for(auto iter = modelProps.begin(); iter != modelProps.end(); iter++)
   {
     if("material" == iter.key()){
-      const nlohmann::json &matProps = iter.value();
-      m_mat = std::make_shared<MaterialManager>(matProps);
-      double E = m_mat->GetMaterialPara("E");
-      double nu = m_mat->GetMaterialPara("nu");
-      m_rho = m_mat->GetMaterialPara("rho");
-      m_waveSpeed = sqrt(E*(1.-nu)/((1+nu)*(1-2.*nu)*m_rho));
+      SetMaterialParameters(modelProps);
     }
     else if("reducedIntegration" == iter.key()){
       m_reductedIntegration = modelProps["reducedIntegration"];
     }
+    else if("analyseType" == iter.key()){
+      SetAnalyseType(modelProps);
+    }
     else{
       m_props[iter.key()] = iter.value();
     }
+  }
+}
+
+void Element::SetMaterialParameters(const nlohmann::json &modelProps)
+{
+  nlohmann::json matProps = modelProps["material"];
+  if (modelProps.contains("analyseType"))
+    matProps["analyseType"] = modelProps["analyseType"];
+  m_mat = std::make_shared<MaterialManager>(matProps);
+  double E = m_mat->GetMaterialPara("E");
+  double nu = m_mat->GetMaterialPara("nu");
+  m_rho = m_mat->GetMaterialPara("rho");
+  m_waveSpeed = sqrt(E * (1. - nu) / ((1 + nu) * (1 - 2. * nu) * m_rho));
+}
+
+void Element::SetAnalyseType(const nlohmann::json &modelProps)
+{
+  // For Axis Aymmetric Problem
+  if ("AxiSymmetry" == modelProps["analyseType"])
+  {
+    m_analyseType = "AxiSymmetry";
+    if (!modelProps.contains("axiSymmetry"))
+    {
+      std::cout << "Catch Exception: "
+                << "Please Assign Axis of Symmetry!!!"
+                << std::endl;
+      exit(-1);
+    }
+    m_axiSymmetry = modelProps["axiSymmetry"];
+  }
+  // For Plane Stress Problem
+  else if ("PlaneStrain" == modelProps["analyseType"])
+  {
+    m_analyseType = "PlaneStress";
+  }
+  // For Plane Strain Problem
+  else if ("PlaneStrain" == modelProps["analyseType"])
+  {
+    m_analyseType = "PlaneStrain";
   }
 }
 

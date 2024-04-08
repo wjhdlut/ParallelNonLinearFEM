@@ -20,14 +20,14 @@ VonMises::VonMises(const nlohmann::json &matProps)
   {
     if("PlaneStrain" == matProps.at("analyseType"))
     {
-      m_plainStrain = true;
+      m_planeStrain = true;
       m_oneVec = VectorXd::Zero(3);
       m_oneVec(0) = 1., m_oneVec(1) = 1.;
     }
     if("PlaneStress" == matProps.at("analyseType"))
     {
       // TO DO IN THE FUTHER
-      m_plainStress = true;
+      m_planeStress = true;
     }
   }
   else
@@ -47,14 +47,14 @@ double VonMises::CompYieldFunction(const Eigen::VectorXd &stress)
   // std::cout << "m_oneVec =\n " << m_oneVec << std::endl;
   
   double stress3 = 0.;
-  if(m_plainStrain)
+  if(m_planeStrain)
     stress3 = m_nu * (stress[0] + stress[1]);
   
   double P = (m_oneVec.dot(stress) + stress3) / 3.;
   VectorXd devStress = stress - P * m_oneVec;
   
   double devStress3 = 0.;
-  if(m_plainStrain)
+  if(m_planeStrain)
     devStress3 = stress3 - P;  
   
   double J2 = 0.;

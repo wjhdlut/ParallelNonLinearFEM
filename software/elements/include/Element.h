@@ -266,6 +266,20 @@ private:
    */
   void InitializeStateVariable();
 
+  /**
+   * @Brief: Set the Analyse Type
+   * 
+   * @param iter 
+   */
+  void SetAnalyseType(const nlohmann::json &modelProps);
+  
+  /**
+   * @Brief: Set the Material Parameters
+   * 
+   * @param modelProps 
+   */
+  void SetMaterialParameters(const nlohmann::json &modelProps);
+
 protected:
   bool   m_reductedIntegration = false;
   double m_rho = 0.;
@@ -281,9 +295,11 @@ protected:
   std::unordered_map<std::string, VectorXd> m_current;                // Current Data
 
 protected:
+  int order = 0;                                                      // the Order of Gauss Integration
+  std::string m_analyseType;                                          // the Analyse Type
+  std::string m_axiSymmetry;                                          // the Axis of Symmetry for the Axisymetric Problem
   MatrixXd xi;
   VectorXd weight;
-  int order = 0;                                                      // the Order of Gauss Integration
   std::string method = "Gauss";                                       // the Method of Integration
   std::shared_ptr<ElementShapeFunctions> m_elemShapePtr;              // the Element Shape Pointer
   MatrixXd outputData;                                                // the Element Output Data 
