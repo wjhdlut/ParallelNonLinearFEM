@@ -29,6 +29,8 @@ void LinearElasticity::ComputeDMatrix()
     ForPlaneStrain();
   else if(m_planeStressFlag)
     ForPlaneStress();
+  else if(m_axiSymmetryFlag)
+    ForAxiSymmetry();
   else
     For3D();
 }
@@ -70,4 +72,22 @@ void LinearElasticity::ForPlaneStress()
   m_D(1, 0) = m_D(0, 1);
   m_D(1, 1) = m_D(0, 0);
   m_D(2, 2) = m_E/2./(1. + m_nu);
+}
+
+void LinearElasticity::ForAxiSymmetry()
+{
+ m_D = MatrixXd::Zero(4, 4);
+ m_D(0, 0) = m_E * (1. - m_nu) / ((1. + m_nu) * (1. - 2.*m_nu));
+ m_D(0, 1) = m_E * m_nu / ((1. + m_nu) * (1. - 2. * m_nu));
+ m_D(0, 3) = m_E * m_nu / ((1. + m_nu) * (1. - 2. * m_nu));
+
+ m_D(1, 0) = m_D(0, 1);
+ m_D(1, 1) = m_D(0, 0);
+ m_D(1, 3) = m_E * m_nu / ((1. + m_nu) * (1. - 2. * m_nu));
+
+ m_D(2, 2) = m_E / (2. * (1. + m_nu));
+
+ m_D(3, 0) = m_D(0, 3);
+ m_D(3, 1) = m_D(1, 3);
+ m_D(3, 3) = m_D(1, 1);
 }

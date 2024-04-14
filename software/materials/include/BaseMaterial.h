@@ -168,6 +168,7 @@ private:
 protected:
   bool   m_planeStrainFlag = false;
   bool   m_planeStressFlag = false;
+  bool   m_axiSymmetryFlag = false;
   bool   m_updateDMatrix   = false;
   int    m_iIter  = -1;
   double m_rho    = 0.;

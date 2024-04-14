@@ -41,8 +41,12 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
 {
   InsertElemOutputData(elemDat->m_outputData, "stresses");
   
-  outputData = MatrixXd::Zero(elemDat->m_coords.rows(), m_elemShapePtr->numOfStress);
+  if("AxiSymmetry" == m_analyseType)
+    outputData = MatrixXd::Zero(elemDat->m_coords.rows(), 4);
+  else
+    outputData = MatrixXd::Zero(elemDat->m_coords.rows(), m_elemShapePtr->numOfStress);
   
+  double tempWeight = 1.;
   for(int i = 0; i < xi.rows(); i++)
   {
     // std::cout << i << "-th Gauss Point, " << xi.row(i) << std::endl;
@@ -61,6 +65,9 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
 
     // compute strain matrix B
     GetBMatrix(pHpX);
+    if("AxiSymmetry" == m_analyseType)
+      tempWeight = GetBMatrixForAxiSymmetry(B, m_elemShapePtr->H, elemDat->m_coords);
+    // std::cout << "B = \n" << B << std::endl;
 
     GetKinematics(elemDat);
 
@@ -73,10 +80,10 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
     // std::cout << "m_D = \n" << D << std::endl;
 
     // compute stiffness matrix
-    elemDat->m_stiff += jac.determinant() * weight(i) * B.transpose() * D * B;
+    elemDat->m_stiff += jac.determinant() * weight(i) * B.transpose() * D * B * tempWeight;
 
     // compute internal force vector
-    elemDat->m_fint += jac.determinant() * weight(i) * B.transpose() * sigma;
+    elemDat->m_fint += jac.determinant() * weight(i) * B.transpose() * sigma * tempWeight;
     
     // Hour-Glass method
     HourGlassTech(elemDat, VectorXd::Zero(elemDat->m_state.size()), pHpX);
@@ -90,7 +97,11 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
 void SmallStrainContinuum::GetKinematics(const std::shared_ptr<ElementData> &elemDat)
 {
   int numOfDim = 0;
-  if(3 == B.rows())
+  if("PlaneStrain" == m_analyseType)
+    numOfDim = 2;
+  else if("PlaneStress" == m_analyseType)
+    numOfDim = 2;
+  else if("AxiSymmetry" == m_analyseType)
     numOfDim = 2;
   else if (6 == B.rows())
     numOfDim = 3;
@@ -102,6 +113,10 @@ void SmallStrainContinuum::GetKinematics(const std::shared_ptr<ElementData> &ele
   }
   
   kin = std::make_shared<Kinematics>(numOfDim);
+  if("AxiSymmetry" == m_analyseType){
+    kin->strain.resize(4);
+    kin->incremStrain.resize(4);
+  }
   kin->strain = B * elemDat->m_state;
   kin->incremStrain = B * elemDat->m_Dstate;
 }

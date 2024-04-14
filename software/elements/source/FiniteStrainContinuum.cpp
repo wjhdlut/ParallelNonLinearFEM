@@ -70,6 +70,8 @@ void FiniteStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&ele
     
     // compute strain matrix
     GetBMatrix(pHpX, kin->F);
+    if("AxiSymmetry" == m_analyseType)
+      GetBMatrixForAxiSymmetry(B, m_elemShapePtr->H, elemDat->m_coords);
     // kin->strain = B * elemDat->m_Dstate;
     
     // compute linear stiffness matrix

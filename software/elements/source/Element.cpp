@@ -277,7 +277,8 @@ VectorXd Element::CompEquivalentNodeForce(const std::unordered_map<int, VectorXd
   MatrixXd boundaryXi, pBoundaryHpXi;
   m_elemShapePtr->GetBoundaryIntegrationPoint(boundaryXi, boundaryWeight);
 
-
+  double tempWeight = 1.;
+  int index = ("Y" == m_axiSymmetry) ? 0 : 1;
   for(int iGaussPoint = 0; iGaussPoint < boundaryWeight.size(); iGaussPoint++){
     m_elemShapePtr->GetBoundaryShapeFunction(boundaryH, pBoundaryHpXi, boundaryXi.row(iGaussPoint));
 
@@ -288,7 +289,7 @@ VectorXd Element::CompEquivalentNodeForce(const std::unordered_map<int, VectorXd
      * 
      *********************************************************************************/
     std::vector<double> PGASH(nodeForcePres.begin()->second.size(), 0.);
-    std::vector<double> DGASH(PGASH);
+    std::vector<double> DGASH(PGASH), tempCoord(PGASH);
     double cosThea = 0., sinThea = 0.;
     for(auto iter : nodeForcePres)
     {
@@ -297,17 +298,23 @@ VectorXd Element::CompEquivalentNodeForce(const std::unordered_map<int, VectorXd
       {
         PGASH[iDof] += iter.second[iDof] * boundaryH(ii);
         DGASH[iDof] += nodeCoord.at(iter.first)(iDof) * pBoundaryHpXi(ii, 0);
+        tempCoord[iDof] += nodeCoord.at(iter.first)(iDof) * boundaryH(ii);
       }
     }
     double pX = DGASH[0] * PGASH[1] - DGASH[1] * PGASH[0];
     double pY = DGASH[0] * PGASH[0] + DGASH[1] * PGASH[1];
 
+    if("AxiSymmetry" == m_analyseType)
+      tempWeight = 2. * Pi * tempCoord[index];
+    if("PlaneStress" == m_analyseType)
+      tempWeight = 1.;  // to do in the Future
+
     for(int i = 0; i < nodeForcePres.size(); i++)
     {
       int iNode = nodeChk[i];
       int index = (iNode - 1) * m_dofType.size();
-      equivalentForce(index + 0) += boundaryH(i) * pX * boundaryWeight(iGaussPoint);
-      equivalentForce(index + 1) += boundaryH(i) * pY * boundaryWeight(iGaussPoint);
+      equivalentForce(index + 0) += boundaryH(i) * pX * boundaryWeight(iGaussPoint) * tempWeight;
+      equivalentForce(index + 1) += boundaryH(i) * pY * boundaryWeight(iGaussPoint) * tempWeight;
     }
   }
   return equivalentForce;
@@ -321,4 +328,27 @@ void Element::InsertElemOutputData(std::unordered_map<std::string, MatrixXd> &el
     elemOutData.insert(std::pair<std::string, MatrixXd>(name, outputData));
   else
     elemOutData[name] = outputData;
+}
+
+double Element::GetBMatrixForAxiSymmetry(MatrixXd &B,
+                                         const MatrixXd &h,
+                                         const MatrixXd &nodeCoord)
+{
+  int numOfNode = nodeCoord.rows();
+  MatrixXd tempCoord = h.transpose() * nodeCoord;
+  VectorXd tempVec = VectorXd::Zero(B.cols());
+  // std::cout << "tempCoord = \n" << tempCoord << std::endl;
+
+  int index;
+  if("X" == m_axiSymmetry)
+    index = 1;
+  if("Y" == m_axiSymmetry)
+    index = 0;
+  
+  for(int i = 0; i < numOfNode; i++)
+    tempVec(2*i + index) = h(i) / tempCoord(0, index);
+  
+  B.conservativeResize(B.rows()+1, B.cols());
+  B.row(3) = tempVec.transpose();
+  return 2.*Pi*tempCoord(0, index);
 }

@@ -111,6 +111,12 @@ private:
    */
   double GetHardModuli(const double accumPlasticStrain);
 
+  /**
+   * @Brief: Compute the Elasticial Trial Stress
+   * 
+   * @param kin 
+   * @return VectorXd 
+   */
   VectorXd CompElasticTrialStress(const std::shared_ptr<Kinematics> &kin);
 
 protected:

@@ -49,6 +49,7 @@ public:
 protected:
   bool m_planeStrain = false;
   bool m_planeStress = false;
+  bool m_axiSymmetry = false;
   double m_nu = 0.;
 };
 

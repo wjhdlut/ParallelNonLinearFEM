@@ -48,15 +48,24 @@ void ElasticityPlasticity::ComputeDMatrix()
     double qTrial = m_J2;
     // double qTrial = J2;
     // double H = GetHardModuli(m_accumPlasticStrain);
-    double devStress3 = 0.; 
-    if(m_planeStrainFlag)
-      devStress3 = -(m_devStress[0] + m_devStress[1]);
-
     double normDevStress = 0.;
-    if(3 == m_oneVec.size())
+    if(m_planeStrainFlag){
+      // For the Plane Strain Problem
+      double devStress3 = -(m_devStress[0] + m_devStress[1]);
       normDevStress = sqrt(pow(m_devStress(0), 2) + pow(m_devStress(1), 2)
-                           + pow(devStress3, 2.) + 2. * (pow(m_devStress(2), 2)));
-    if(6 == m_oneVec.size()){
+                    + pow(devStress3, 2.) + 2. * (pow(m_devStress(2), 2)));
+    }
+    else if(m_planeStressFlag){
+      // For the Plane Stress Problem
+      // To Do in the Future
+    }
+    else if(m_axiSymmetryFlag){
+      // For the AxiSymmetric Problem
+      normDevStress = sqrt(pow(m_devStress(0), 2) + pow(m_devStress(1), 2)
+                    + pow(m_devStress(3), 2.) + 2. * (pow(m_devStress(2), 2)));
+    }
+    else{
+      // For the General Three Dimensional Problem
       normDevStress = sqrt(pow(m_devStress(0), 2) + pow(m_devStress(1), 2) + pow(m_devStress(2), 2)
                     + 2. * (pow(m_devStress(3), 2) + pow(m_devStress(4), 2) + pow(m_devStress(5), 2)));
     }
@@ -136,11 +145,9 @@ VectorXd ElasticityPlasticity::GetStress(const std::shared_ptr<Kinematics> &kin)
 VectorXd ElasticityPlasticity::CompElasticTrialStress(const std::shared_ptr<Kinematics> &kin)
 {
   VectorXd stress;
-
   GetHistoryParameter(stress, "stress");
-
+  // std::cout << "D = \n" << m_lineMat->GetTangMatrix() << std::endl;
   // std::cout << "incremStrain = " << kin->incremStrain.transpose() << std::endl;
-
   return stress + m_lineMat->GetTangMatrix() * kin->incremStrain;
 }
 
@@ -221,14 +228,24 @@ void ElasticityPlasticity::Initialize()
 
     m_devMat = MatrixXd::Zero(3, 3);
     m_devMat = m_oneMat - m_oneVec * m_oneVec.transpose() / 3.;
-
-    SetHistoryParameter("stress", VectorXd::Zero(3));
   }
   else if(m_planeStressFlag)
   {
     // To Do
     m_devStress = VectorXd::Zero(3);
-    SetHistoryParameter("stress", VectorXd::Zero(3));
+  }
+  else if(m_axiSymmetryFlag)
+  {
+    m_devStress = VectorXd::Zero(4);
+    m_oneVec    = VectorXd::Zero(4);
+    m_oneVec[0] = 1., m_oneVec[1] = 1., m_oneVec[3] = 1.;
+
+    m_oneMat = MatrixXd::Zero(4, 4);
+    m_oneMat(0, 0) = 1.,  m_oneMat(1, 1) = 1.;
+    m_oneMat(2, 2) = 0.5, m_oneMat(3, 3) = 1.;
+
+    m_devMat = MatrixXd::Zero(4,4);
+    m_devMat = m_oneMat - m_oneVec * m_oneVec.transpose() / 3.;
   }
   else
   {
@@ -243,10 +260,8 @@ void ElasticityPlasticity::Initialize()
     
     m_devMat = MatrixXd::Zero(6, 6);
     m_devMat = m_oneMat - m_oneVec * m_oneVec.transpose() / 3.;
-
-    SetHistoryParameter("stress", VectorXd::Zero(6));
   }
-
+  SetHistoryParameter("stress", m_devStress);
   ReadYieldStressStrainData();
 }
 

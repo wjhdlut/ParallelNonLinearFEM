@@ -172,5 +172,7 @@ void BaseMaterial::Initialize()
       m_planeStrainFlag = true;
     if("PlaneStress" == m_props.at("analyseType"))
       m_planeStressFlag = true;
+    if("AxiSymmetry" == m_props.at("analyseType"))
+      m_axiSymmetryFlag = true;
   }
 }

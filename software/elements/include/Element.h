@@ -67,9 +67,19 @@ struct ElementData
 class Element
 {
 public:
+  /**
+   * @Brief: Construct a new Element Class
+   * 
+   * @param elemNodes 
+   * @param modelProps 
+   */
   Element(const std::vector<int> &elemNodes,
           const nlohmann::json &modelProps);
   
+  /**
+   * @Brief: Destroy the Element Class
+   * 
+   */
   virtual ~Element();
 
   /**
@@ -245,6 +255,17 @@ protected:
   void InsertElemOutputData(std::unordered_map<std::string, MatrixXd> &elemOutData,
                             const std::string &name,
                             const MatrixXd &outputData = MatrixXd::Zero(0, 0));
+  
+  /**
+   * @Brief: Compute the Strain Matrix for AxiSymmetric Problem
+   * 
+   * @param B                    [in/out] Strain Matrix
+   * @param h                    [in]    Shape funtion
+   * @param elemDat              [in]    Element Data
+   */
+  double GetBMatrixForAxiSymmetry(MatrixXd &B,
+                                  const MatrixXd &h,
+                                  const MatrixXd &nodeCoord);
 
 private:
   /**
@@ -307,6 +328,7 @@ protected:
 
 private:
   MatrixXd N;
+  const double Pi = 3.1415926;
 };
 
 #endif // ELEMENT_H

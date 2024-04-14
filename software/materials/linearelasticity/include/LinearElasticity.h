@@ -57,6 +57,12 @@ private:
    * 
    */
   void ForPlaneStress();
+
+  /**
+   * @Brief: For AxiSYmmetric Problem
+   * 
+   */
+  void ForAxiSymmetry();
 };
 ReflectRegister(LinearElasticity, const nlohmann::json &)
 
