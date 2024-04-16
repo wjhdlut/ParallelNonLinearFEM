@@ -110,6 +110,8 @@ PetscErrorCode DofSpace::Solve(Mat&K, Vec&df, Vec&da, KSP&ksp)
   ierr = MatMatMult(tempMat, m_C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &constrainedK); CHKERRQ(ierr);
   // std::cout << "constrainedK = " << std::endl;
   // ierr = MatView(constrainedK, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+  // std::string fileK = "constrainedK.txt";
+  // ierr = Tools::PrintMatIntoFile(constrainedK, fileK);
 
   Vec constrainedB;
   Vec tempVec1, tempVec2;
@@ -136,11 +138,14 @@ PetscErrorCode DofSpace::Solve(Mat&K, Vec&df, Vec&da, KSP&ksp)
   ierr = MatMultTranspose(m_C, tempVec1, constrainedB); CHKERRQ(ierr);
   // std::cout << "constrainedB = " << std::endl;
   // ierr = VecView(constrainedB, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+  // std::string fileB = "constrainedB.txt";
+  // ierr = Tools::PrintVecIntoFile(constrainedB, fileB);
 
   Vec constrainedDa;
   ierr = VecDuplicate(constrainedB, &constrainedDa); CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp, constrainedK, constrainedK); CHKERRQ(ierr);
   ierr = KSPSetUp(ksp); CHKERRQ(ierr);
+  ierr = KSPSetType(ksp, KSPFCG); CHKERRQ(ierr);
   ierr = KSPSolve(ksp, constrainedB, constrainedDa); CHKERRQ(ierr);
   // std::cout << "constrainedDa = " << std::endl;
   // ierr = VecView(constrainedDa, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
@@ -171,7 +176,7 @@ PetscErrorCode DofSpace::Solve(const Vec &K, const Vec &df, Vec&da)
     ierr = VecSetValue(da, iConstrained.first, m_constrainedFac*iConstrained.second, INSERT_VALUES); CHKERRQ(ierr);
   ierr = VecAssemblyBegin(da); CHKERRQ(ierr);
   ierr = VecAssemblyEnd(da); CHKERRQ(ierr);
-  Tools::PrintVecIntoFile(da, "da.txt");
+  // Tools::PrintVecIntoFile(da, "da.txt");
 
   if(nullptr != m_rigidWall) RigidWallConstraint(da);
 

@@ -232,34 +232,47 @@ std::vector<int> Element::CheckNodeBoundary(std::vector<int> &nodeChk,
 {
   const std::unordered_map<int, std::vector<int>> &elemNodeOrdered = m_elemShapePtr->ReturnElemNodeOrdered();
   
+  // ensure the position of applied pressure in element
+  int numOfEdgeNode = 0;
   for(auto iter : nodeForcePres){
     int index = std::distance(m_nodes.begin(),
                 std::find(m_nodes.begin(), m_nodes.end(), iter.first));
     nodeChk[index] = 1;
+    numOfEdgeNode += 1;
   }
 
-  bool found = false;
   for(int iEdge = 1; iEdge <= elemNodeOrdered.size(); iEdge++)
   {
+    bool notFound = false;
     for(int iNode = 0; iNode < m_nodes.size(); iNode++)
     {
+      /********************************************************************************************
+       * @Brief: for two case:
+       *    Only the Position of Zero and NonZero in Vector nodeChk and elemNodeOrdered.at(iEdge)
+       *    is Same, the Pressure is applied in iEdge edge.
+       *    1. iNode-th node is aggigned pressure, but it is not edge node in the iEdge-th edge
+       *    2. iNode-th node in iEdge-th edge is not assigned pressure
+       * 
+       ********************************************************************************************/
       if((0 != nodeChk[iNode] && 0 == elemNodeOrdered.at(iEdge)[iNode])
       || (0 == nodeChk[iNode] && 0 != elemNodeOrdered.at(iEdge)[iNode])){
-        continue;
+        notFound = true;
+        break;
       }
     }
+    if(notFound) continue;
     // Found the index of edge
     for(int iNode = 0; iNode < m_nodes.size(); iNode++){
       if(0 != elemNodeOrdered.at(iEdge)[iNode])
         nodeChk[elemNodeOrdered.at(iEdge)[iNode] - 1] = iNode + 1;
     }
   }
-  std::vector<int> nodeAux;
+  std::vector<int> nodeAux(numOfEdgeNode);
   for(auto iter : nodeForcePres){
     for(int index = 0; index < nodeForcePres.size(); index++)
     {
       if (iter.first == m_nodes[nodeChk[index] - 1])
-        nodeAux.emplace_back(iter.first);
+        nodeAux[index] = iter.first;
     }
   }
   return nodeAux;
@@ -281,6 +294,8 @@ VectorXd Element::CompEquivalentNodeForce(const std::unordered_map<int, VectorXd
   int index = ("Y" == m_axiSymmetry) ? 0 : 1;
   for(int iGaussPoint = 0; iGaussPoint < boundaryWeight.size(); iGaussPoint++){
     m_elemShapePtr->GetBoundaryShapeFunction(boundaryH, pBoundaryHpXi, boundaryXi.row(iGaussPoint));
+    // std::cout << "boundaryH = " << boundaryH.transpose() << std::endl;
+    // std::cout << "pBoundaryHpXi = " << pBoundaryHpXi.transpose() << std::endl;
 
     /*********************************************************************************
      * 
@@ -294,6 +309,7 @@ VectorXd Element::CompEquivalentNodeForce(const std::unordered_map<int, VectorXd
     for(auto iter : nodeForcePres)
     {
       int ii = std::distance(nodeAux.begin(), std::find(nodeAux.begin(), nodeAux.end(), iter.first));
+      // std::cout << "nodeCoord = " << nodeCoord.at(iter.first).transpose() << std::endl;
       for(int iDof = 0; iDof < iter.second.size(); iDof++)
       {
         PGASH[iDof] += iter.second[iDof] * boundaryH(ii);

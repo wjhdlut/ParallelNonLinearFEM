@@ -284,10 +284,10 @@ void GlobalData::ReadEdgeLoadsData(const std::string &fileName)
         
         // Compute Equivalent Node Force
         VectorXd elemForce = elemPtr->CompEquivalentNodeForce(nodeCoords, nodeForcePres);
+        // std::cout << "elem ID: " << elemID << "  elemForce:\n" << elemForce << std::endl;
         // Assemble into total force vector
         std::vector<int> elemDofs = m_dofs->Get(elemPtr->GetNodes());
-        VecSetValues(m_fhat, elemDofs.size(), &elemDofs[0],&elemForce(0), ADD_VALUES);
-
+        VecSetValues(m_fhat, elemDofs.size(), &elemDofs[0], &elemForce(0), ADD_VALUES);
       }
     }
     if(fin.eof()) break;

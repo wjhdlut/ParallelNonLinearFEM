@@ -154,7 +154,7 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
 
   // Create PETSc object Vec
   ierr = VecSet(B, 0.);
-  Tools::PrintVecIntoFile(B, "B_ini.txt");
+  // Tools::PrintVecIntoFile(B, "B_ini.txt");
   // ierr = VecCreate(PETSC_COMM_WORLD, &B); CHKERRQ(ierr);
   // ierr = VecSetSizes(B, PETSC_DECIDE, numOfTolDof); CHKERRQ(ierr);
   // ierr = VecSetFromOptions(B); CHKERRQ(ierr);
@@ -174,7 +174,7 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
   for(auto elementGroup : m_groups)
   {
     nlohmann::json &elemPrpos = m_props.at(elementGroup.first);
-    std::ofstream fint("elemfint.txt", std::ios::out);
+    
     for(auto element : elementGroup.second)
     {
       elemPtr = m_elem[element];
@@ -204,10 +204,6 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
       elemPtr->SetTimeIncrementPara(m_dtK1, m_elemDistortion);
       elemPtr->GetTangentStiffness(elemData);
       elemPtr->ReturnTimeIncrementPara(m_dtK1, m_elemDistortion);
-      for(int index_fint = 0; index_fint < elemData->m_fint.size(); index_fint++){
-        fint << elemData->m_fint[index_fint] << std::endl;
-        // findof << elemDofs[index_fint]<< std::endl;
-      }
 
       for(auto outputData : elemData->m_outputData)
         elemPtr->AppendNodalOutput(outputData.first, outputData.second);
@@ -233,7 +229,6 @@ PetscErrorCode ElementSet::AssembleMatrix(Mat&A, Vec&B, const int rank, const st
         exit(-1);
       }
     }
-    fint.close();
   }
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);

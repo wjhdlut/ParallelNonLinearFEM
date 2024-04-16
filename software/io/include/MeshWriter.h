@@ -38,30 +38,78 @@ public:
   virtual void Run() override;
 
 private:
+  /**
+   * @Brief: Write Resulte into VTK Files
+   * 
+   */
   void WriteVTKFile();
 
+  /**
+   * @Brief: Write a PVD File
+   * 
+   */
   void WritePVDFile();
 
+  /**
+   * @Brief: Write Nodal Displacement and Stress
+   * 
+   * @param vtkfile 
+   */
   void WritePointInfo(std::fstream &vtkfile);
 
+  /**
+   * @Brief: Write Elemental Information
+   * 
+   * @param vtkfile 
+   */
   void WriteCellInfo(std::fstream &vtkfile);
 
+  /**
+   * @Brief: Write Nodal Displacement Result
+   * 
+   * @param vtkfile 
+   */
   void WritePointDisplaceData(std::fstream &vtkfile);
 
+  /**
+   * @Brief: Write Nodal Stress Reault
+   * 
+   * @param vtkfile 
+   */
   void WritePointStressData(std::fstream &vtkfile);
 
+  /**
+   * @Brief: Write Nodal Coordinates Reslut
+   * 
+   * @param vtkfile 
+   */
   void WritePointCoordsData(std::fstream &vtkfile);
 
+  /**
+   * @Brief: Write Element Connection Information
+   * 
+   * @param vtkfile 
+   */
   void WriteElemConnecData(std::fstream &vtkfile);
 
+  /**
+   * @Brief: Write Element Offset Data
+   * 
+   * @param vtkfile 
+   */
   void WriteElemOffsetData(std::fstream &vtkfile);
 
+  /**
+   * @Brief: Write Element Type Information
+   * 
+   * @param vtkfile 
+   */
   void WriteElemTypeData(std::fstream &vtkfile);
 
 private:
-  int m_k = 0;                          // Load Step
+  int m_k = 0;                                           // Load Step
   int m_interval = 1;
-  std::string m_fileName;               // Output File Name
+  std::string m_fileName;                                // Output File Name
   std::string m_elementGroup = "All";
   std::vector<std::string> m_elemType;
 

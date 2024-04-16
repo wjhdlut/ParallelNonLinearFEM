@@ -112,10 +112,54 @@ PetscErrorCode PrintVecIntoFile(const Vec&data, const std::string&fileName)
   ierr = VecGetSize(data, &numOfVecSize);
   for(int index = 0; index < numOfVecSize; index++){
     ierr = VecGetValues(data, 1, &index, &temp);
-    ierr = PetscFPrintf(PETSC_COMM_WORLD, fr, "%1.6e\n", temp);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD, fr, "%1.20e\n", temp);
   }
   fclose(fr);
 
   return ierr;
+}
+
+PetscErrorCode PrintMatIntoFile(const Mat &data, const std::string &fileName)
+{
+  PetscErrorCode ierr;
+  FILE *fr;
+  fr=fopen(fileName.c_str(), "w");
+  
+  int rowsOfMat, colsOfMat;
+  double temp;
+  ierr = MatGetSize(data, &rowsOfMat, &colsOfMat);
+  for(int row = 0; row < rowsOfMat; row++){
+    for(int col = 0; col < colsOfMat; col++){
+      ierr = MatGetValue(data, row, col, &temp);
+      ierr = PetscFPrintf(PETSC_COMM_WORLD, fr, "%1.20e   ", temp);
+    }
+    ierr = PetscFPrintf(PETSC_COMM_WORLD, fr, "\n");
+  }
+  fclose(fr);
+
+  return ierr;
+}
+void tempFunction(const Mat &K)
+{
+  Mat tempTransMat;
+  MatCreate(PETSC_COMM_WORLD, &tempTransMat);
+  MatSetSizes(tempTransMat, PETSC_DECIDE, PETSC_DECIDE, 90, 90);
+  MatSetFromOptions(tempTransMat);
+  MatSetUp(tempTransMat);
+  std::vector<int> temp = { 1,  2, 37, 38, 21, 22, 89, 90,  7,  8, 57, 58,  5,  6, 65, 66,  9, 10, 75, 76, 15, 16, 43, 44, 39, 40, 55, 56, 51, 52, 67, 68, 77, 78, 25, 26, 41, 42,
+                           31, 32, 85, 86, 33, 34, 53, 54, 35, 36, 69, 70, 27, 28, 79, 80, 29, 30, 49, 50, 45, 46, 63, 64, 59, 60, 71, 72, 81, 82,  3,  4, 47, 48, 19, 20,
+                           87, 88, 23, 24, 61, 62, 13, 14, 73, 74, 11, 12, 83, 84, 17, 18};
+  for(int i = 0; i < 90; i++)
+  {
+    MatSetValue(tempTransMat, i, temp[i]-1, 1., INSERT_VALUES);
+  }
+  MatAssemblyBegin(tempTransMat, MAT_FINAL_ASSEMBLY);
+  MatAssemblyEnd(tempTransMat, MAT_FINAL_ASSEMBLY);
+  
+  Mat tempK;
+  MatTransposeMatMult(tempTransMat, K, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tempK);
+  // MatMatMult(tempK, tempTransMat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &K);
+  std::cout << "stiffness Matrix 2 = " << std::endl;
+  MatView(K, PETSC_VIEWER_STDOUT_WORLD);
 }
 }

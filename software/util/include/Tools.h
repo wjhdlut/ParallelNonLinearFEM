@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <petscvec.h>
+#include <petscmat.h>
 #include "../../nlohmann/json.hpp"
 
 namespace Tools
@@ -92,6 +93,10 @@ namespace Tools
    * @return PetscErrorCode 
    */
   PetscErrorCode PrintVecIntoFile(const Vec&data, const std::string &fileName);
+
+  PetscErrorCode PrintMatIntoFile(const Mat&data, const std::string &filename);
+
+  void tempFunction(const Mat &K);
 }
 
 #endif // TOOLS_H

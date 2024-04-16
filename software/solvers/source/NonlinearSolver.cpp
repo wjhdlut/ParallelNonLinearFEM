@@ -62,6 +62,8 @@ void NonlinearSolver::Run()
   Vec &a = GlobalData::GetInstance()->m_state;
   Vec &Da = GlobalData::GetInstance()->m_Dstate;
   Vec &fhat = GlobalData::GetInstance()->m_fhat;
+  // std::cout << "m_fhat = " << std::endl;
+  // VecView(fhat, PETSC_VIEWER_STDOUT_WORLD);
 
   Vec &fint = GlobalData::GetInstance()->m_fint;
 
@@ -79,7 +81,9 @@ void NonlinearSolver::Run()
 
   Mat K;
   GlobalData::GetInstance()->m_elements->AssembleTangentStiffness(K, fint);
+  // std::cout << "stiffness Matrix = " << std::endl;
   // MatView(K, PETSC_VIEWER_STDOUT_WORLD);
+  
   // std::cout << "fint = " << std::endl;
   // VecView(fint, PETSC_VIEWER_STDOUT_WORLD);
 

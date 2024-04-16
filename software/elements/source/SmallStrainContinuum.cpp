@@ -47,6 +47,7 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
     outputData = MatrixXd::Zero(elemDat->m_coords.rows(), m_elemShapePtr->numOfStress);
   
   double tempWeight = 1.;
+  // std::cout << "elemNodeCoord = \n" << elemDat->m_coords << std::endl;
   for(int i = 0; i < xi.rows(); i++)
   {
     // std::cout << i << "-th Gauss Point, " << xi.row(i) << std::endl;
@@ -77,7 +78,8 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
  
     // compute tangent modulue matrix
     D = m_mat->GetTangMatrix();
-    // std::cout << "m_D = \n" << D << std::endl;
+    Eigen::IOFormat fmt(10);
+    // std::cout << "m_D = \n" << D.format(fmt) << std::endl;
 
     // compute stiffness matrix
     elemDat->m_stiff += jac.determinant() * weight(i) * B.transpose() * D * B * tempWeight;
@@ -91,6 +93,8 @@ void SmallStrainContinuum::GetTangentStiffness(std::shared_ptr<ElementData>&elem
     // compute output stress matrix
     outputData += Math::VecCross(VectorXd::Ones(elemDat->m_coords.rows()), sigma);
   }
+  Eigen::IOFormat fmt(10);
+  // std::cout << "elemStiff = \n" << elemDat->m_stiff.format(fmt) << std::endl;
   InsertElemOutputData(elemDat->m_outputData, "stresses", 1./xi.rows() * outputData);
 }
 
