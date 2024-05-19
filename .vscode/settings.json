@@ -60,6 +60,7 @@
         "variant": "cpp",
         "dense": "cpp",
         "complex": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "set": "cpp"
     }
 }

@@ -13,6 +13,7 @@
 #define DOFSPACE_H
 
 #include <map>
+#include <set>
 #include <petscksp.h>
 #include "ElementSet.h"
 
@@ -126,9 +127,23 @@ public:
    */
   void CompBasicVariable();
 
+  /**
+   * @Brief: Compute the Norm of Vec fext and fint
+   * 
+   * @param fext 
+   * @param fint 
+   * @return double 
+   */
   double Converg(const Vec &fext, const Vec &fint);
 
 private:
+  /**
+   * @Brief: Set the Constraint
+   * 
+   * @param nodeId 
+   * @param dofType 
+   * @param value 
+   */
   void Constrain(const int&nodeId, const std::string&dofType, const double&value);
 
   /**
@@ -138,7 +153,12 @@ private:
    * @return PetscErrorCode 
    */
   PetscErrorCode GetConstraintsMatrix(Mat&C);
-
+  
+  /**
+   * @Brief:Get the Constraints Matrix
+   * 
+   * @return PetscErrorCode 
+   */
   PetscErrorCode GetConstraintsMatrix();
 
   /**
@@ -154,6 +174,24 @@ private:
    * @param fileName 
    */
   void ReadRigidWall(const std::string &fileName);
+  
+  /**
+   * @Brief: Read Mastre/Slave Constrtiant
+   * 
+   * @param fileName 
+   */
+  void ReadMasterSlaveConstraint(const std::string &fileName);
+
+  /**
+   * @Brief: Set Master Slave Constraint Constraint
+   * 
+   * @param masterNode 
+   * @param dofType 
+   * @param slaveNodes 
+   */
+  void MasterSlaveConstraint(const int &masterNodeId,
+                             const std::string &dofType,
+                             const std::set<int> &slaveNodesId);
 
   /**
    * @Brief: Apply the Rigid Wall COnstraint
@@ -199,6 +237,17 @@ private:
    */
   PetscErrorCode ComputeTransMatrix();
 
+  // /**
+  //  * @Brief:  Set the Master Slave Node Constraint
+  //  * 
+  //  * @param K 
+  //  * @param dF 
+  //  * @return PetscErrorCode 
+  //  */
+  // PetscErrorCode SetMasterSlaveConstraint(Mat &K, Vec &dF);
+
+  // PetscErrorCode GetMasterSlaveMatrix();
+
 public:
   std::vector<std::vector<int>> m_dofs;
 
@@ -206,6 +255,7 @@ private:
   std::vector<std::string> m_dofTypes;
   std::map<int, VectorXd>  *m_nodeCoords;
   std::unordered_map<int, double> m_constrained;
+  std::unordered_map<int, std::set<int>> m_masterSlave;
   double m_constrainedFac = 1.;
   std::vector<int> m_IDmap;
   std::shared_ptr<RigidWall> m_rigidWall = nullptr;

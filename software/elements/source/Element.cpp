@@ -294,8 +294,8 @@ VectorXd Element::CompEquivalentNodeForce(const std::unordered_map<int, VectorXd
   int index = ("Y" == m_axiSymmetry) ? 0 : 1;
   for(int iGaussPoint = 0; iGaussPoint < boundaryWeight.size(); iGaussPoint++){
     m_elemShapePtr->GetBoundaryShapeFunction(boundaryH, pBoundaryHpXi, boundaryXi.row(iGaussPoint));
-    // std::cout << "boundaryH = " << boundaryH.transpose() << std::endl;
-    // std::cout << "pBoundaryHpXi = " << pBoundaryHpXi.transpose() << std::endl;
+    std::cout << "boundaryH = " << boundaryH.transpose() << std::endl;
+    std::cout << "pBoundaryHpXi = " << pBoundaryHpXi.transpose() << std::endl;
 
     /*********************************************************************************
      * 

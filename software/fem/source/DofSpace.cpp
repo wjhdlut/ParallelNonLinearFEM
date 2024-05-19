@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <regex>
 
 #include "../include/DofSpace.h"
 #include "../../util/include/DataStructure.h"
@@ -52,6 +53,8 @@ void DofSpace::ReadFromFile(const std::string&fileName)
   ReadNodeConstraint(fileName);
 
   ReadRigidWall(fileName);
+
+  ReadMasterSlaveConstraint(fileName);
 }
 
 void DofSpace::Constrain(const int&nodeId, const std::string&dofType, const double&value)
@@ -94,10 +97,13 @@ PetscErrorCode DofSpace::Solve(Mat&K, Vec&df, Vec&da, KSP&ksp)
   ierr = VecSetSizes(a, PETSC_DECIDE, m_dofs.size()*m_dofs[0].size()); CHKERRQ(ierr);
   ierr = VecSetFromOptions(a); CHKERRQ(ierr);
 
+  m_constrainedFac = GlobalData::GetInstance()->m_lam;
   for(auto iConstrained : m_constrained)
     ierr = VecSetValue(a, iConstrained.first, m_constrainedFac*iConstrained.second, INSERT_VALUES); CHKERRQ(ierr);
   ierr = VecAssemblyBegin(a); CHKERRQ(ierr);
   ierr = VecAssemblyEnd(a); CHKERRQ(ierr);
+  std::string fileA="a.txt";
+  Tools::PrintVecIntoFile(a, fileA);
 
   Mat constrainedK;
   int numOfRow = 0, numOfLine = 0;
@@ -120,12 +126,15 @@ PetscErrorCode DofSpace::Solve(Mat&K, Vec&df, Vec&da, KSP&ksp)
   ierr = VecSetFromOptions(constrainedB); CHKERRQ(ierr);
   
   ierr = VecDuplicate(a, &tempVec1); CHKERRQ(ierr);
+  ierr = VecZeroEntries(tempVec1); CHKERRQ(ierr);
   ierr = VecAXPY(tempVec1, -1., a); CHKERRQ(ierr);
   ierr = VecDuplicate(a, &tempVec2); CHKERRQ(ierr);
+  ierr = VecZeroEntries(tempVec2); CHKERRQ(ierr);
   // ierr = VecScale(tempVec1, -1.); CHKERRQ(ierr);
   // std::cout << "tempVec1 = " << std::endl;
   // ierr = VecView(tempVec1, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   
+  // f = K*u;
   ierr = MatMult(K, tempVec1, tempVec2); CHKERRQ(ierr);
   // std::cout << "tempVec2 = " << std::endl;
   // ierr = VecView(tempVec2, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
@@ -138,19 +147,29 @@ PetscErrorCode DofSpace::Solve(Mat&K, Vec&df, Vec&da, KSP&ksp)
   ierr = MatMultTranspose(m_C, tempVec1, constrainedB); CHKERRQ(ierr);
   // std::cout << "constrainedB = " << std::endl;
   // ierr = VecView(constrainedB, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-  // std::string fileB = "constrainedB.txt";
-  // ierr = Tools::PrintVecIntoFile(constrainedB, fileB);
+  std::string fileB = "constrainedB.txt";
+  ierr = Tools::PrintVecIntoFile(constrainedB, fileB);
 
   Vec constrainedDa;
   ierr = VecDuplicate(constrainedB, &constrainedDa); CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp, constrainedK, constrainedK); CHKERRQ(ierr);
-  ierr = KSPSetUp(ksp); CHKERRQ(ierr);
+
+  PC kspPC;
   ierr = KSPSetType(ksp, KSPFCG); CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp, &kspPC); CHKERRQ(ierr);
+  ierr = PCSetType(kspPC, PCSOR); CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp, constrainedK, constrainedK); CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp); CHKERRQ(ierr);
+  ierr = KSPSetUp(ksp); CHKERRQ(ierr);
+  // ierr = KSPSetType(ksp, KSPFCG); CHKERRQ(ierr);
   ierr = KSPSolve(ksp, constrainedB, constrainedDa); CHKERRQ(ierr);
   // std::cout << "constrainedDa = " << std::endl;
   // ierr = VecView(constrainedDa, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+  // Tools::PrintVecIntoFile(constrainedDa, "constrainedDa.txt");
   ierr = MatMult(m_C, constrainedDa, da); CHKERRQ(ierr);
   ierr = VecAXPY(da, 1.0, a); CHKERRQ(ierr);
+  // std::cout << "da = " << std::endl;
+  // ierr = VecView(da, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+  // Tools::PrintVecIntoFile(da, "da.txt");
   
   if(m_transMatrix != NULL){
     ierr = TransVecToGlobalCSY(da); CHKERRQ(ierr);
@@ -210,22 +229,39 @@ PetscErrorCode DofSpace::GetConstraintsMatrix()
 {
   int n_constrianed = m_constrained.size();
   int n = m_dofs.size() * m_dofs[0].size();
+  int numOfSlave = 0;
+  for(auto iMasterSlave : m_masterSlave){
+    for(auto iSlave : iMasterSlave.second){
+      if(0 != m_constrained.count(iSlave)) continue;
+      numOfSlave += 1;
+    }
+  }
 
   PetscErrorCode ierr;
   ierr = MatCreate(PETSC_COMM_WORLD, &m_C); CHKERRQ(ierr);
-  ierr = MatSetSizes(m_C, PETSC_DECIDE, PETSC_DECIDE, n, n-n_constrianed); CHKERRQ(ierr);
+  ierr = MatSetSizes(m_C, PETSC_DECIDE, PETSC_DECIDE, n, n-n_constrianed-numOfSlave); CHKERRQ(ierr);
   ierr = MatSetUp(m_C); CHKERRQ(ierr);
   
   int j = 0;
   for(int i = 0; i < n ; i++)
   {
-    if(0 != m_constrained.count(i)) continue;
+    bool pass = false;
+    for(auto iMasterSlave : m_masterSlave){
+      if(0 != iMasterSlave.second.count(i)){
+        pass = true;
+        ierr = MatSetValue(m_C, i, iMasterSlave.first, 1., INSERT_VALUES); CHKERRQ(ierr);
+        break;
+      }
+    }
+    if(0 != m_constrained.count(i) || pass) continue;
     ierr = MatSetValue(m_C, i, j, 1., INSERT_VALUES); CHKERRQ(ierr);
     j += 1;
   }
   ierr = MatAssemblyBegin(m_C, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(m_C, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
+  Tools::PrintMatIntoFile(m_C, "transMatrix.txt");
+  
   return ierr;
 }
 
@@ -352,6 +388,96 @@ void DofSpace::ReadRigidWall(const std::string &fileName)
     if(fin.eof()) break;
   }
   fin.close();
+}
+
+void DofSpace::ReadMasterSlaveConstraint(const std::string &fileName)
+{
+  std::ifstream fin(fileName, std::ios::in);
+  std::string line = "";
+  std::regex pattern("[\\s]{2,}");
+  while(true)
+  {
+    getline(fin, line);
+    if(line.npos != line.find("\r"))
+      line.erase(line.find("\r"));
+
+    if(fin.eof()) break;
+
+    if(line.npos != line.find("<MasterSlaveNodalConstraints>"))
+    {
+      while(true)
+      {
+        getline(fin, line);
+        if(line.npos != line.find("\r"))
+          line.erase(line.find("\r"));
+        line.erase(0, line.find_first_not_of(" "));
+
+        if(line.npos != line.find("</MasterSlaveNodalConstraints>"))
+        {
+          fin.close();
+          return;
+        }
+        
+        line =  std::regex_replace(line, pattern, " ");
+        std::vector<std::string> a = Tools::StringSplit(line, ";");
+        std::vector<std::string> b = Tools::StringSplit(a[0], " ");
+
+        if(3 > b.size()){
+          std::cout << "Catch Exception: "
+                    << "The input of MasterSlaveConstraint is wrong!"
+                    << std::endl;
+          exit(-1);
+        }
+
+        int masterNodeId = std::stoi(b[0]);
+        std::set<int> slaveNodesId;
+        for(int i = 2; i < b.size(); i++)
+          slaveNodesId.insert(std::stoi(b[i]));
+        MasterSlaveConstraint(masterNodeId, b[1], slaveNodesId);
+      }
+    }
+  }
+  fin.close();
+}
+
+void DofSpace::MasterSlaveConstraint(const int &masterNodeId,
+                                     const std::string &dofType,
+                                     const std::set<int> &slaveNodesId)
+{
+  if(0 == m_nodeCoords->count(masterNodeId)){
+    std::cout << "Catch Exception: "
+              << "Node ID " + std::to_string(masterNodeId) + " does not exist"
+              << std::endl;
+    exit(-1);
+  }
+  
+  for(int i = 1; i < dofType.size()-1; i++)
+  {
+    if(m_dofTypes.end() == std::find(m_dofTypes.begin(), m_dofTypes.end(), std::string(1, dofType[i]))){
+      std::cout << "Catch Exception: "
+                << "DOF type " + dofType + " does not exit"
+                << std::endl;
+      exit(-1);
+    }
+    int masterNodeRow  = std::distance(m_IDmap.begin(),
+                         std::find(m_IDmap.begin(), m_IDmap.end(), masterNodeId));
+    int masterNodeLine = std::distance(m_dofTypes.begin(),
+                         std::find(m_dofTypes.begin(), m_dofTypes.end(), std::string(1, dofType[i])));
+    int masterDof = m_dofs[masterNodeRow][masterNodeLine];
+    
+    if(0 != m_masterSlave.count(masterDof)){
+      std::cout << " PLEASE CHECK THE MASTER/SLAVE CONSTRAIN FOR MATER NODE ID IS " 
+                << masterNodeId
+                << std::endl;
+    }
+    m_masterSlave.insert(std::pair<int, std::set<int>>(masterDof, {}));
+    for(auto iter : slaveNodesId)
+    {
+      int slaveNodeRow = std::distance(m_IDmap.begin(), std::find(m_IDmap.begin(), m_IDmap.end(), iter));
+      int slaveNodeDof = m_dofs[slaveNodeRow][masterNodeLine];
+      m_masterSlave[masterDof].insert(slaveNodeDof);
+    }
+  }
 }
 
 void DofSpace::RigidWallConstraint(Vec&da)
@@ -517,3 +643,51 @@ double DofSpace::Converg(const Vec&fext, const Vec &fint)
 
   return normDf / normFext;
 }
+
+// PetscErrorCode DofSpace::SetMasterSlaveConstraint(Mat &K, Vec &dF)
+// {
+//   PetscErrorCode ierr;
+  
+//   Mat tempMat;
+//   ierr = MatTransposeMatMult(m_masterSlaveTrans, K, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tempMat); CHKERRQ(ierr);
+//   ierr = MatMatMult(tempMat, m_masterSlaveTrans, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &K); CHKERRQ(ierr);
+
+//   ierr = MatMultTranspose(m_masterSlaveTrans, dF, dF); CHKERRQ(ierr);
+
+//   return ierr;
+// }
+
+// PetscErrorCode DofSpace::GetMasterSlaveMatrix()
+// {
+//   int numOfDof = m_dofs.size() * m_dofs[0].size();
+//   int numOfSlave = 0;
+//   for(auto iMasterSlave : m_masterSlave){
+//     numOfSlave += iMasterSlave.second.size();
+//   }
+
+//   PetscErrorCode ierr;
+//   ierr = MatCreate(PETSC_COMM_WORLD, &m_masterSlaveTrans); CHKERRQ(ierr);
+//   ierr = MatSetSizes(m_masterSlaveTrans, PETSC_DECIDE, PETSC_DECIDE, numOfDof, numOfDof-numOfSlave); CHKERRQ(ierr);
+//   ierr = MatSetUp(m_masterSlaveTrans); CHKERRQ(ierr);
+  
+//   int j = 0;
+//   for(int i = 0; i < numOfDof; i++){
+//     bool pass = false;
+//     for(auto iMasterSlave : m_masterSlave){
+//       if(iMasterSlave.second.count(i)){
+//         pass = true;
+//         ierr = MatSetValue(m_masterSlaveTrans, i, iMasterSlave.first, 1., INSERT_VALUES); CHKERRQ(ierr);
+//         break;
+//       }
+//     }
+
+//     if(pass) continue;
+//     ierr = MatSetValue(m_masterSlaveTrans, i, j, 1., INSERT_VALUES); CHKERRQ(ierr);
+//     j += 1;
+// }
+
+//   ierr = MatAssemblyBegin(m_masterSlaveTrans, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+//   ierr = MatAssemblyEnd(m_masterSlaveTrans, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+//   return ierr;
+// }

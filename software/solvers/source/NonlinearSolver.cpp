@@ -104,8 +104,8 @@ void NonlinearSolver::Run()
     GlobalData::GetInstance()->m_iiter += 1;
 
     GlobalData::GetInstance()->m_dofs->Solve(K, dF, da, ksp);
-    // std::cout << "da = " << std::endl;
-    // VecView(da, PETSC_VIEWER_STDOUT_WORLD);
+    std::cout << "da = " << std::endl;
+    VecView(da, PETSC_VIEWER_STDOUT_WORLD);
 
     // update the increment displacement and total displacement
     VecAXPY(Da, 1., da);
